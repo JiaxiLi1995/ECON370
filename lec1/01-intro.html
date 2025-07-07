@@ -1,36 +1,40 @@
----
-title: "Data Science for Economists"
-# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
-subtitle: "Lecture 1: Introduction"
-author: "Jiaxi Li"
-date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
-output:
-  xaringan::moon_reader:
-    css: [default, metropolis, metropolis-fonts] 
-    lib_dir: libs
-    nature:
-      highlightStyle: github
-      highlightLines: true
-      countIncrementalSlides: false
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data Science for Economists</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Jiaxi Li" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link href="libs/htmltools-fill/fill.css" rel="stylesheet" />
+    <script src="libs/htmlwidgets/htmlwidgets.js"></script>
+    <script src="libs/viz/viz.js"></script>
+    <link href="libs/DiagrammeR-styles/styles.css" rel="stylesheet" />
+    <script src="libs/grViz-binding/grViz.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Data Science for Economists
+]
+.subtitle[
+## Lecture 1: Introduction
+]
+.author[
+### Jiaxi Li
+]
+.date[
+### University of North Carolina | <a href="https://github.com/JiaxiLi1995/ECON370">ECON 370</a>
+]
+
 ---
 
-```{r setup, include=FALSE}
-# xaringanExtra::use_scribble() ## Draw on slides. Requires dev version of xaringanExtra.
 
-options(htmltools.dir.version = FALSE)
-library(knitr)
-opts_chunk$set(
-  fig.align="center",  
-  fig.height=4, #fig.width=6,
-  # out.width="748px", #out.length="520.75px",
-  dpi=300, #fig.path='Figs/',
-  cache=T#, echo=F, warning=F, message=F
-  )
-library(tidyverse)
-library(hrbrthemes)
-library(fontawesome)
-library(DiagrammeR)
-```
+
 
 
 # Table of contents
@@ -45,7 +49,7 @@ library(DiagrammeR)
 
 5. [Data visualization with ggplot2](#ggplot2)
 
-`r fa('star-of-life')` Slides adapted from Drew Van Kuiken and Alex Marsh's ECON 370 and originally based on materials by Grant McDermott's EC 607 at University of Oregon.
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M208 32c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V172.9l122-70.4c15.3-8.8 34.9-3.6 43.7 11.7l16 27.7c8.8 15.3 3.6 34.9-11.7 43.7L352 256l122 70.4c15.3 8.8 20.5 28.4 11.7 43.7l-16 27.7c-8.8 15.3-28.4 20.6-43.7 11.7L304 339.1V480c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V339.1L86 409.6c-15.3 8.8-34.9 3.6-43.7-11.7l-16-27.7c-8.8-15.3-3.6-34.9 11.7-43.7L160 256 38 185.6c-15.3-8.8-20.5-28.4-11.7-43.7l16-27.7C51.1 98.8 70.7 93.6 86 102.4l122 70.4V32z"/></svg> Slides adapted from Drew Van Kuiken and Alex Marsh's ECON 370 and originally based on materials by Grant McDermott's EC 607 at University of Oregon.
 
 
 ---
@@ -54,7 +58,7 @@ name: prologue
 
 # Prologue
 
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 
@@ -62,9 +66,7 @@ name: prologue
 
 ### Me
 
-```{r, cache=FALSE,echo=FALSE,out.width="30%",fig.show='hold',out.extra='style="float:right; padding:10px"'}
-knitr::include_graphics(c("pics/Head_shot.jpg"))
-```
+&lt;img src="pics/Head_shot.jpg" width="30%" style="float:right; padding:10px" style="display: block; margin: auto;" /&gt;
 
 - [Jiaxi Li](https://jiaxili1995.github.io/)
 
@@ -132,7 +134,7 @@ name: syllabus
 
 # Syllabus Highlights
 
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 (Read the full document [here](https://github.com/JiaxiLi1995/ECON370/blob/main/syllabus/ECON370_Syllabus.pdf).)
 
@@ -163,31 +165,8 @@ Econ 370 vs. Econ 400:
 
 # Why this course?
 
-```{r, whythiscourse, cache=FALSE,echo=FALSE,out.width="98%",out.height="20%",fig.show='hold'}
-grViz("
-digraph flow {
-  
-  graph [layout = dot, rankdir = LR]  // Left to right
-
-  node [shape = box, style = filled, fillcolor = LightBlue]
-
-  DataCollection [label = 'Data Collection']
-  DataCleaning [label = 'Data Cleaning / Wrangling']
-  DataAnalysis [label = 'Data Analysis']
-  Conclusion [label = 'Conclusion']
-
-  // Connect the flow
-  DataCollection -> DataCleaning -> DataAnalysis -> Conclusion
-
-  // Economic Question node above
-  EconomicQuestion [label = 'Goal: Economic Question', shape = ellipse, style=filled, fillcolor=lightgray, fontsize=14, fontcolor=black]
-
-  // Position the goal above the flow
-  {rank = min; EconomicQuestion}
-  EconomicQuestion -> DataCollection [arrowhead=none, style=dashed]
-}
-")
-```
+<div class="grViz html-widget html-fill-item" id="htmlwidget-8663db9fd70363385423" style="width:98%;height:20%;"></div>
+<script type="application/json" data-for="htmlwidget-8663db9fd70363385423">{"x":{"diagram":"\ndigraph flow {\n  \n  graph [layout = dot, rankdir = LR]  // Left to right\n\n  node [shape = box, style = filled, fillcolor = LightBlue]\n\n  DataCollection [label = \"Data Collection\"]\n  DataCleaning [label = \"Data Cleaning / Wrangling\"]\n  DataAnalysis [label = \"Data Analysis\"]\n  Conclusion [label = \"Conclusion\"]\n\n  // Connect the flow\n  DataCollection -> DataCleaning -> DataAnalysis -> Conclusion\n\n  // Economic Question node above\n  EconomicQuestion [label = \"Goal: Economic Question\", shape = ellipse, style=filled, fillcolor=lightgray, fontsize=14, fontcolor=black]\n\n  // Position the goal above the flow\n  {rank = min; EconomicQuestion}\n  EconomicQuestion -> DataCollection [arrowhead=none, style=dashed]\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 Fill in the gaps left by traditional econometrics and methods classes.
 
@@ -313,7 +292,7 @@ name: started
 
 # Getting started
 
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 
@@ -323,9 +302,7 @@ name: started
 
 2. Download [RStudio](https://www.rstudio.com/products/rstudio/download/preview/).
 
-```{r, cache=FALSE,echo=FALSE,out.width="49%",out.height="20%",fig.show='hold',fig.align='center'}
-knitr::include_graphics(c("pics/RStudio.png"))
-```
+&lt;img src="pics/RStudio.png" width="49%" height="20%" style="display: block; margin: auto;" /&gt;
 
 --
 
@@ -348,19 +325,26 @@ I'll detail further software requirements as and when the need arises. However, 
 # Checklist
 
 ☑ Do you have the most recent version of R?
-  ```{r, cache=FALSE}
+  
+  ``` r
   version$version.string
+  ```
+  
+  ```
+  ## [1] "R version 4.5.1 (2025-06-13 ucrt)"
   ```
 
 
 ☑ Do you have the most recent version of RStudio? (The [preview version](https://www.rstudio.com/products/rstudio/download/preview/) is fine.)
-  ```{r eval=FALSE}
+  
+  ``` r
   RStudio.Version()$version
   ## Requires an interactive session but should return something like "[1] ‘2024.4.2.764’"
   ```
 
 ☑ Have you updated all of your R packages? 
-  ```{r eval=FALSE}
+  
+  ``` r
   update.packages(ask = FALSE, checkBuilt = TRUE)
   ```
 
@@ -369,43 +353,13 @@ class: inverse, center, middle
 name: r4ds
 
 # R for data science
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 name: whyr
 
 # Why R and RStudio? (cont.)
-```{R, indeeddotcom, echo = F, fig.height = 6, fig.width = 9, dev = "svg"}
-# The popularity data
-pop_df = 
-  data.frame(
-  lang = c("Python", "R", "SQL", "Matlab", "SAS", "SPSS", "Stata"),
-  n_jobs = c(70000, 68000, 58000, 6000, 5000, 600, 500),
-  free = c(T, T, T, F, F, F, F)
-  )
-## Plot it
-pop_df %>% 
-  mutate(lang = lang %>% factor(ordered = T)) %>%
-  ggplot(aes(x = lang, y = n_jobs, fill = free)) +
-  geom_col() +
-  geom_hline(yintercept = 0) +
-  aes(x = reorder(lang, -n_jobs), fill = reorder(free, -free)) +
-  xlab("Statistical language") +
-  scale_y_continuous(label = scales::comma) +
-  ylab("Number of jobs") +
-  labs(
-    title = "Comparing statistical languages",
-    subtitle = "Number of job postings on Indeed.com, 2025/07/04"
-    ) +
-  scale_fill_manual(
-    "Free?",
-    labels = c("True", "False"),
-    values = c("#f92672", "darkslategray")
-    ) +
-  ggthemes::theme_pander(base_size = 17) +
-  # theme_ipsum() +
-  theme(legend.position = "bottom")
-```
+&lt;img src="01-intro_files/figure-html/indeeddotcom-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 # Why This Course? Why R? My Experience:
 
@@ -448,39 +402,39 @@ programming languages and APIs.
 ---
 # Pros and Cons of R
 
-`r fa('check')` Free.
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Free.
 
 --
 
-`r fa('check')` Great community with lots of support.
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Great community with lots of support.
 
 --
 
-`r fa('check')` Syntax is fairly basic for those with a math background.
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Syntax is fairly basic for those with a math background.
 
 --
 
-`r fa('check')` RStudio.
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> RStudio.
 
 --
 
-`r fa('check')` Beautiful Graphics (better than Python `r fa('smile')`).
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Beautiful Graphics (better than Python <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>).
 
 --
 
-`r fa('check')` Data wrangling.
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg> Data wrangling.
 
 --
 
-`r fa('times')` Slow. (Only slightly comparing to Julia.)
+<svg aria-hidden="true" role="img" viewBox="0 0 384 512" style="height:1em;width:0.75em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg> Slow. (Only slightly comparing to Julia.)
 
 --
 
-`r fa('times')` Demanding on RAM.
+<svg aria-hidden="true" role="img" viewBox="0 0 384 512" style="height:1em;width:0.75em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg> Demanding on RAM.
 
 --
 
-`r fa('times')` Dependency on packages.
+<svg aria-hidden="true" role="img" viewBox="0 0 384 512" style="height:1em;width:0.75em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg> Dependency on packages.
 
 ---
 # R vs Python
@@ -510,15 +464,15 @@ R is a language for statistics whereas Python is a language that can do statisti
 # Laptops in Class
 We'll be using our laptops a lot in class this semester. This is the best way to learn how to code! 
 
-</br>
+&lt;/br&gt;
 
 Playing games, watching sports, shopping online are ***incredibly*** distracting. ***Please!!!!!!!*** do not do this.
 
-</br> 
+&lt;/br&gt; 
 
 If you are unable to control yourself, ***please*** sit in the back of the classroom 
 
-</br> 
+&lt;/br&gt; 
 
 I reserve the right to take participation points off if you're making life harder for your classmates. 
 
@@ -530,22 +484,22 @@ It has come to my attention that many college students do not use folders
 
 --
 
-</br>
+&lt;/br&gt;
 
 When I was in high school, I did not use folders.
 
 --
 
-</br>
+&lt;/br&gt;
 
 Things are extremely hard to find in a large pile of files.
 
 ---
 # A Suggested File Structure
 
-D: &rarr; R &rarr; ECON370 &rarr; hw1, final project, books, slides, etc.
+D: &amp;rarr; R &amp;rarr; ECON370 &amp;rarr; hw1, final project, books, slides, etc.
 
-</br> 
+&lt;/br&gt; 
 
 For any coding project (and, e.g., within the hw1 folder) use the following subfolders (trust me on this): 
   - data
@@ -572,19 +526,19 @@ RStudio is the studio for R. (Like a studio for tufting.) You can find all helpf
 
 --
 
-2. You can also write script in R files called *R Script*. (*File* &rarr; *New File* &rarr; *R Script*)
+2. You can also write script in R files called *R Script*. (*File* &amp;rarr; *New File* &amp;rarr; *R Script*)
 
-  This is like using the English language to write a book. You keep a copy about the things you want to say. But you still have to run things in the console (or Highlight and then Control&Enter). (Read your written speech to the computer.)
+  This is like using the English language to write a book. You keep a copy about the things you want to say. But you still have to run things in the console (or Highlight and then Control&amp;Enter). (Read your written speech to the computer.)
 
 --
 
-3. You can also write both word and code in R called *R Markdown*. Then you knit it into a single file. (*File* &rarr; *New File* &rarr; *R Markdown...*)
+3. You can also write both word and code in R called *R Markdown*. Then you knit it into a single file. (*File* &amp;rarr; *New File* &amp;rarr; *R Markdown...*)
 
   Markdown is still widely used. All slides in this class are written with R Markdown!
 
 --
 
-4. The newer version of R Markdown is Quarto. Quarto visual shows you the output look while coding. Quarto source is basically Markdown. (*File* &rarr; *New File* &rarr; *R Quarto...*)
+4. The newer version of R Markdown is Quarto. Quarto visual shows you the output look while coding. Quarto source is basically Markdown. (*File* &amp;rarr; *New File* &amp;rarr; *R Quarto...*)
 
 
 ---
@@ -630,9 +584,7 @@ Nowadays, there are three paradigms people use to write R code:
 ---
 # A Lay of the Land (Virtual)
 
-```{r, cache=FALSE,echo=FALSE,out.width="100%",fig.show='hold',fig.align='center'}
-knitr::include_graphics(c("pics/lay_of_land.png"))
-```
+&lt;img src="pics/lay_of_land.png" width="100%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -650,7 +602,7 @@ knitr::include_graphics(c("pics/lay_of_land.png"))
 
 --
 
-</br>
+&lt;/br&gt;
 
 Points 1. and 2. can be summarized as an [object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming) (OOP) approach.
   - This may sound super abstract now, but we'll see *lots* of examples over the coming weeks that will make things clear.
@@ -661,19 +613,19 @@ Points 1. and 2. can be summarized as an [object-oriented programming](https://e
 
 # Some useful short keys
 
-- Hightlight multiple lines + Control&Shift&c &rarr; Comment/Uncomment multiple lines
-- Hightlight multiple lines + Control&Enter &rarr; Run multiple lines of code
-- Hightlight multiple lines + tab &rarr; indent multiple lines
-- Hightlight multiple lines + Shift&tab &rarr; unindent multiple lines
-- Control&z &rarr; Undo changes
-- Control&Shift&z &rarr; Redo changes
-- Control&f &rarr; Find and replace
+- Hightlight multiple lines + Control&amp;Shift&amp;c &amp;rarr; Comment/Uncomment multiple lines
+- Hightlight multiple lines + Control&amp;Enter &amp;rarr; Run multiple lines of code
+- Hightlight multiple lines + tab &amp;rarr; indent multiple lines
+- Hightlight multiple lines + Shift&amp;tab &amp;rarr; unindent multiple lines
+- Control&amp;z &amp;rarr; Undo changes
+- Control&amp;Shift&amp;z &amp;rarr; Redo changes
+- Control&amp;f &amp;rarr; Find and replace
 
 [Here](https://support.posit.co/hc/en-us/articles/200711853-Keyboard-Shortcuts-in-the-RStudio-IDE) is a more complete list of short keys.
 
 --
 
-</br>
+&lt;/br&gt;
 
 **Warning about the Insert key**:
 
@@ -684,28 +636,57 @@ If you accidentally press the *Insert* key, your typing may start overwriting ex
 
 # R code example (linear regression)
 
-```{r fit}
+
+``` r
 fit = lm(mpg ~ wt, data = mtcars)
 summary(fit)
+```
+
+```
+## 
+## Call:
+## lm(formula = mpg ~ wt, data = mtcars)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.5432 -2.3647 -0.1252  1.4096  6.8727 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  37.2851     1.8776  19.858  &lt; 2e-16 ***
+## wt           -5.3445     0.5591  -9.559 1.29e-10 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 3.046 on 30 degrees of freedom
+## Multiple R-squared:  0.7528,	Adjusted R-squared:  0.7446 
+## F-statistic: 91.38 on 1 and 30 DF,  p-value: 1.294e-10
 ```
 
 ---
 
 # ggplot2
 
-```{r mtcars_ggplot, dev="svg"}
+
+``` r
 library(ggplot2)
 ggplot(data = mtcars, aes(x = wt, y = mpg)) + 
   geom_smooth(method = "lm", col = "red") + 
   geom_point() 
 ```
 
+```
+## `geom_smooth()` using formula = 'y ~ x'
+```
+
+&lt;img src="01-intro_files/figure-html/mtcars_ggplot-1.svg" style="display: block; margin: auto;" /&gt;
+
 ---
 class: inverse, center, middle
 name: ggplot2
 
 # More ggplot2
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 
@@ -724,7 +705,8 @@ If you don't have them already, install the `ggplot2` and `gapminder` packages v
 # Install and load (cont.)
 
 Once the packages are installed, load them into your R session with the `library()` function.
-```{r pkg_load}
+
+``` r
 library(ggplot2)
 library(gapminder) ## We're just using this package for the gapminder data
 ```
@@ -742,8 +724,26 @@ PS — A convenient way to combine the package installation and loading steps is
 
 Because we're going to be plotting the [gapminder](https://github.com/jennybc/gapminder) dataset, it is helpful to know that it contains panel data on life expectancy, population size, and GDP per capita for 142 countries since the 1950s.
 
-```{r gapm}
+
+``` r
 gapminder
+```
+
+```
+## # A tibble: 1,704 × 6
+##    country     continent  year lifeExp      pop gdpPercap
+##    &lt;fct&gt;       &lt;fct&gt;     &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+##  1 Afghanistan Asia       1952    28.8  8425333      779.
+##  2 Afghanistan Asia       1957    30.3  9240934      821.
+##  3 Afghanistan Asia       1962    32.0 10267083      853.
+##  4 Afghanistan Asia       1967    34.0 11537966      836.
+##  5 Afghanistan Asia       1972    36.1 13079460      740.
+##  6 Afghanistan Asia       1977    38.4 14880372      786.
+##  7 Afghanistan Asia       1982    39.9 12881816      978.
+##  8 Afghanistan Asia       1987    40.8 13867957      852.
+##  9 Afghanistan Asia       1992    41.7 16317921      649.
+## 10 Afghanistan Asia       1997    41.8 22227415      635.
+## # ℹ 1,694 more rows
 ```
 
 
@@ -764,7 +764,7 @@ There's a lot to say about ggplot2's implementation of this "grammar of graphics
 
 --
 
-</br>
+&lt;/br&gt;
 
 That's kind of abstract. Let's review each element in turn with some actual plots.
 
@@ -772,17 +772,21 @@ That's kind of abstract. Let's review each element in turn with some actual plot
 
 # 1. Aesthetic mappings
 
-```{r, aesthetics0}
+
+``` r
 ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
   geom_point()
 ```
+
+&lt;img src="01-intro_files/figure-html/aesthetics0-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
 
 # 1. Aesthetic mappings (cont.)
 
-```{r aesthetics1, eval=FALSE}
+
+``` r
 ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) + 
   geom_point()
 ```
@@ -800,10 +804,13 @@ The aesthetic mappings here are pretty simple: They just define an x-axis (GDP p
 
 # 1. Aesthetic mappings (cont.)
 
-```{r aesthetics2, dev='svg'}
+
+``` r
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, col = continent)) + 
   geom_point(alpha = 0.3) ## "alpha" controls transparency. Takes a value between 0 and 1.
 ```
+
+&lt;img src="01-intro_files/figure-html/aesthetics2-1.svg" style="display: block; margin: auto;" /&gt;
 
 --
 
@@ -814,20 +821,26 @@ Note that I've dropped the "mapping =" part of the ggplot call. Most people just
 # 1. Aesthetic mappings (cont.)
 
 We can specify aesthetic mappings in the geom layer too.
-```{r aesthetics3, dev='svg'}
+
+``` r
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + ## Applicable to all geoms
   geom_point(aes(size = pop, col = continent), alpha = 0.3) ## Applicable to this geom only
 ```
+
+&lt;img src="01-intro_files/figure-html/aesthetics3-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # 1. Aesthetic mappings (cont.)
 
 Oops. What went wrong here?
-```{r aesthetics_mistake, warning=FALSE,dev='svg'}
+
+``` r
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
   geom_point(aes(size = "big", col="black"), alpha = 0.3)
 ```
+
+&lt;img src="01-intro_files/figure-html/aesthetics_mistake-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -835,10 +848,13 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
 
 This is what we wanted to do!
 
-```{r aesthetics_mistake_correct, warning=FALSE,dev='svg'}
+
+``` r
 ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) + 
   geom_point(size = 3, col="black", alpha = 0.3)
 ```
+
+&lt;img src="01-intro_files/figure-html/aesthetics_mistake_correct-1.svg" style="display: block; margin: auto;" /&gt;
 
 
 --
@@ -851,10 +867,13 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
 
 At this point, instead of repeating the same ggplot2 call every time, it will prove convenient to define an intermediate plot object that we can re-use.
 
-```{r p, dev='svg'}
+
+``` r
 p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 ```
+
+&lt;img src="01-intro_files/figure-html/p-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -862,10 +881,17 @@ p
 
 Once your variable relationships have been defined by the aesthetic mappings, you can invoke and combine different geoms to generate different visulaizations.
 
-```{r geoms1, dev='svg'}
+
+``` r
 p + geom_point(alpha = 0.3)  +
   geom_smooth(method = "loess") 
 ```
+
+```
+## `geom_smooth()` using formula = 'y ~ x'
+```
+
+&lt;img src="01-intro_files/figure-html/geoms1-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -873,10 +899,17 @@ p + geom_point(alpha = 0.3)  +
 
 Aesthetics can be applied differentially across geoms.
 
-```{r geoms2, dev='svg'}
+
+``` r
 p + geom_point(aes(size = pop, col = continent), alpha = 0.3)  +
   geom_smooth(method = "loess") 
 ```
+
+```
+## `geom_smooth()` using formula = 'y ~ x'
+```
+
+&lt;img src="01-intro_files/figure-html/geoms2-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 # 2. Geoms (cont.)
@@ -884,7 +917,8 @@ p + geom_point(aes(size = pop, col = continent), alpha = 0.3)  +
 The previous plot provides a good illustration of the power (or effect) that comes from assigning aesthetic mappings "globally" vs in the individual geom layers.
 - Compare: What happens if you run the below code chunk?
 
-```{r geoms3}
+
+``` r
 p_bad = ggplot(data = gapminder, 
                aes(x = gdpPercap, y = lifeExp, size = pop, col = continent)) +
   geom_point(alpha = 0.3)  +
@@ -894,9 +928,32 @@ p_bad = ggplot(data = gapminder,
 ---
 # 2. Geoms (cont.)
 
-```{r geoms3_new}
+
+``` r
 p_bad
 ```
+
+```
+## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+## ℹ Please use `linewidth` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+```
+
+```
+## `geom_smooth()` using formula = 'y ~ x'
+```
+
+```
+## Warning: The following aesthetics were dropped during statistical transformation: size.
+## ℹ This can happen when ggplot fails to infer the correct grouping structure in
+##   the data.
+## ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+##   variable into a factor?
+```
+
+&lt;img src="01-intro_files/figure-html/geoms3_new-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -904,8 +961,25 @@ p_bad
 
 Similarly, note that some geoms only accept a subset of mappings. E.g. `geom_density()` doesn't know what to do with the "y" aesthetic mapping.
 
-```{r geoms4, error=TRUE, dev='svg'}
+
+``` r
 p + geom_density()
+```
+
+```
+## Warning: The following aesthetics were dropped during statistical transformation: y.
+## ℹ This can happen when ggplot fails to infer the correct grouping structure in
+##   the data.
+## ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+##   variable into a factor?
+```
+
+```
+## Error in `geom_density()`:
+## ! Problem while setting up geom.
+## ℹ Error occurred in the 1st layer.
+## Caused by error in `compute_geom_1()`:
+## ! `geom_density()` requires the following missing aesthetics: y.
 ```
 
 ---
@@ -914,10 +988,13 @@ p + geom_density()
 
 We can fix that by being more careful about how we build the plot.
 
-```{r geoms5, dev='svg'}
+
+``` r
 ggplot(data = gapminder) + ## i.e. No "global" aesthetic mappings"
   geom_density(aes(x = gdpPercap, fill = continent), alpha=0.3)
 ```
+
+&lt;img src="01-intro_files/figure-html/geoms5-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -930,7 +1007,8 @@ But it bears repeating: You can build out some truly impressive complexity and t
 - You don't have to transform your original data; ggplot2 takes care of all of that.
 - For example (see next slide for figure).
 
-```{r layers1}
+
+``` r
 p2 =
   p +
   geom_point(aes(size = pop, col = continent), alpha = 0.3) +
@@ -938,16 +1016,14 @@ p2 =
   scale_size(name = "Population", labels = scales::comma) + ## Different point (i.e. legend) scale
   scale_x_log10(labels = scales::dollar) + ## Switch to logarithmic scale on x-axis. Use dollar units.
   labs(x = "Log (GDP per capita)", y = "Life Expectancy") + ## Better axis titles
-  theme_minimal() ## Try a minimal (b&w) plot theme
+  theme_minimal() ## Try a minimal (b&amp;w) plot theme
 ```
 
 ---
 
 # 3. Build your plot in layers (cont.)
 
-```{r layers2, echo=FALSE, dev='svg'}
-p2
-```
+&lt;img src="01-intro_files/figure-html/layers2-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -960,8 +1036,16 @@ We have barely scratched the surface of ggplot2's functionality... let alone tal
 
 Note that you will need to install and load some additional packages if you want to recreate the next two figures on your own machine. A quick way to do this:
 
-```{r pacinstall}
+
+``` r
 if (!require("pacman")) install.packages("pacman")
+```
+
+```
+## Loading required package: pacman
+```
+
+``` r
 pacman::p_load(hrbrthemes, gganimate)
 ```
 
@@ -970,17 +1054,21 @@ pacman::p_load(hrbrthemes, gganimate)
 # What else? (cont.)
 
 Simple extension: Use an external package theme.
-```{r modern_rc_theme, dev='svg'}
+
+``` r
 # library(hrbrthemes)
 p2 + theme_modern_rc() + geom_point(aes(size = pop, col = continent), alpha = 0.2)
 ```
+
+&lt;img src="01-intro_files/figure-html/modern_rc_theme-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # What else? (cont.)
 
 Elaborate extension: Animation! (See the next slide for the resulting GIF.)
-```{r gganim1, eval=FALSE}
+
+``` r
 library(gganimate)
 library(magick)
 
@@ -1000,22 +1088,12 @@ ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
 
 # What else? (cont.)
 
-```{r ggamin2, echo=FALSE,message=FALSE}
-library(gganimate)
-library(gapminder)
-library(magick)
 
-ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, colour = country)) +
-  geom_point(alpha = 0.7, show.legend = FALSE) +
-  scale_colour_manual(values = country_colors) +
-  scale_size(range = c(2, 12)) +
-  scale_x_log10() +
-  facet_wrap(~continent) +
-  # Here comes the gganimate specific bits
-  labs(title = 'Year: {frame_time}', x = 'GDP per capita', y = 'life expectancy') +
-  transition_time(year) +
-  ease_aes('linear')
 ```
+## Warning: package 'magick' was built under R version 4.3.3
+```
+
+&lt;img src="01-intro_files/figure-html/ggamin2-1.gif" style="display: block; margin: auto;" /&gt;
 
 --
 
@@ -1041,13 +1119,13 @@ In the meantime, I want you to do some reading and practice on your own. Pick ei
 class: inverse, center, middle
 
 # Next lecture: Getting started with R.
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 class: inverse, center, middle
 
 # Appendix
-<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 
 ---
@@ -1073,14 +1151,150 @@ If you're coming from Stata, some additional things worth emphasizing:
 
 # Base R plot
 
-```{r mtcars_baseplot, dev="svg"}
+
+``` r
 par(mar = c(4, 4, 1, .1)) ## Just for nice plot margins on this slide deck
 plot(mtcars$wt, mtcars$mpg)
 abline(fit, col = "red")
 ```
 
+&lt;img src="01-intro_files/figure-html/mtcars_baseplot-1.svg" style="display: block; margin: auto;" /&gt;
 
-```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
-infile = list.files(pattern = '.html')
-pagedown::chrome_print(input = infile, timeout = 10000)
-```
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
