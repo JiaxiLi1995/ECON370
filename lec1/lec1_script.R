@@ -45,8 +45,6 @@ ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
 
 
 p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
-# You can also use <- to assign value to an object
-# p <- ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 
 
