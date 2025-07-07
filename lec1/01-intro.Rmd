@@ -853,6 +853,8 @@ At this point, instead of repeating the same ggplot2 call every time, it will pr
 
 ```{r p, dev='svg'}
 p = ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
+# You can also use <- to assign value to an object
+# p <- ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
 p
 ```
 
