@@ -1,4 +1,5 @@
-
+################################################################################
+# Basic Operations
 first_vec = 1:5
 first_vec
 
@@ -15,14 +16,25 @@ first_vec
 6:9
 first_vec + 6:9
 
-my_name    = "Drew Van Kuiken"
-first_name = "Drew"
-last_name  = "Van Kuiken"
+1.4:3.5
+
+c(1,2,5,12,1.4)
+c("Blue", "Beige", "Black", "Brown")
+
+2^(1:4)
+1 + 2:4
+
+110:130 %% 60
+120 %% 15:20
 
 
+################################################################################
+# Data Types: Character
+my_name    = "Jiaxi Li"
+first_name = "Jiaxi"
+last_name  = "Li"
 
 class(my_name)
-
 
 class(first_vec)
 
@@ -38,14 +50,11 @@ my_name
 c(first_name,last_name)
 nchar(c(first_name,last_name))
 
-also_my_name = 'Drew Van Kuiken'
+also_my_name = 'Jiaxi Li' # We are using ' instead of " here
 my_name == also_my_name
 
-my_name_in_dutch = 'Drew van Kuiken'
-my_name == my_name_in_dutch
-# -- end 8/21/2024
-help(paste)
-?paste
+Lowercase_my_name = 'jiaxi li'
+my_name == Lowercase_my_name
 
 first_name
 last_name
@@ -54,25 +63,36 @@ paste(first_name,last_name,sep="-")
 paste0(first_name,last_name)
 paste(first_name,last_name,sep="\'")
 c(first_name,last_name)
+c(first_name,last_name) == paste(first_name,last_name)
+first_name + " " + last_name
 
 my_name
 print(my_name)
 
+# Things inside of functions/loop are considered non-interactive contexts
+nchar(my_name)
+nchar(print(my_name))
+for (i in 1) {my_name}
+for (i in 1) {print(my_name)}
+
 toupper(c(first_name,last_name))
 tolower(c(first_name,last_name))
 
+
+################################################################################
+# Data Types: Numeric
 tolower(2)
 
 class(Inf)
 class(-Inf)
 class(NaN)
 
+################################################################################
+# Data Types: Logical
 R_is_fun  = TRUE
 R_is_hard = FALSE
-true      = T
-false     = F
-
-R_is_fun == true
+R_is_fun  == T
+R_is_fun  == true
 
 2 > 1
 2 > 2
@@ -82,7 +102,6 @@ R_is_fun == true
 1 > 1/2
 (1 > 2) & (1 > 1/2)
 (2 > 1) & (1 > 1/2)
-
 (1 > 2) | (1 > 1/2)
 
 0.5 == 1/2
@@ -96,16 +115,21 @@ R_is_fun == true
 5 %in% c(1,2,3,4)    # test if 5 is in the vector c(1,2,3,4)
 !(5 %in% c(1,2,3,4)) # test if 5 is NOT in the vector c(1,2,3,4)
 
-"%!in%" = function(a,b){!(a %in% b)}
-5 %!in% c(1,2,3,4)
-# This is a comment! Anything after is not interpreted as "code"
-
-# speaking of comments... does anything about this new function look weird? 
 
 class(NA)
+NA+1
+is.na(NA)
+is.nan(NA)
+is.na(NaN) # This is a little strange, but good to know
 
-sum(c(1,2,3))
+################################################################################
+# Data Types: Complex
+i
+3i
 
+
+################################################################################
+# Data Structures: Vector
 numeric_grades = c(90,75,95,85,100,60,76)
 letter_grades  = c("A-","C","A","B","A","D","C")
 mixed_grades   = c("A", 95,"B",85,"C",75)
@@ -118,7 +142,9 @@ names(numeric_grades) = c("Student 1","Student 2","Student 3",
 some_numbers = c(27,22,94)
 some_numbers[1]
 
-TestList = list(c("Drew","Van Kuiken"),1:5,sample(c(TRUE,FALSE),20,replace=T))
+################################################################################
+# Data Structures: List
+TestList = list(c("Jiaxi","Li"),1:5,sample(c(TRUE,FALSE),20,replace=T))
 
 TestList[[1]]
 TestList
@@ -127,7 +153,7 @@ TestList
 names(TestList) = c("my_name","numbers","logicals")
 TestList[1][1]
 TestList[1][[1]]
-big_list <- list(list(c("Drew","VanKuiken"),1:5,sample(c(TRUE,FALSE),20,replace=T)),c(1,2))
+big_list <- list(list(c("Jiaxi","Li"),1:5,sample(c(TRUE,FALSE),20,replace=T)),c(1,2))
 big_list[[1]]
 big_list[1]
 big_list[[1]][2]
@@ -144,6 +170,8 @@ grade_list[["letterGrade"]]
 grade_list["letterGrade"]
 
 
+################################################################################
+# Data Structures: Matrix
 num_mat = matrix(1:9,ncol=3)
 num_mat2 = matrix(1:9,ncol=3,byrow = T)
 colnames(num_mat) = paste("Col",1:ncol(num_mat))
@@ -151,6 +179,8 @@ rownames(num_mat) = paste("Row",1:nrow(num_mat))
 num_mat
 num_mat2
 
+################################################################################
+# Data Structures: Data.frame
 class(mtcars)
 
 head(mtcars)
@@ -168,6 +198,8 @@ summary(mtcars$mpg)
 mpgvec = mtcars$mpg
 testvec <- mtcars[mpgvec > median(mpgvec),]
 
+################################################################################
+# Data Structures: Factors
 fact_groups = letters[sample(1:26,10,replace=T)]
 fact_groups2 = sample(letters,10,replace=T) # two ways of writing the same command
 fact_groups = factor(fact_groups,levels=letters)

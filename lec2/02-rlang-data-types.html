@@ -3,7 +3,7 @@
   <head>
     <title>Data Science for Economists</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Drew Van Kuiken" />
+    <meta name="author" content="Jiaxi Li" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
@@ -20,10 +20,10 @@ class: center, middle, inverse, title-slide
 ## Lecture 2: R language basics
 ]
 .author[
-### Drew Van Kuiken
+### Jiaxi Li
 ]
 .date[
-### University of North Carolina | <a href="https://github.com/drewvankuiken/ECON370">ECON 370</a>
+### University of North Carolina | <a href="https://github.com/JiaxiLi1995/ECON370">ECON 370</a>
 ]
 
 ---
@@ -44,7 +44,7 @@ name: toc
 
 7. [Getting Help](#help)
 
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M208 32c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V172.9l122-70.4c15.3-8.8 34.9-3.6 43.7 11.7l16 27.7c8.8 15.3 3.6 34.9-11.7 43.7L352 256l122 70.4c15.3 8.8 20.5 28.4 11.7 43.7l-16 27.7c-8.8 15.3-28.4 20.6-43.7 11.7L304 339.1V480c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V339.1L86 409.6c-15.3 8.8-34.9 3.6-43.7-11.7l-16-27.7c-8.8-15.3-3.6-34.9 11.7-43.7L160 256 38 185.6c-15.3-8.8-20.5-28.4-11.7-43.7l16-27.7C51.1 98.8 70.7 93.6 86 102.4l122 70.4V32z"/></svg> Slides adapted from Grant McDermott's EC 607 at University of Oregon.
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M208 32c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V172.9l122-70.4c15.3-8.8 34.9-3.6 43.7 11.7l16 27.7c8.8 15.3 3.6 34.9-11.7 43.7L352 256l122 70.4c15.3 8.8 20.5 28.4 11.7 43.7l-16 27.7c-8.8 15.3-28.4 20.6-43.7 11.7L304 339.1V480c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V339.1L86 409.6c-15.3 8.8-34.9 3.6-43.7-11.7l-16-27.7c-8.8-15.3-3.6-34.9 11.7-43.7L160 256 38 185.6c-15.3-8.8-20.5-28.4-11.7-43.7l16-27.7C51.1 98.8 70.7 93.6 86 102.4l122 70.4V32z"/></svg> Slides adapted from Drew Van Kuiken and Alex Marsh's ECON 370 and originally based on materials by Grant McDermott's EC 607 at University of Oregon.
 
 ---
 class: inverse, center, middle
@@ -210,6 +210,91 @@ We can also invoke modulo operators (quotient &amp; remainder).
 ## [1] 0
 ```
 
+
+---
+
+# More about Vector Operation
+
+`:` sequence: start from the first number, add 1 each time, stop right before become greater than the later number.
+
+
+``` r
+1.4:3.5
+```
+
+```
+## [1] 1.4 2.4 3.4
+```
+
+&lt;/br&gt;
+
+You can also use `c`, concatenation to create a vector (more about `c` later):
+
+
+``` r
+c(1,2,5,12,1.4)
+```
+
+```
+## [1]  1.0  2.0  5.0 12.0  1.4
+```
+
+``` r
+c("Blue", "Beige", "Black", "Brown")
+```
+
+```
+## [1] "Blue"  "Beige" "Black" "Brown"
+```
+
+
+---
+
+# More about Vector Operation
+
+In vector operation, we can have number first and then vector:
+
+
+``` r
+2^(1:4)
+```
+
+```
+## [1]  2  4  8 16
+```
+
+``` r
+1 + 2:4
+```
+
+```
+## [1] 3 4 5
+```
+
+&lt;/br&gt;
+
+
+Modulo operators can also be applied to vectors:
+
+
+``` r
+110:130 %% 60
+```
+
+```
+##  [1] 50 51 52 53 54 55 56 57 58 59  0  1  2  3  4  5  6  7  8  9 10
+```
+
+``` r
+120 %% 15:20
+```
+
+```
+## [1]  0  8  1 12  6  0
+```
+
+
+
 ---
 class: inverse, center, middle
 name: datatypes
@@ -234,18 +319,16 @@ R has 6 basic data types:
 
 ---
 
-# Data Types (cont.)
-
-## Character
+# Data Types (Character)
 
 - The character type can be described as "text."
   - It is known as a "string" in other programming languages.
 
 
 ``` r
-my_name    = "Drew Van Kuiken"
-first_name = "Drew"
-last_name  = "Van Kuiken"     #good style to line up to equals signs (i often don't put in the effort)
+my_name    = "Jiaxi Li"
+first_name = "Jiaxi"
+last_name  = "Li"     #good style to line up to equals signs (i often don't put in the effort)
 class(my_name)
 ```
 
@@ -263,13 +346,13 @@ is.character(my_name)
 
 ---
 
-# Data Types (cont.)
+# Data Types (Character)
 
-## Character: Counting Characters
+## Counting Characters
 
 
 ``` r
-length(my_name)
+length(my_name) # length also works for other data types
 ```
 
 ```
@@ -289,7 +372,7 @@ nchar(my_name)
 ```
 
 ```
-## [1] 15
+## [1] 8
 ```
 
 ``` r
@@ -297,18 +380,20 @@ nchar(c(first_name,last_name))
 ```
 
 ```
-## [1]  4 10
+## [1] 5 2
 ```
 
 ---
 
-# Data Types (cont.)
+# Data Types (Character)
 
-## Character: Combinding Characters
+## Comparing (In general)
+
+**Important**: `==` is used for comparing two objects and `=` is used for assigning values.
 
 
 ``` r
-also_my_name = 'Drew Van Kuiken'
+also_my_name = 'Jiaxi Li' # We are using ' instead of " here
 my_name == also_my_name
 ```
 
@@ -317,20 +402,27 @@ my_name == also_my_name
 ```
 
 ``` r
-my_name_in_dutch = 'Drew van Kuiken'
-my_name == my_name_in_dutch
+Lowercase_my_name = 'jiaxi li'
+my_name == Lowercase_my_name
 ```
 
 ```
 ## [1] FALSE
 ```
 
+---
+
+# Data Types (Character)
+
+## Combining Characters
+
+
 ``` r
 paste(first_name,last_name)
 ```
 
 ```
-## [1] "Drew Van Kuiken"
+## [1] "Jiaxi Li"
 ```
 
 ``` r
@@ -338,7 +430,7 @@ paste(first_name,last_name,sep="-")
 ```
 
 ```
-## [1] "Drew-Van Kuiken"
+## [1] "Jiaxi-Li"
 ```
 
 ``` r
@@ -346,49 +438,8 @@ paste0(first_name,last_name)
 ```
 
 ```
-## [1] "DrewVan Kuiken"
+## [1] "JiaxiLi"
 ```
-
----
-
-# Data Types (cont.)
-
-## Character: An Aside
-
-- The following code will look *very* similar to a user when examined in the console.
-
-
-``` r
-my_name
-```
-
-```
-## [1] "Drew Van Kuiken"
-```
-
-``` r
-print(my_name)
-```
-
-```
-## [1] "Drew Van Kuiken"
-```
---
-
-- However, what's happening is ***very different.***
-  - The first thing returns the *object* `my_name`
-  - The second only prints the *contents* of the object `my_name`
---
-
-- Imagine I have something written on a piece of paper. The first line is if I handed you the piece of paper and you read it. The second line is if I told you aloud what was written on the paper.
-  - This difference will matter a lot when it comes to functions.
-
----
-
-# Data Types (cont.)
-
-## Character
-
 
 ``` r
 first_name + " " + last_name
@@ -398,12 +449,88 @@ first_name + " " + last_name
 ## Error in first_name + " ": non-numeric argument to binary operator
 ```
 
+Note: `c` and `paste` are different and `+` does not work for character.
+
+---
+
+# Data Types (Character)
+
+## Printing (In general)
+
+- The following code will look *very* similar to a user when examined in the console.
+
+
+``` r
+my_name
+```
+
+```
+## [1] "Jiaxi Li"
+```
+
+``` r
+print(my_name)
+```
+
+```
+## [1] "Jiaxi Li"
+```
+--
+
+- However, what's happening is ***very different.***
+  - The first is called auto-printing, and it only happens in interactive mode (e.g., console or top-level script execution).
+  - The second forces printing even in non-interactive contexts (loops and functions). We will talk about loops and functions later in more details.
+
+---
+
+# Data Types (Character)
+
+## Printing (In general)
+
+
+``` r
+# Things inside of functions/curly brackets are considered non-interactive contexts
+nchar(my_name)
+```
+
+```
+## [1] 8
+```
+
+``` r
+nchar(print(my_name))
+```
+
+```
+## [1] "Jiaxi Li"
+```
+
+```
+## [1] 8
+```
+
+``` r
+for (j in 1) {my_name}
+for (j in 1) {print(my_name)}
+```
+
+```
+## [1] "Jiaxi Li"
+```
+
+---
+
+# Data Types (Character)
+
+## Change Cases
+
+
 ``` r
 toupper(paste(first_name,last_name))
 ```
 
 ```
-## [1] "DREW VAN KUIKEN"
+## [1] "JIAXI LI"
 ```
 
 ``` r
@@ -411,25 +538,41 @@ tolower(paste(first_name,last_name))
 ```
 
 ```
-## [1] "drew van kuiken"
+## [1] "jiaxi li"
+```
+
+``` r
+toupper(c(first_name,last_name))
+```
+
+```
+## [1] "JIAXI" "LI"
+```
+
+``` r
+tolower(c(first_name,last_name))
+```
+
+```
+## [1] "jiaxi" "li"
 ```
 
 ---
 
-# Data Types (cont.)
+# Data Types (Character)
 
-## Character: Special Characters
+## Special Characters
 
 - Special characters "not native" to English can still be used but must be encoded so that `R` handles them correctly. 
 - Encoding guarantees that the computer will handle the special characters correctly.
 - We will not spend much time on this; however, to read more about encoding text, [see this post.](https://cran.r-project.org/web/packages/utf8/vignettes/utf8.html)
 
+**In general, make sure to switch back to English keyboard before coding!!!!!!**
+
 
 ---
 
-# Data Types (cont.)
-
-## Numeric
+# Data Types (Numeric)
 
 Numeric data are "numbers"
 - In a lot of programming languages, there is this distinction between floats and integers. This is also true in `R` but to a much smaller degree. 
@@ -440,12 +583,12 @@ Numeric data are "numbers"
 
 ``` r
 my_age    = 29
-my_height = 6 + 4/12 #+1/12
+my_height = 5 + 11/12
 c(my_age,my_height)
 ```
 
 ```
-## [1] 29.000000  6.333333
+## [1] 29.000000  5.916667
 ```
 
 ``` r
@@ -466,7 +609,7 @@ class(my_height)
 
 ---
 
-# Data Types (cont.)
+# Data Types (Numeric)
 
 ## Special Numeric Data
 
@@ -507,7 +650,7 @@ log(-1)
 ---
 
 
-# Data Types (cont.)
+# Data Types (Numeric)
 
 ## Integers
 
@@ -538,12 +681,11 @@ class(also_my_age)
 
 ---
 
-# Data Types (cont.)
-
-## Logical
+# Data Types (Logical)
 
 Logical data are either `TRUE` or `FALSE`.
 - `T` and `F` are equivalent.
+- Not `true` and `false` though
 
 --
 
@@ -551,10 +693,7 @@ Logical data are either `TRUE` or `FALSE`.
 ``` r
 R_is_fun  = TRUE
 R_is_hard = FALSE
-true      = T
-false     = F
-
-R_is_fun  == true
+R_is_fun  == T
 ```
 
 ```
@@ -562,18 +701,18 @@ R_is_fun  == true
 ```
 
 ``` r
-R_is_hard == false
+R_is_fun  == true
 ```
 
 ```
-## [1] TRUE
+## Error: object 'true' not found
 ```
 
 ---
 
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Operations
+## Operations
 
 The most common use of logical data is for testing conditions and control flow.
 - \&gt;, &lt;, &gt;=, and &lt;= test for greater/less than and/or equal to.
@@ -584,9 +723,9 @@ The most common use of logical data is for testing conditions and control flow.
 
 ---
 
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Operations
+## Operations
 
 --
 
@@ -625,9 +764,9 @@ The most common use of logical data is for testing conditions and control flow.
 
 ---
 
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Operations
+## Operations
 
 --
 
@@ -641,7 +780,15 @@ The most common use of logical data is for testing conditions and control flow.
 ```
 
 ``` r
-1 &gt; 2 &amp; (1 &gt; 1/2 | 3 &gt; 2) #use parentheses when in doubt
+(1 &gt; 1/2) &amp; (1 &gt; 2) | (3 &gt; 2)   #above is equivalent to this
+```
+
+```
+## [1] TRUE
+```
+
+``` r
+1 &gt; 2 &amp; (1 &gt; 1/2 | 3 &gt; 2) #use parentheses to change the order of operation
 ```
 
 ```
@@ -665,9 +812,9 @@ The most common use of logical data is for testing conditions and control flow.
 ```
 
 ---
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Operations
+## Operations
 
 %in% tests for containment
 
@@ -705,43 +852,24 @@ R_is_fun
 ```
 ## [1] TRUE
 ```
----
-# Aside: Binary operators
 
-Operators like +, -, /, %%, %in%, etc are special functions in R that are binary operators.
---
-
-Notice that above to do "not in," it was a bit clunky:
-
-``` r
-!(5 %in% c(1,2,3,4))
-```
-
---
-You can define a new binary operator like so:
-
-``` r
-"%!in%" = function(a,b){!(a %in% b)}
-5 %!in% c(1,2,3,4)
-```
-
-```
-## [1] TRUE
-```
 ---
 # Data Types (cont.)
 
 ## Special Logicals
 
-- `NA` is a special type of logical data 
-- Cannot be compared the same way.
-- `NA` is different than `NaN`
-
+- `NA` (Not Available) is a special type of logical data
+  - Cannot be compared the same way.
+  - `is.na` can detect `NA` and `NaN`
+- `NaN` (Not a Number) is a special type of numeric data
+  - Calculation result is not a number
+  - `is.nan` only works for `NaN`
+  
 --
 
 
 ``` r
-NA == TRUE
+NA + 1
 ```
 
 ```
@@ -757,26 +885,18 @@ is.na(NA)
 ```
 
 ``` r
-1 == NaN
+is.nan(NaN)
 ```
 
 ```
-## [1] NA
-```
-
-``` r
-is.nan(NA)
-```
-
-```
-## [1] FALSE
+## [1] TRUE
 ```
 
 ---
 
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Operations
+## Operations
 
 If "mathematical operations" are performed on logicals, they will be coerced into 1s and 0s. 
 
@@ -816,9 +936,9 @@ mean(c(TRUE,FALSE,TRUE))
 ```
 ---
 
-# Data Types (cont.)
+# Data Types (Logical)
 
-## Logical: Comparing Floats
+## Comparing Floats
 
 Must be careful when testing for equality of floating point numbers ("decimals")
 
@@ -848,16 +968,12 @@ all.equal(0.1+0.2,0.3)
 ```
 
 ---
-# Data Types (cont.)
-
-## Logical
+# Data Types (Logical)
 
 You can read more about logical operators and types &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/Logic.html" target="_blank"&gt;here&lt;/a&gt; and &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/logical.html" target="_blank"&gt;here&lt;/a&gt;.
 
 ---
-# Data Types (cont.)
-
-## Complex
+# Data Types (Complex)
 
 Complex data are data that have complex numbers.
 - We probably won't use these much but can pop-up if you're not careful.
@@ -873,6 +989,14 @@ Complex data are data that have complex numbers.
 
 ```
 ## [1] NaN
+```
+
+``` r
+i            #doesn't work
+```
+
+```
+## Error: object 'i' not found
 ```
 
 ``` r
@@ -951,7 +1075,7 @@ b
 Most R users (purists?) seem to prefer `&lt;-` for assignment, since `=` also has specific role for evaluation *within* functions. 
 - We'll see lots of examples of this later.
 - But I don't think it matters; `=` is quicker to type and is more intuitive if you're coming from another programming language. (More discussion [here](https://github.com/Robinlovelace/geocompr/issues/319#issuecomment-427376764) and [here](https://www.separatinghyperplanes.com/2018/02/why-you-should-use-and-never.html).)
-- I prefer `=` as it makes for easier to read and cleaner code.
+- Slides for this class uses `=`, but I personally prefer `&lt;-`.
 
 **Bottom line:** Use whichever you prefer. Just be consistent.
 
@@ -976,9 +1100,7 @@ In base `R`, there are 5 main data structures (not exhaustive).
 5. factors
 
 ---
-# Data Structures (cont.)
-
-## Vectors
+# Data Structures (Vectors)
 
 - Vectors are a collection of multiple objects.
 - There are two types of vectors:
@@ -986,7 +1108,7 @@ In base `R`, there are 5 main data structures (not exhaustive).
   2. lists.
 - Atomic vectors must be all of the same type of data.
 - To create an atomic vector, put multiple objects within `c()` separated by commas.
-  - **Never store an object as c!** 
+  - **Never store an object as c! In general, avoid naming objects after existing functions**
   - Will break your code and it might take hours to figure out why.
 - A list is a collection of atomic vectors.
 - Atomic vectors are one dimensional
@@ -1005,9 +1127,7 @@ mixed_grades   = c("A", 95,"B",85,"C",75)
 I said atomic vectors must be all of the same type. However, the last line ran without an error. What do you think happened?
 
 ---
-# Data Structures (cont.)
-
-## Vectors
+# Data Structures (Vectors)
 
 
 ``` r
@@ -1042,9 +1162,9 @@ class(mixed_grades)
 ## [1] "character"
 ```
 ---
-# Data Structures (cont.)
+# Data Structures (Vectors)
 
-## Vectors: Attributes
+## Attributes
 
 - Objects in R can have attributes. Each type of data structure (and objects more generally) will have different attributes.
 - Types of attributes include (but not limited to):
@@ -1053,9 +1173,9 @@ class(mixed_grades)
  3. class
 
 ---
-# Data Structures (cont.)
+# Data Structures (Vectors)
 
-## Vectors: Attributes
+## Attributes
 
 
 ``` r
@@ -1092,9 +1212,9 @@ names(numeric_grades)
 ```
 ---
 
-# Data Structures (cont.)
+# Data Structures (Vectors)
 
-## Vectors: Indexing
+## Indexing
 - Indexing in `R` is very simple: it starts at 1 and count up by 1.
   - This is different than indexing in other programming languages which starts at 0.
   - Most "mathematical" languages will start at 1 e.g. `R`, `Matlab`, `Julia`.
@@ -1128,9 +1248,9 @@ some_numbers[1:2]
 
 ---
 
-# Data Structures (cont.)
+# Data Structures (Vectors)
 
-## Vectors: Indexing
+## Indexing
 - Can use indexing to change values in an object   
 
 --
@@ -1169,9 +1289,7 @@ some_numbers[1:2][2]
 ```
 
 ---
-# Data Structures (cont.)
-
-## Lists
+# Data Structures (Lists)
 
 - Lists are collections of atomic vectors.
 - Since each atomic vector is still an atomic vector, within vector types have to be the same but across vectors can differ in type.
@@ -1201,9 +1319,9 @@ grade_list
 
 ---
 
-# Data Structures (cont.)
+# Data Structures (Lists)
 
-## Lists: Indexing
+## Indexing
 - Indexing for lists is almost the same as vectors, you just have another layer to deal with.
 - To return an element of the list as a list, use single brackets: `[i]`
 - To return an element of the list as a vector, use double brackets: `[[i]]`
@@ -1231,9 +1349,9 @@ grade_list[[1]]
 ```
 
 ---
-# Data Structures (cont.)
+# Data Structures (Lists)
 
-## Lists: Indexing
+## Indexing
 - Elements of a list can still have names
 
 --
@@ -1260,9 +1378,9 @@ grade_list
 
 ---
 
-# Data Structures (cont.)
+# Data Structures (Lists)
 
-## Lists: Indexing
+## Indexing
 - You can access an element of a list using it's name and the `$`
 
 --
@@ -1301,9 +1419,7 @@ grade_list$`student names`[4]
 ```
 
 ---
-# Data Structures (cont.)
-
-## Matrix
+# Data Structures (Matrix)
 
 - Matrices are essentially two dimensional atomic vectors.
 - Most things that apply to atomic vectors are true for matrices
@@ -1325,9 +1441,9 @@ num_mat
 ```
 
 ---
-# Data Structures (cont.)
+# Data Structures (Matrix)
 
-## Matrix: Indexing
+## Indexing
 - Indexing a matrix is similar to atomic vectors; two dimensions to index.
 - If one dimension is omitted, returns that entire dimension.
 - First index is for rows; second index is for columns.
@@ -1366,9 +1482,7 @@ num_mat[5]
 ```
 ---
 
-# Data Structures (cont.)
-
-## Array
+# Data Structures (Array)
 
 - Arrays are 2 dimensional *or greater* matrices.
 - Again, while arrays can be useful, we will likely not be working with them much.
@@ -1396,9 +1510,9 @@ num_array
 ```
 
 ---
-# Data Structures (cont.)
+# Data Structures (Array)
 
-## Array: Indexing
+## Indexing
 
 - Indexing is same as matrices, just the same number of indexes as dimensions
 --
@@ -1440,9 +1554,7 @@ num_array[12]
 ```
 
 ---
-# Data Structures (cont.)
-
-## Data.frame
+# Data Structures (Data.frame)
 
 - data.frames are basically "data sets."
 - Using established terminology, they are collections of atomic vectors in a rectangular format.
@@ -1467,15 +1579,14 @@ head(mtcars,5)
 ```
 
 ---
-# Data Structures (cont.)
-
-## Data.frame
+# Data Structures (Data.frame)
 
 - `names()` on a data.frame returns the names of the variables.
 - `length()` and `ncol()` return the number of variables in the data.frame
 - `nrow()` returns the number of rows in the data.frame.
 - Note: if you don't use `head()`, `tail()` or another way to restrict which rows are returned, returning a data.frame will return all rows, which is annoying.
  - This is fixed in a popular library called `data.table` that we will learn later.
+ - This is also fixed in tibble, a modern reimagining of the data frame, in `tidyverse`.
 
 
 ``` r
@@ -1518,9 +1629,9 @@ mtcars
 ## Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
 ```
 ---
-# Data Structures (cont.)
+# Data Structures (Data.frame)
 
-## Data.frame: Indexing
+## Indexing
 - Indexing a data.frame is similar to indexing a matrix; the columns can have names
 
 
@@ -1557,9 +1668,7 @@ row.names(mtcars)[1:5]
 ## [4] "Hornet 4 Drive"    "Hornet Sportabout"
 ```
 ---
-# Data Structures (cont.)
-
-## Factors:
+# Data Structures (Factors)
 
 - Factors are essentially categorical variables.
 - Factors can organized text into different groups.
@@ -1574,7 +1683,7 @@ fact_groups
 ```
 
 ```
-##  [1] "x" "f" "b" "m" "g" "s" "o" "x" "o" "q"
+##  [1] "u" "c" "d" "a" "p" "s" "t" "p" "c" "a"
 ```
 
 ``` r
@@ -1583,7 +1692,7 @@ fact_groups
 ```
 
 ```
-##  [1] x f b m g s o x o q
+##  [1] u c d a p s t p c a
 ## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
 ```
 
@@ -1615,14 +1724,7 @@ Or, more simply, just use `?`:
 
 --
 
-&lt;/br&gt;
-
-**Aside 1:** Comments in R are demarcated by `#`. 
-- Hit `Ctrl+Shift+c` in RStudio to (un)comment whole sections of highlighted code.
-
---
-
-**Aside 2:** See the *Examples* section at the bottom of the help file?
+**Aside:** See the *Examples* section at the bottom of the help file?
 - You can run them with the `example()` function. Try it: `example(plot)`.
 
 ---
@@ -1672,6 +1774,23 @@ To run a specific demo, just tell R which one and the name of the parent package
 demo("graphics", package = "graphics")
 ```
 
+---
+
+# HW 1
+
+I will release HW 1 on this afternoon
+
+It will be due on Tuesday, 9/9, before our class begins. 
+
+...*because* this is introductory material, I am going to ask that you ***do not*** use LLMs/AI models for help with this homework specifically.
+
+I know I said you could (and should!) use them for our class. And you should! But you need to build strong coding foundations first
+
+&lt;/br&gt;
+
+Recommended order of resources:
+
+Try Yourself &amp;rarr; Slides &amp;rarr; Online Threads &amp;rarr; Classmates &amp;rarr; ChatGPT (but ask for explaination)
 
 ---
 
@@ -1688,9 +1807,9 @@ class: inverse, center, middle
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
