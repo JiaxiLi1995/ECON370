@@ -34,6 +34,6 @@ library(ggplot2)
 
 filter = stats::filter
 
-
+rm(list = setdiff(ls(), c("d2"))) # remove all but d2
 
 

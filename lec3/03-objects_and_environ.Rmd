@@ -2,8 +2,8 @@
 title: "Data Science for Economists"
 # subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
 subtitle: "Lecture 3: Objects and the Environment"
-author: "Drew Van Kuiken"
-date: "University of North Carolina | [ECON 370](https://github.com/drewvankuiken/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
 output:
   xaringan::moon_reader:
     css: [default, metropolis, metropolis-fonts] 
@@ -42,7 +42,7 @@ library(fontawesome)
 
 6. [Cleaning up](#cleaning)
 
-`r fa('star-of-life')` Slides adapted from Grant McDermott's EC 607 at University of Oregon.
+`r fa('star-of-life')` Slides adapted from Drew Van Kuiken and Alex Marsh's ECON 370 and originally based on materials by Grant McDermott's EC 607 at University of Oregon.
 
 ---
 class: inverse, center, middle
@@ -132,7 +132,7 @@ We'll revisit the issue of "type" vs "class" in a slide or two. For the moment, 
 --
 
 Most likely, you already have a good idea of what distinguishes these objects and how to use them.
-- However, bear in mind that there subtleties that may confuse while you're still getting used to R. 
+- However, bear in mind that there are subtleties that may confuse while you're still getting used to R. 
 - E.g. There are different kinds of data frames. We'll soon encounter "[tibbles](https://tibble.tidyverse.org/)" and "[data.tables](https://rdatatable.gitlab.io/data.table/articles/datatable-intro.html#what-is-datatable-1a)", which are enhanced versions of the standard data frame in R. 
 
 ---
@@ -159,18 +159,17 @@ m
 
 # Object class, type, and structure
 
-Use the `class`, `typeof`, and `str` commands if you want understand more about a particular object.
+Use the `class` and `str` commands if you want understand more about a particular object.
 
 ```{r}
 # d = data.frame(x = 1:2, y = 3:4) ## Create a small data frame called "d".
 class(d) ## Evaluate its class.
-typeof(d) ## Evaluate its type.
 str(d) ## Show its structure.
 ```
 
 --
 
-PS — Confused by the fact that `typeof(d)` returns "list"? See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
+PS - Data.frames are lists of vectors, which are all the same size! Each column is an item in the list. You can see this if you run `typeof(d)`. See [here](https://stackoverflow.com/questions/45396538/typeofdata-frame-shows-list-in-r).
 
 ---
 
@@ -446,6 +445,10 @@ In a similar vein, one of the most common and confusing errors that even experie
 Again, R will figure out what you mean if you are clear/lucky enough. But, much the same as with `c()`, it's relatively easy to run into problems.
 - Case in point: Triggering the infamous "object of type closure is not subsettable" error message. (See from 1:45 [here](https://rstudio.com/resources/rstudioconf-2020/object-of-type-closure-is-not-subsettable/).)
 
+--
+
+***Always good to check `?whatever` before assign an object to `whatever`!***
+
 ---
 class: inverse, center, middle
 name: cleaning
@@ -460,9 +463,9 @@ name: cleaning
 
 Use `rm()` to remove an object or objects from your working environment.
 ```{r}
-a = "hello"
-b = "world"
-rm(a, b)
+A = "hello"
+B = "world"
+rm(A, B)
 ```
 
 You can also use `rm(list = ls())` to remove all objects in your working environment (except packages), but this is [frowned upon](https://www.tidyverse.org/articles/2017/12/workflow-vs-script/). 
@@ -473,6 +476,46 @@ You can also use `rm(list = ls())` to remove all objects in your working environ
 Detaching packages is more complicated, because there are so many cross-dependencies (i.e. one package depends on, and might even automatically load, another.) However, you can try, e.g. `detach(package:dplyr)`
 - Again, better just to restart your R session.
   
+---
+
+# RAM and Free Unused Memory
+
+As mentioned earlier, a limitation of `R` is its heavy reliance on *Random Access Memory (RAM)*.
+
+- Saving data to your computer is like taking notes in class — you store information for later, and can reopen it when needed (i.e., loading an object from disk).
+
+- Loading data into RAM is like memorizing facts in your head — it's fast and readily available for processing, but it takes up memory space.
+
+--
+
+**Too many objects loaded in RAM — or working with very large datasets — can slow your computer significantly, or even cause it to crash.**
+
+--
+
+This is why, when working with large datasets in R (or any RAM-dependent language), it's important to either:
+- Use a computer with sufficient RAM, or
+- Leverage cluster computing resources (such as Longleaf provided at UNC).
+
+---
+
+# Cleaning Up: RAM Management Tips
+
+Simply removing objects might not immediately free memory. That’s why I often combine the following two commands:
+
+```{r}
+A = 1
+B = 2
+D = 3
+# I do not use C and D here, you can check why by ?C and ?D
+
+# rm(list = setdiff(ls(), c("keep_this", "and_this")))  # remove all but a few key objects
+rm(list = setdiff(ls(), c("A")))  # remove all but A
+gc()                                                  # free unused RAM
+```
+
+This helps reduce memory usage by clearing unnecessary objects and reclaiming unused memory from R's internal heap.
+
+
 ---
 
 # Removing plots
