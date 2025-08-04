@@ -68,7 +68,7 @@ knitr::include_graphics(c("pics/Head_shot.jpg"))
 
 - [Jiaxi Li](https://jiaxili1995.github.io/)
 
-- [lijiaxi@unc.edu](mailto:lijiaxi@unc.edu)
+- [lijiaxi@unc.edu](mailto:lijiaxi@unc.edu) (I will email you back as fast as possible.)
 
 - Office Hours: Th 2:15-3:15PM (Does this work for people?)
 
@@ -670,6 +670,10 @@ Points 1. and 2. can be summarized as an [object-oriented programming](https://e
 - Control&f &rarr; Find and replace
 
 [Here](https://support.posit.co/hc/en-us/articles/200711853-Keyboard-Shortcuts-in-the-RStudio-IDE) is a more complete list of short keys.
+
+--
+
+A line of `#` can even divide sections of the code and act as a break line!
 
 --
 
