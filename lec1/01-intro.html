@@ -165,8 +165,8 @@ Econ 370 vs. Econ 400:
 
 # Why this course?
 
-<div class="grViz html-widget html-fill-item" id="htmlwidget-c555a26dd5ac6ba5e226" style="width:98%;height:20%;"></div>
-<script type="application/json" data-for="htmlwidget-c555a26dd5ac6ba5e226">{"x":{"diagram":"\ndigraph flow {\n  \n  graph [layout = dot, rankdir = LR]  // Left to right\n\n  node [shape = box, style = filled, fillcolor = LightBlue]\n\n  DataCollection [label = \"Data Collection\"]\n  DataCleaning [label = \"Data Cleaning / Wrangling\"]\n  DataAnalysis [label = \"Data Analysis\"]\n  Conclusion [label = \"Conclusion\"]\n\n  // Connect the flow\n  DataCollection -> DataCleaning -> DataAnalysis -> Conclusion\n\n  // Economic Question node above\n  EconomicQuestion [label = \"Goal: Economic Question\", shape = ellipse, style=filled, fillcolor=lightgray, fontsize=14, fontcolor=black]\n\n  // Position the goal above the flow\n  {rank = min; EconomicQuestion}\n  EconomicQuestion -> DataCollection [arrowhead=none, style=dashed]\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-9520ecdfdcbb295411bc" style="width:98%;height:20%;"></div>
+<script type="application/json" data-for="htmlwidget-9520ecdfdcbb295411bc">{"x":{"diagram":"\ndigraph flow {\n  \n  graph [layout = dot, rankdir = LR]  // Left to right\n\n  node [shape = box, style = filled, fillcolor = LightBlue]\n\n  DataCollection [label = \"Data Collection\"]\n  DataCleaning [label = \"Data Cleaning / Wrangling\"]\n  DataAnalysis [label = \"Data Analysis\"]\n  Conclusion [label = \"Conclusion\"]\n\n  // Connect the flow\n  DataCollection -> DataCleaning -> DataAnalysis -> Conclusion\n\n  // Economic Question node above\n  EconomicQuestion [label = \"Goal: Economic Question\", shape = ellipse, style=filled, fillcolor=lightgray, fontsize=14, fontcolor=black]\n\n  // Position the goal above the flow\n  {rank = min; EconomicQuestion}\n  EconomicQuestion -> DataCollection [arrowhead=none, style=dashed]\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 
 Fill in the gaps left by traditional econometrics and methods classes.
 
@@ -190,11 +190,13 @@ Data science skills are largely distinct from (and complementary to) the core 'm
 - Number of homework assignments might change.
  - Regardless, will be equally weighted.
  - Individual weight = 60/n.
-- Homework assignments must be completed individually. However, discussing concepts and comparing approaches with peers is encouraged.
-- I will be requiring you to submit assignments with an R Markdown file and an R script.
+- Homework assignments maybe done in groups of 3 or 4. However, discussing concepts and comparing approaches with peers is encouraged.
+  - If done in groups all group members are still expected to program on their own.
+  - If done in groups, please submit only one assignment with all names.
+- I will provide you with R Markdown templates for assignments and require you to submit assignments with an R Markdown file.
  - Discuss details when the first assignment comes up.
 - Final Project
- - Details TBD.
+ - About Predicting Stock Returns, more details later.
  - Individual project, short presentations during our final period.
 
 ---
@@ -203,8 +205,11 @@ Data science skills are largely distinct from (and complementary to) the core 'm
 ## Course Goals
 
 1. Teach students how to competently program in R with good style,
+
 2. Teach students how to think and approach problems from a computational perspective,
+
 3. Teach students basic data science skills including data visualization and basic models,
+
 4. Imbue students with a desire to learn more about econometrics and data science.
 
 ---
@@ -214,8 +219,11 @@ Data science skills are largely distinct from (and complementary to) the core 'm
 ## Learning Objectives
 
 1. Be able to write functioning,  readable,  and aesthetically pleasing code in the R programming language,
+
 2.  Give raw data, be able to manipulate the data into the correct format needed for an analysis,
+
 3.  Given data and a research question, be able to create a exploratory data visualization in the right format to get at answering the question,
+
 4.  Be able to communicate results to a non-technical audience.
 
 ---
@@ -248,6 +256,7 @@ Topics here are good to know but are mostly to practice programming
 - Data Visualization
 - Regression
 - Classification
+- Machine Learning and Artificial Intelligence
 
 ---
 # Textbooks and Resources
@@ -264,6 +273,7 @@ Additional Books and Resources
 - [*Advanced R* by Hadley Wickham](https://adv-r.hadley.nz/index.html)
 - [Swirl: Learn R, in R](https://swirlstats.com/students.html)
 -- Great resource to learn the basics of R within R
+- [R Markdown Cookbook](https://bookdown.org/yihui/rmarkdown-cookbook/)
 - UNC Library [BeginR](https://tarheels.live/beginr/) and [Open Lab GitHub page](https://github.com/UNC-Libraries-data)
 
 Note: UNC library also offer crash courses for other languages. [Here](https://library.unc.edu/news/hone-your-research-skills-with-workshops-from-library-data-services/) is a old post but there should be something similar.
@@ -316,8 +326,10 @@ If you had trouble completing any of these steps, please raise your hand.
 
 I'll detail further software requirements as and when the need arises. However, to help smooth some software installation issues further down the road, please also do the following (depending on your OS):
 
-- **Windows:** Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/). 
+- **Windows:** Install [Rtools](https://cran.r-project.org/bin/windows/Rtools/).
+
 - **Mac:** Might need to install Xcode later. This can take awhile, so I will let you know.
+
 - **Linux:** None (you should be good to go).
 
 ---
@@ -514,13 +526,37 @@ Notes on folders:
   - When creating files with multiple versions, it is useful to have filenames with the date or version number. HW1_V1.R or HW1_2025_08_19.R
 
 ---
+# Directory and Default Directory
+
+A directory is the folder where `R` is currently working. `R` will load files from, and save files to, this location-known as the current working directory.
+
+You can change it in RStudio by navigating to the desired folder, then selecting:
+
+`More` &amp;rarr; `Set As Working Directory`
+
+After this, any files you save will appear in the newly set working directory.
+
+--
+
+&lt;/br&gt; 
+
+To avoid having to manually navigate to the correct folder each time, you can set a default working directory-a convenient location that contains all your `R` files.
+
+Go to:
+
+`Tools` &amp;rarr; `Global Options` &amp;rarr; change the Default working directory &amp;rarr; `Apply`
+
+From then on, every time you open RStudio, it will start in your chosen default folder.
+
+
+---
 # A Lay of the Land
 
 R is a coding language. If you want, you can just open your computer's terminal and start typing in R.* This is like directly tell computer/people do some thing, like "1+1".
 
 --
 
-RStudio is the studio for R. (Like a studio for tufting.) You can find all helpful things here for R programming.
+RStudio is the studio for R. (Like a studio for woodworking) You can find all helpful things here for R programming.
 
 1. You can start typing R code into the console and make your computer do stuff.
 
@@ -539,6 +575,77 @@ RStudio is the studio for R. (Like a studio for tufting.) You can find all helpf
 --
 
 4. The newer version of R Markdown is Quarto. Quarto visual shows you the output look while coding. Quarto source is basically Markdown. (*File* &amp;rarr; *New File* &amp;rarr; *R Quarto...*)
+
+
+---
+# More on R Markdown (.Rmd)
+
+**What is R Markdown?**
+
+R Markdown is a file format in RStudio that lets you combine:
+
+- **Text** (like a Word document)
+
+- **R code** (that you can run)
+
+- **The results of that code** (tables, plots, analysis)
+
+It’s like a notebook where your explanations, code, and results all live together.
+
+--
+
+**Why use R Markdown?**
+
+1. Reproducibility - You can re-run the document and get the exact same results later.
+2. Transparency - Code and results are side-by-side, so others can see how you did your analysis.
+3. Easy reporting - Turn your file into HTML, PDF, or Word documents with a single click.
+4. Efficiency - Update your analysis once and automatically refresh all results.
+
+---
+# How it works
+
+Go to:
+
+`File` &amp;rarr; `New File` &amp;rarr; `R Markdown...`
+
+Note: You can click `Visual` if you think that interface is more aesthetically pleasing.
+
+An R Markdown file has three parts:
+
+1. YAML Header (top part in `---`): sets the title, author, date, and output format.
+
+2. Text Sections: written in Markdown — a simple way to format text (headings, bold, lists, etc.).
+
+3. Code Chunks: blocks of R code inside triple backticks.
+
+
+---
+# Running the document
+
+Click the `Knit` button in RStudio.
+
+`R` will run all code chunks in order and produce a finished document (HTML, PDF, or Word).
+
+If something breaks, fix the code and knit again.
+
+We can use this to create project report, paper, presentation, etc. (More about this in lec5)
+
+--
+
+&lt;/br&gt;
+
+Additional tips:
+
+- Write as you go: Don’t separate “doing the work” and “writing the report.”
+- Keep it clean: Comment your code so future-you understands it.
+
+Control chunk options:
+
+- echo = FALSE: hides the code, shows only results.
+- eval = FALSE: shows the code, doesn’t run it.
+- message = FALSE, warning = FALSE: hides messages and warnings.
+
+
 
 
 ---
