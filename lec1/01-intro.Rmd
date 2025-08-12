@@ -94,9 +94,9 @@ knitr::include_graphics(c("pics/Head_shot.jpg"))
 
 - Full Name (Preferred Name): [Your Name]
 
-- Hometown / Origin: [City, State or Country]
+- Hometown / Home Country: [City, State or Country]
 
-- Major and Academic Year: [Your Major], [e.g., Junior / 3rd Year Undergraduate]
+- Major / Academic Year: [Your Major], [e.g., Junior / 3rd Year Undergraduate]
 
 - Relevant Coursework in Economics: [List economics courses taken]
 
@@ -104,9 +104,7 @@ knitr::include_graphics(c("pics/Head_shot.jpg"))
 
 - Programming Experience: [Briefly describe tools/languages used and in what context — e.g., coursework, projects, research]
 
-
-Just a heads-up: I’ll be collecting these data in a separate R script on the side.
-
+Note: I have collected these information in the survey! If you have not yet done so, please do it [here](https://forms.gle/dqY9bdmzEbnTCvZd7).
 
 ---
 class: inverse, center, middle
@@ -156,7 +154,7 @@ Comparing Data Science, Econometrics, Economics (Theory), and Computer Science:
 
 Econ 370 vs. Econ 400:
 
-- *Econ 400*: emphasizes *econometrics and statistical analysis*
+- *Econ 400*: emphasizes *econometrics theory and statistical analysis*
 - *Econ 370*: places greater emphasis on *data cleaning and computational implementation*
 
 ---

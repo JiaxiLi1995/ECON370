@@ -10,19 +10,6 @@ print("Hello World!")
 # Left of the break line, you can find a little triangle.
 # Click and see what does it do.
 
-# Here is our first dataset
-# Collect the student information
-Student_Info = data.frame(
-  Name = c(),
-  Preferred_name = c(),
-  Origin = c(),
-  Major = c(),
-  Year = c(),
-  Econ_courses = c(),
-  Stat_courses = c(),
-  Program_lang = c(),
-  Program_exper = c()
-)
 
 ################################################################################
 # introduction to ggplot2
