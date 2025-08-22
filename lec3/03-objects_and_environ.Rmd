@@ -539,7 +539,7 @@ demo("graphics", package = "graphics")
 
 class: inverse, center, middle
 
-# Next lecture(s): Logic and loops
+# Next lecture(s): Functions
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 

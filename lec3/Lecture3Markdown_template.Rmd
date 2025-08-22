@@ -1,0 +1,100 @@
+---
+title: "Lecture 3 Script Template"
+author: "Jiaxi Li"
+date: "2025-09-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+# This is global set up for all later chunks
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Everying is an object
+
+```{r}
+# A simple data frame
+d = data.frame(x = 1:2, y = 3:4) 
+class(d)
+```
+
+```{r}
+# Convert to matrix
+m = as.matrix(d)
+# Our previous factor
+fact_groups = sample(letters,10,replace=T)
+# Covert to other types. Do they work?
+as.integer(fact_groups)
+as.character(d)
+```
+
+```{r}
+# Different ways to conduct lm
+lm(y~x,data=d)
+lm(d$y~d$x)
+```
+
+```{r}
+# A new data frame!
+d2 = data.frame(x = rnorm(10), y = runif(10))
+```
+
+```{r}
+# We can do lm for both
+lm(y~x,data=d)
+lm(y~x,data=d2)
+
+# Summary here shows more details of lm result
+# Do you remember what we get from summary with `summary(mtcars$mpg)`?
+summary(lm(y~x,data=d2))
+# Try ?summary to found out
+```
+
+
+## Everything has a name
+
+```{r}
+# Some naming problems
+#TRUE = 1
+```
+
+```{r}
+pi = function(q,p,mc){
+  q*p - q*mc
+}
+```
+
+```{r}
+rm(pi)
+```
+
+```{r}
+c(1,2,3)
+c = 2
+```
+
+```{r}
+library(dplyr)
+library(data.table)
+library(ggplot2)
+```
+
+
+```{r}
+filter = stats::filter
+```
+
+
+## Clearn up
+
+```{r}
+# Cleaning up
+A = 1
+B = 2
+D = 3
+# I do not use C and D here, you can check why by ?C and ?D
+
+# rm(list = setdiff(ls(), c("keep_this", "and_this")))  # remove all but a few key objects
+rm(list = setdiff(ls(), c("A")))  # remove all but A
+gc()                                                  # free unused RAM
+```
