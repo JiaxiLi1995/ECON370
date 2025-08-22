@@ -70,9 +70,9 @@ knitr::include_graphics(c("pics/Head_shot.jpg"))
 
 - [lijiaxi@unc.edu](mailto:lijiaxi@unc.edu) (I will email you back as fast as possible.)
 
-- Office Hours: Th 2:15-3:15PM (Does this work for people?)
+- Office Hours: Th 11:00AM-12:00PM
 
-- Office: Gardner Hall 5th floor library (during Office Hours)
+- Office: Gardner Hall 4th floor library (during Office Hours)
 
 --
 
