@@ -87,7 +87,8 @@ In this section, I will be asking you to read the documentation for functions th
 -   Write the code to draw 100 values from a normal distribution with mean 5 and *variance* of 4. Note: remember that the variance is the standard deviation squared.
 
 ```{r}
-# Answer: 
+# Code Below, remember commenting
+
 ```
 
 3.  Pull up the documentation for the "optim" function. This will be the most challenging question. Please answer the following:
