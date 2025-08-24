@@ -35,7 +35,7 @@ Names of all group members:
 
 Use the Rmd template and write code to answer the following questions. In order to ensure smooth grading, I will ask you to write both your code and explanation (as comment) in code chunk. Please write your code and answer in the corresponding place.
 
-Each question is worth three points. For each section, a "question" corresponse to a number. So each bullet point in "Reading Documentation" section will be worth one point.
+Each question is worth three points. For each section, a "question" corresponds to a number. So each bullet point in "Reading Documentation" section will be worth one point.
 
 Please comment your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
 
