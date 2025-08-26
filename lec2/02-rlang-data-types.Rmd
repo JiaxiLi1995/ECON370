@@ -953,7 +953,7 @@ demo("graphics", package = "graphics")
 
 I will release HW 1 on this afternoon
 
-It will be due on Tuesday, 9/9, before our class begins. 
+It will be due on Tuesday, 9/11, before our class begins. 
 
 ...*because* this is introductory material, I am going to ask that you ***do not*** use LLMs/AI models for help with this homework specifically.
 
