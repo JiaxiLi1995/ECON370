@@ -14,21 +14,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # Here is out first vector
-first_vec = 1:5
+first_vec = 
 first_vec
 ```
 
 ```{r}
 # Try using : to create vector
-0:10
+
 # concatenate numbers to make a vector
-c(0,3,2)
+
 ```
 
 ```{r}
 # Add single number to a vector, what does that do?
 # How about adding a vector to a number?
-first_vec + 0.5
+
 ```
 
 ```{r}
@@ -47,7 +47,7 @@ first_vec + 6:9
 
 ```{r}
 # What would be the result of this one?
-1.4:3.5
+
 ```
 
 ```{r}
@@ -58,11 +58,9 @@ c("Blue", "Beige", "Black", "Brown")
 
 ```{r}
 # other ways to work with vector
-2^(1:4)
-1 + 2:4
 
-110:130 %% 60
-120 %% 15:20
+
+
 ```
 
 
@@ -72,33 +70,32 @@ c("Blue", "Beige", "Black", "Brown")
 
 ```{r}
 # Try to put in your name here
-my_name    = "Jiaxi Li"
-first_name = "Jiaxi"
-last_name  = "Li"
+my_name    = ""
+first_name = ""
+last_name  = ""
 
 # `class` can check the data type
-class(my_name)
+
 ```
 
 ```{r}
 class(first_vec)
 
 # Now, check the length of the numeric vector
-length(first_vec)
-length(6:9)
+
 ```
 
 ```{r}
 # Same length function can work for character (vector) too
 # What does it do?
 my_name
-length(my_name)
+
 ```
 
 ```{r}
 # How about nchar
-nchar(my_name)
 my_name
+
 ```
 
 ```{r}
@@ -110,11 +107,11 @@ nchar(c(first_name,last_name))
 ```{r}
 # `==` can be used to compare things, more about this in logic data type section
 # Type your full name again here
-also_my_name = 'Jiaxi Li' # We are using ' instead of " here
+also_my_name = '' # We are using ' instead of " here
 my_name == also_my_name
 
 # Type lower case of your name here
-Lowercase_my_name = 'jiaxi li'
+Lowercase_my_name = ''
 my_name == Lowercase_my_name
 ```
 
@@ -124,9 +121,10 @@ my_name == Lowercase_my_name
 first_name
 last_name
 paste(first_name,last_name)
-paste(first_name,last_name,sep="-")
-paste0(first_name,last_name)
-paste(first_name,last_name,sep="\'")
+
+# try paste0 and separate with -, \
+
+
 c(first_name,last_name)
 c(first_name,last_name) == paste(first_name,last_name)
 first_name + " " + last_name
@@ -147,7 +145,7 @@ for (j in 1) {print(my_name)}
 ```{r}
 # Change to upper case and lower case
 toupper(c(first_name,last_name))
-tolower(c(first_name,last_name))
+?(c(first_name,last_name))
 ```
 
 
@@ -179,37 +177,29 @@ R_is_fun  == true
 
 ```{r}
 # Math comparison
-2 > 1
-2 > 2
-2 >= 2
+
 ```
 
 
 ```{r}
 # `& |` operations
-1 > 2
-1 > 1/2
-(1 > 2) & (1 > 1/2)
-(2 > 1) & (1 > 1/2)
-(1 > 2) | (1 > 1/2)
+
 ```
 
 
 ```{r}
 # `!` for negation
-0.5 == 1/2
-3 != 2
 
-!TRUE
-!FALSE
 ```
 
 
 ```{r}
 # `%in%` checks whether a single element is in a vector
 2 %in% c(1,2,3,4)
-5 %in% c(1,2,3,4)    # test if 5 is in the vector c(1,2,3,4)
-!(5 %in% c(1,2,3,4)) # test if 5 is NOT in the vector c(1,2,3,4)
+
+# test if 5 is in the vector c(1,2,3,4)
+
+# test if 5 is NOT in the vector c(1,2,3,4)
 ```
 
 
@@ -269,7 +259,6 @@ some_numbers[1]
 TestList = list(c("Jiaxi","Li"),1:5,sample(c(TRUE,FALSE),20,replace=T))
 
 # Indexing for list
-TestList[[1]]
 TestList
 ```
 
@@ -339,11 +328,12 @@ rownames(mtcars) = NULL
 
 ```{r}
 # Five number summary
-summary(mtcars$mpg)
+
 
 mpgvec = mtcars$mpg
 # Row selecting and indexing with data frame
-testvec <- mtcars[mpgvec > median(mpgvec),3]
+# Select mtcars rows that mpgvec > median(mpgvec) and columns == 3
+testvec <- mtcars[]
 ```
 
 
