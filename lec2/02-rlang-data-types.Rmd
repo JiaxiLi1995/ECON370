@@ -241,7 +241,7 @@ paste0(first_name,last_name)
 first_name + " " + last_name
 ```
 
-Note: `c` and `paste` are different and `+` does not work for character.
+Note: `c` and `paste` are different and `+` does not work for character. We can use `cat` as a combination of `c` and `paste`.
 
 ---
 

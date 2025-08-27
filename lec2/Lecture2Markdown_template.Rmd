@@ -102,6 +102,10 @@ my_name
 # Now concatenate two char (vectors)
 c(first_name,last_name)
 nchar(c(first_name,last_name))
+
+
+# cat is to concatenate and print
+cat(first_name,last_name)
 ```
 
 ```{r}

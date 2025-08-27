@@ -65,6 +65,9 @@ my_name
 c(first_name,last_name)
 nchar(c(first_name,last_name))
 
+# cat is to concatenate and print
+cat(first_name,last_name)
+
 # `==` can be used to compare things, more about this in logic data type section
 also_my_name = 'Jiaxi Li' # We are using ' instead of " here
 my_name == also_my_name
