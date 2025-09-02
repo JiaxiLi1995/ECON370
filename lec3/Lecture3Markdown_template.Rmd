@@ -1,7 +1,7 @@
 ---
 title: "Lecture 3 Script Template"
 author: "Jiaxi Li"
-date: "2025-09-02"
+date: "2025-09-04"
 output: pdf_document
 ---
 
@@ -20,18 +20,24 @@ class(d)
 
 ```{r}
 # Convert to matrix
-m = as.matrix(d)
+m = 
+# Convert to list
+l = 
+  
+# Convert to numerical? character?
+
 # Our previous factor
 fact_groups = sample(letters,10,replace=T)
 # Covert to other types. Do they work?
 as.integer(fact_groups)
-as.character(d)
 ```
 
 ```{r}
-# Different ways to conduct lm
-lm(y~x,data=d)
-lm(d$y~d$x)
+# Why this does not work?
+lm(y~x)
+
+# Different ways to conduct lm, regress y on x
+
 ```
 
 ```{r}
@@ -40,9 +46,7 @@ d2 = data.frame(x = rnorm(10), y = runif(10))
 ```
 
 ```{r}
-# We can do lm for both
-lm(y~x,data=d)
-lm(y~x,data=d2)
+# We can do lm for both d and d2
 
 # Summary here shows more details of lm result
 # Do you remember what we get from summary with `summary(mtcars$mpg)`?
@@ -55,25 +59,29 @@ summary(lm(y~x,data=d2))
 
 ```{r}
 # Some naming problems
-#TRUE = 1
+TRUE = 1
 ```
 
 ```{r}
+# Why shouldn't we create this function?
 pi = function(q,p,mc){
   q*p - q*mc
 }
-```
 
-```{r}
+# Remove only the pi function
 rm(pi)
 ```
 
 ```{r}
+# Naming with c might not be a good idea, but R is smart enough now
 c(1,2,3)
 c = 2
+# remove the saved c
+rm(c)
 ```
 
 ```{r}
+# Try to load these packages, what do you see?
 library(dplyr)
 library(data.table)
 library(ggplot2)
@@ -81,6 +89,7 @@ library(ggplot2)
 
 
 ```{r}
+# Assignment to use a function from a specific package
 filter = stats::filter
 ```
 
@@ -94,7 +103,10 @@ B = 2
 D = 3
 # I do not use C and D here, you can check why by ?C and ?D
 
-# rm(list = setdiff(ls(), c("keep_this", "and_this")))  # remove all but a few key objects
-rm(list = setdiff(ls(), c("A")))  # remove all but A
-gc()                                                  # free unused RAM
+# remove all but a few key objects
+# rm(list = setdiff(ls(), c("keep_this", "and_this")))
+# Try to remove all but A
+
+# free unused RAM
+gc()
 ```
