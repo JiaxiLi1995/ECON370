@@ -691,6 +691,26 @@ some_numbers[2]
 some_numbers[1:2][2]
 ```
 
+
+---
+# Data Structures (Vectors)
+
+## Indexing
+
+You can also use `c` to add object and `-` index to remove object
+
+```{r}
+some_numbers
+
+c(some_numbers, 12)
+
+some_numbers[-3]
+
+some_numbers[-(2:3)]
+```
+
+
+
 ---
 # Data Structures (Lists)
 
@@ -759,6 +779,36 @@ grade_list$`student names`[4]
 ```
 
 ---
+
+# Data Structures (Lists)
+
+## Indexing
+
+- You can add an element by assigning it to the list with `$` and remove an element by setting it to `NULL`
+
+
+```{r}
+grade_list$`Newfeature` <- 1:10
+
+grade_list
+```
+
+---
+
+# Data Structures (Lists)
+
+## Indexing
+
+- You can remove an element by setting it to `NULL`
+
+
+```{r}
+grade_list$`Newfeature` <- NULL
+
+grade_list
+```
+
+---
 # Data Structures (Matrix)
 
 - Matrices are essentially two dimensional atomic vectors.
@@ -786,6 +836,28 @@ num_mat[1,]
 num_mat[,2]
 num_mat[5]
 ```
+
+---
+# Data Structures (Matrix)
+
+## Indexing
+- You can add a row using `rbind`, add a column using `cbind`.
+
+```{r}
+cbind(num_mat, 1:3)
+rbind(num_mat, 1:3)
+```
+
+--
+
+- You can still remove row/column using `-` (You cannot remove an single entry though).
+
+```{r}
+num_mat[,-2]
+
+num_mat[-2,]
+```
+
 ---
 
 # Data Structures (Array)
@@ -853,6 +925,27 @@ mtcars$mpg[1:5]
 mtcars[1:5,1]
 row.names(mtcars)[1:5]
 ```
+
+---
+# Data Structures (Data.frame)
+
+## Indexing
+- Adding/removing row/column is also similar to matrix using `rbind`/`cbind`/`-`. Also, we can use `$` or assing to `NULL` similar to list.
+
+
+```{r, eval=FALSE}
+mtcars[-1,]
+mtcars[,-1]
+mtcars$NewVar <- 1
+mtcars$NewVar <- NULL
+
+# Need same number of columns when doing rbind
+rbind(mtcars, 1:11)
+
+# Need same number of rows when doing cbind
+cbind(mtcars, 1:32)
+```
+
 ---
 # Data Structures (Factors)
 

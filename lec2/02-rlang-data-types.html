@@ -1288,6 +1288,49 @@ some_numbers[1:2][2]
 ## [1] 23
 ```
 
+
+---
+# Data Structures (Vectors)
+
+## Indexing
+
+You can also use `c` to add object and `-` index to remove object
+
+
+``` r
+some_numbers
+```
+
+```
+## [1] 27 23 94
+```
+
+``` r
+c(some_numbers, 12)
+```
+
+```
+## [1] 27 23 94 12
+```
+
+``` r
+some_numbers[-3]
+```
+
+```
+## [1] 27 23
+```
+
+``` r
+some_numbers[-(2:3)]
+```
+
+```
+## [1] 27
+```
+
+
+
 ---
 # Data Structures (Lists)
 
@@ -1419,6 +1462,69 @@ grade_list$`student names`[4]
 ```
 
 ---
+
+# Data Structures (Lists)
+
+## Indexing
+
+- You can add an element by assigning it to the list with `$` and remove an element by setting it to `NULL`
+
+
+
+``` r
+grade_list$`Newfeature` &lt;- 1:10
+
+grade_list
+```
+
+```
+## $`student names`
+## [1] "Student 1" "Student 2" "Student 3" "Student 4" "Student 5" "Student 6"
+## [7] "Student 7"
+## 
+## $`numeric grade`
+## Student 1 Student 2 Student 3 Student 4 Student 5 Student 6 Student 7 
+##        90        75        95        85       100        60        76 
+## 
+## $`letter grade`
+## Student 1 Student 2 Student 3 Student 4 Student 5 Student 6 Student 7 
+##      "A-"       "C"       "A"       "B"       "A"       "D"       "C" 
+## 
+## $Newfeature
+##  [1]  1  2  3  4  5  6  7  8  9 10
+```
+
+---
+
+# Data Structures (Lists)
+
+## Indexing
+
+- You can remove an element by setting it to `NULL`
+
+
+
+``` r
+grade_list$`Newfeature` &lt;- NULL
+
+grade_list
+```
+
+```
+## $`student names`
+## [1] "Student 1" "Student 2" "Student 3" "Student 4" "Student 5" "Student 6"
+## [7] "Student 7"
+## 
+## $`numeric grade`
+## Student 1 Student 2 Student 3 Student 4 Student 5 Student 6 Student 7 
+##        90        75        95        85       100        60        76 
+## 
+## $`letter grade`
+## Student 1 Student 2 Student 3 Student 4 Student 5 Student 6 Student 7 
+##      "A-"       "C"       "A"       "B"       "A"       "D"       "C"
+```
+
+---
 # Data Structures (Matrix)
 
 - Matrices are essentially two dimensional atomic vectors.
@@ -1480,6 +1586,63 @@ num_mat[5]
 ```
 ## [1] 5
 ```
+
+---
+# Data Structures (Matrix)
+
+## Indexing
+- You can add a row using `rbind`, add a column using `cbind`.
+
+
+``` r
+cbind(num_mat, 1:3)
+```
+
+```
+##      [,1] [,2] [,3] [,4]
+## [1,]    1    4    7    1
+## [2,]    2    5    8    2
+## [3,]    3    6    9    3
+```
+
+``` r
+rbind(num_mat, 1:3)
+```
+
+```
+##      [,1] [,2] [,3]
+## [1,]    1    4    7
+## [2,]    2    5    8
+## [3,]    3    6    9
+## [4,]    1    2    3
+```
+
+--
+
+- You can still remove row/column using `-` (You cannot remove an single entry though).
+
+
+``` r
+num_mat[,-2]
+```
+
+```
+##      [,1] [,2]
+## [1,]    1    7
+## [2,]    2    8
+## [3,]    3    9
+```
+
+``` r
+num_mat[-2,]
+```
+
+```
+##      [,1] [,2] [,3]
+## [1,]    1    4    7
+## [2,]    3    6    9
+```
+
 ---
 
 # Data Structures (Array)
@@ -1667,6 +1830,28 @@ row.names(mtcars)[1:5]
 ## [1] "Mazda RX4"         "Mazda RX4 Wag"     "Datsun 710"       
 ## [4] "Hornet 4 Drive"    "Hornet Sportabout"
 ```
+
+---
+# Data Structures (Data.frame)
+
+## Indexing
+- Adding/removing row/column is also similar to matrix using `rbind`/`cbind`/`-`. Also, we can use `$` or assing to `NULL` similar to list.
+
+
+
+``` r
+mtcars[-1,]
+mtcars[,-1]
+mtcars$NewVar &lt;- 1
+mtcars$NewVar &lt;- NULL
+
+# Need same number of columns when doing rbind
+rbind(mtcars, 1:11)
+
+# Need same number of rows when doing cbind
+cbind(mtcars, 1:32)
+```
+
 ---
 # Data Structures (Factors)
 
@@ -1683,7 +1868,7 @@ fact_groups
 ```
 
 ```
-##  [1] "a" "e" "u" "x" "r" "f" "y" "m" "o" "b"
+##  [1] "c" "f" "s" "r" "f" "e" "u" "a" "d" "v"
 ```
 
 ``` r
@@ -1692,7 +1877,7 @@ fact_groups
 ```
 
 ```
-##  [1] a e u x r f y m o b
+##  [1] c f s r f e u a d v
 ## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
 ```
 
