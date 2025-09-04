@@ -45,7 +45,7 @@ You may work in groups of three to four people for this homework. Please submit 
 
 # I. Reading Documentation
 
-In this section, I will be asking you to read the documentation for functions that we have yet to cover or use. Remember, if the name of a function is "fun1", you can pull up its documentation by running either "help(fun1)" or "?fun1" in the R Console. Also, when answering what each function does, \textit{please do not just copy and paste the description of the function in the documentation.} Please respond inside the code chunk as comments, using your own words.
+In this section, I will be asking you to read the documentation for functions that we have yet to cover or use. Remember, if the name of a function is "fun1", you can pull up its documentation by running either "help(fun1)" or "?fun1" in the R Console. Also, when answering what each function does, *please do not just copy and paste the description of the function in the documentation.* Please respond inside the code chunk as comments, using your own words.
 
 **Note: Do not print the function documentation in Rmd, but rather run it in R console.**
 
