@@ -210,7 +210,7 @@ my_mat = matrix(c(rnorm(20,0,10), rnorm(20,-1,10)), nrow = 20, ncol = 2)
 
 ```
 
-3.  Can we use apply functions for the above operation? Provide the code if yes. Provide explanation if no.
+3.  Can we use apply functions for the above operation? Provide the code if yes. Provide explanation if no. (Hint: you can use a combination of functions and force assignment in the function. Note that the whole purpose of the function is to update, so no "return" here.)
 
 ```{r}
 # Yes or No: 
