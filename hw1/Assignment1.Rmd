@@ -24,7 +24,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 # Note, this is global setting for all code chunks
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(include = FALSE)
 ```
 
 Names of all group members:
