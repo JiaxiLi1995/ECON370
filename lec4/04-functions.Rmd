@@ -12,7 +12,6 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
-    pdf_document: default
 ---
 name: toc
 
@@ -975,6 +974,6 @@ class: inverse, center, middle
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
-#pagedown::chrome_print(input = infile, timeout = 10000)
+pagedown::chrome_print(input = infile, timeout = 10000)
 #xaringan::decktape(infile, "04-functions.pdf")
 ```
