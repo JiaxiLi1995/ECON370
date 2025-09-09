@@ -956,8 +956,10 @@ cbind(mtcars, 1:32)
 - Can be tricky when first learning, but ultimately rather simple.
 
 ```{r factors}
+# Draw 10 ramdom letters with replacement
 fact_groups = letters[sample(1:26,10,replace=T)]
 fact_groups
+# Form the factor group
 fact_groups = factor(fact_groups,levels=letters)
 fact_groups
 ```

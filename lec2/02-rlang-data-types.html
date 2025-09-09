@@ -1863,21 +1863,23 @@ cbind(mtcars, 1:32)
 
 
 ``` r
+# Draw 10 ramdom letters with replacement
 fact_groups = letters[sample(1:26,10,replace=T)]
 fact_groups
 ```
 
 ```
-##  [1] "c" "f" "s" "r" "f" "e" "u" "a" "d" "v"
+##  [1] "z" "i" "t" "z" "x" "d" "n" "u" "y" "u"
 ```
 
 ``` r
+# Form the factor group
 fact_groups = factor(fact_groups,levels=letters)
 fact_groups
 ```
 
 ```
-##  [1] c f s r f e u a d v
+##  [1] z i t z x d n u y u
 ## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
 ```
 

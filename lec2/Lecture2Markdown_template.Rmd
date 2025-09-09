@@ -63,7 +63,6 @@ c("Blue", "Beige", "Black", "Brown")
 
 ```
 
-
 ## Data Types
 
 ### Character
@@ -102,10 +101,6 @@ my_name
 # Now concatenate two char (vectors)
 c(first_name,last_name)
 nchar(c(first_name,last_name))
-
-
-# cat is to concatenate and print
-cat(first_name,last_name)
 ```
 
 ```{r}
@@ -119,7 +114,6 @@ Lowercase_my_name = ''
 my_name == Lowercase_my_name
 ```
 
-
 ```{r}
 # pasting characters
 first_name
@@ -132,6 +126,11 @@ paste(first_name,last_name)
 c(first_name,last_name)
 c(first_name,last_name) == paste(first_name,last_name)
 first_name + " " + last_name
+```
+
+```{r}
+# cat is to paste together and print
+cat(first_name,last_name)
 ```
 
 ```{r}
@@ -152,8 +151,6 @@ toupper(c(first_name,last_name))
 ?(c(first_name,last_name))
 ```
 
-
-
 ### Numeric
 
 ```{r}
@@ -167,8 +164,6 @@ class(-Inf)
 class(NaN)
 ```
 
-
-
 ### Logical
 
 ```{r}
@@ -178,24 +173,20 @@ R_is_fun  == T
 R_is_fun  == true
 ```
 
-
 ```{r}
 # Math comparison
 
 ```
-
 
 ```{r}
 # `& |` operations
 
 ```
 
-
 ```{r}
 # `!` for negation
 
 ```
-
 
 ```{r}
 # `%in%` checks whether a single element is in a vector
@@ -206,7 +197,6 @@ R_is_fun  == true
 # test if 5 is NOT in the vector c(1,2,3,4)
 ```
 
-
 ```{r}
 # NA vs. NaN
 class(NA)
@@ -215,9 +205,6 @@ is.na(NA)
 is.nan(NA)
 is.na(NaN) # This is a little strange, but good to know
 ```
-
-
-
 
 ### Complex
 
@@ -228,8 +215,6 @@ i
 1+2i
 # i is the imaginary i, if you put a number in front of it
 ```
-
-
 
 ## Data Structure
 
@@ -254,7 +239,6 @@ names(numeric_grades) = c("Student 1","Student 2","Student 3",
 some_numbers = c(27,22,94)
 some_numbers[1]
 ```
-
 
 ### List
 
@@ -292,7 +276,6 @@ grade_list[["letterGrade"]]
 grade_list["letterGrade"]
 ```
 
-
 ### Matrix
 
 ```{r}
@@ -308,7 +291,6 @@ num_mat
 num_mat2 = matrix(1:9,ncol=3,byrow = T)
 num_mat2
 ```
-
 
 ### Data.frame
 
@@ -340,14 +322,12 @@ mpgvec = mtcars$mpg
 testvec <- mtcars[]
 ```
 
-
 ### Factors
 
 ```{r}
 fact_groups = letters[sample(1:26,10,replace=T)]
 fact_groups2 = sample(letters,10,replace=T) # two ways of writing the same command
 ```
-
 
 ```{r}
 # Now, convert as factors
@@ -357,4 +337,3 @@ fact_groups = factor(fact_groups,levels=rev(letters))
 fact_groups = factor(fact_groups, levels=c("a","e","i","o","u","y"))
 # why are we getting NAs?
 ```
-
