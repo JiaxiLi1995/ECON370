@@ -1,7 +1,7 @@
 ---
 title: "ECON 370: Assignment 2"
 author: "Jiaxi Li"
-date: "Due: Before class on September 30th, 2025"
+date: "Due: Before class on October 2nd, 2025"
 output: 
   pdf_document:
     latex_engine: xelatex
@@ -37,9 +37,9 @@ Use the Rmd template and write code to answer the following questions. In order 
 
 Each question is worth three points. For each section, a "question" corresponds to a number.
 
-Please comment your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
+Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
 
-For questions creating functions in this assignment, you must have a "return". Otherwise, 0.5 point per question will be deducted. For any question involving a random number generation, you must set seed. Otherwise, 0.5 point per question will be deducted.
+For questions creating functions in this assignment, you must have a "**return**". Otherwise, 0.5 point per question will be deducted. For any question involving a random number generation, you must **set seed**. Otherwise, 0.5 point per question will be deducted. For questions creating loops in this assignment, you must **preallocate**. Otherwise, 0.5 point per question will be deducted.
 
 You may work in groups of three to four people for this homework. Please submit one script per group and clearly indicate who was in your group for the assignment.
 
@@ -226,14 +226,14 @@ my_mat = matrix(c(rnorm(20,0,10), rnorm(20,-1,10)), nrow = 20, ncol = 2)
 
 ```
 
-5.  Use loop to calculate the mean for 10 random numbers **100 times**. (Remember to set seeds before the operation. Use "rnorm" to generate the random numbers.)
+5.  Use loop to calculate the mean for 10 random numbers **100 times**. (Remember to set seeds before the operation. Use "rnorm" to generate the random numbers. **Do not save those means but use "print" to show them.**)
 
 ```{r}
 # Code Below, remember commenting
 
 ```
 
-6.  Can we vectorize the above operation? Provide the code if yes. Provide explanation if no.
+6.  Can we vectorize the above operation? Provide the code if yes. Provide explanation if no. (Hint: you can use a matrix to do "vectorization" here.)
 
 ```{r}
 # Yes or No: 

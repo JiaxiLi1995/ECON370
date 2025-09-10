@@ -37,7 +37,7 @@ Use the Rmd template and write code to answer the following questions. In order 
 
 Each question is worth three points. For each section, a "question" corresponds to a number. So each bullet point in "Reading Documentation" section will be worth one point.
 
-Please comment your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
+Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
 
 You may work in groups of three to four people for this homework. Please submit one script per group and clearly indicate who was in your group for the assignment.
 
