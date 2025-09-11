@@ -1,7 +1,7 @@
 ---
 title: "Outline of and Rubric for ECON370 Final Project"
-author: "Drew Van Kuiken"
-date: "University of North Carolina | [ECON 370](https://github.com/drewvankuiken/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
 output: #html_document
 #  tufte::tufte_handout: default
   tufte::tufte_html: default
@@ -9,251 +9,529 @@ output: #html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = F)
 library(tufte)
 ```
 
-# Final Project 
-## Overview
 
-The goal of your final project is to complete an independent[^1] data science project. This will consist of: 
+# Final Project Instructions
 
-- A research question
-- Finding some data (likely multiple datasets)
-- Running some regressions
-- Creating some graphs and descriptive tables
-- A short (~5 slide) in-class presentation[^2]
-- A longer (~20 slide) presentation[^3] which the grader and I will review, but which will not be presented live
-- One or more R programs which provide the **full** workflow needed to replicate your results
+The final project aims to apply everything we learn about coding, data wrangling and data analysis. You will estimate and evaluate the **prediction model** using **monthly S&P 500 index returns** from **1985** to **2024** (40 years). The final report would be done using this Rmd template and knitted into html.
+
+You will work progressively throughout the semester, applying key concepts learned in class.  
+
+A **base model** is provided below, but you are expected to enhance it with additional variables (You are required to have **at least 10 variables** for prediction), advanced modeling techniques, and insightful analysis.
+
+The final deliverable includes:
+- One Rmd file and corresponding knitted html file using this template
+- The files need to provide the **full** workflow/code needed to replicate your results and your analysis step by step. [^1]
+- A short (~7 slide) **in-person presentation** during the scheduled final exam period.[^2]
 
 I describe each component in detail below. As a general rule: if you have questions, please ask them. If you feel lost, ***please come to my office hours***. I am more than happy to be a resource for you and help you through problems as they arise. 
 
-Note: LLMs are ***allowed*** on your final project and PS3. Please include information (a slide in your presentation/a comment in your HW submission) about what you used the LLM to do! 
+Note: LLMs are ***allowed*** on your final project. Please include information (an extra slide in your presentation at the end) about what you used the LLM to do! 
 
-[^1]: No group work!
+[^1]: No group work! You can knit a html file using this template as final project report.
 [^2]: Presentations should be written using RMarkdown.
-[^3]: Think of this as an alternative to writing a ~10 page essay. Hopefully, it will be less work than that on your end, but it should be a significant work product
+
+
+## Project Requirements
+Your project should include:
+
+1. **Data Acquisition and Preparation**
+   - Collect data from multiple sources.
+   - Clean, merge, and wrangle datasets appropriately.
+   - Provide clear visualizations of the raw data.
+   - Deal with missing data and mixed frequency.
+   - Avoid **forward-looking bias** by appropriately lagging predictors.
+
+2. **Modeling**
+   - Use **linear regression** provided as a baseline model.
+   - Include **at least one more sophisticated model** (e.g., regularization, neural network, tree-based methods).
+
+3. **Model Evaluation**
+   - Split the data into **training, validation, and testing sets** and apply **expending windows**.
+   - Compare empirical results across models.
+   - Include appropriate visuals to illustrate performance differences.
+
+4. **Presentation**
+   - Present the project in a clear, organized, and professional manner.
+
+5. **Final Report**
+   - Written Rmd and html report with logical structure and visual support.
 
 ## Rubric
 
-|Category | Points |
-|---------|--------|
-|**Conceptual**||
-|Research Question|15|
-|Has Data|15|
-|Reasonable regression(s)|15|
-|Relevant graphs and tables|15|
-|||
-|**Coding**||
-|Code does what it's supposed to|15|
-|Code runs without errors|15|
-|Exhibits good programming practices|15|
-|Appropriately commented|5|
-|Sanely organized|5|
-|||
-|**In-class presentation**||
-|Clear, cogent discussion of project|5|
-|Introduction/Research Question slide|5|
-|Data slide|5|
-|Findings (1)|5|
-|Findings (2)|5|
-|What did we learn / why is this important?|5|
-|||
-|**Final presentation**||
-|At least 15 slides|5|
-|Logical flow through topics|10|
-|Motivates project - why should we care?|15|
-|Discusses drawbacks to project|15|
-|At least 1 table and 1 graph|15|
-|At least 1 regression|15|
-|||
-|**Subtotal**|220|
+Your final project will be graded out of **200 points**, broken down into **five categories**:
 
-**Note:** Think of your in-class presentation as a discussion of "here's what I did, here's why it matters." Your extended slide deck should additionally answer "here's why I did what I did, here are some drawbacks and limitations." 
+| **Category** | **Criteria** | **Points** |
+|--------------|--------------|:----------:|
+| **Conceptual Understanding** | Data acquisition is complete and relevant | 10 |
+| | Reasonable and well-justified model(s) | 15 |
+| | Clear explanation of variable selection and treatment (including lagging to prevent forward-looking bias) | 15 |
+| | Relevant graphs and tables included | 10 |
+| | Thoughtful comparison with baseline model | 10 |
+| **Subtotal** |  | **60** |
+| **Coding** | Code achieves project objectives correctly | 15 |
+| | Code runs without errors | 15 |
+| | Good programming practices (modular, efficient, reproducible) | 10 |
+| | Clear and appropriate comments | 5 |
+| | Code is logically organized and easy to follow | 5 |
+| **Subtotal** |  | **50** |
+| **Presentation (in-class)** | Clear, confident delivery and ability to answer questions | 5 |
+| | Introduction and motivation for the project | 5 |
+| | Clear and informative data slide | 5 |
+| | Explanation of model design and reasoning | 5 |
+| | Comparison with baseline model | 5 |
+| | Conclusion summarizing findings | 5 |
+| **Subtotal** |  | **30** |
+| **Final Report** | in Rmd and knitted into html | 5 |
+| | Logical flow through topics | 10 |
+| | Justification for variable choices and treatments | 15 |
+| | Analysis with tables and graphs | 10 |
+| | At least 1 advanced model beyond linear regression | 10 |
+| **Subtotal** |  | **50** |
+| **Total** |  | **200** |
 
-# Research Questions
-
-Developing good research questions is an art and probably beyond the scope of this course as it stands. As a result, don't sweat your research question too much here. Mostly, I want you to identify an outcome of interest and one or more things to test against that outcome of interest. Most important is that you can identify a single question that forms the basis of your project. Note that you can make your project about whatever you're interested in. Don't feel like your project has to be about something formal and business-related.
-
-Broadly, there are two types of questions you can ask: descriptive questions and causal questions. 
-
-## Descriptive Questions
-Descriptive questions answer how things are. They *describe* the world. A simple example: what is 2+2? A more advanced, personal, example: how do users of a major airline's website differ in their search and purchasing behavior based on observable characteristics?[^4]
-
-Descriptive questions are famously underappreciated in academia, but they're super important in the real world. You're welcome to pursue a descriptive project in this class. As a general rule of thumb, descriptive projects should focus more on the data side of things. Think about what kinds of datasets might be interesting to combine and what insights you might get from linking two topics together. In the case of our airline paper, the paper exists basically because the data is so cool and rare. It's not often you get to see behind the curtain of an airline's website (or really any major corporation's website).
-
-Conversely, descriptive projects will frequently place less weight on the regression side of things. For the purposes of our final project, you should still have at least one regression (note that our airline paper has a couple regressions). Think of your regression as a descriptive object.[^5]
-
-[^4]: This is from a paper I've written. You can find a draft on my website if you're curious to learn more: [link](https://drewvankuiken.github.io/files/WhatCanWebTrafficRevealAboutDemand.pdf)
-[^5]: The descriptive-causal dichotomy maps rather neatly to our gapminder-returns to college examples from our classes on regression. The gapminder regression was definitely descriptive: what is the cost of being a defender in a war in terms of country-level life expectancy? The returns-to-college regression was more causal. After controlling for selection bias, we could ask: what is the financial return to attending Harvard relative to UMass? 
+**Note:** Think of your in-class presentation as a discussion of "here's what I did and how is it better than the base model". Your project report should additionally answer "here's why I did what I did, also more detailed documentation of procedures." 
 
 
-## Causal Questions
-Causal questions answer whether a relationship exists between two objects. They are *why* questions. What causes something to increase (or decrease)? A simple example: how does your college determine your mid-career earnings? More advanced, more personal: how does competition affect the technology that solar panel producers adopt and develop?[^6]
+## Extra Credit Opportunities
+You can earn extra points for:
 
-There are many, many things to learn about causal inference that we have not covered. Josh Angrist, Guido Imbens, and David Card won the economics Nobel prize in 2021 for what's been termed the "causal revolution" in economics. They developed a huge suite of controversial tools for trying to manipulate observational data such that it looks and acts like experimental data. It's cool stuff! I encourage you to learn more about it in future studies. 
+- Using a **more sophisticated modeling approach** (+10 pts)
+- Achieving the **highest out-of-sample $R^2$** among peers (+20 pts)
+- **Peer voting**:
+  - Coolest variable selection (no self-votes) (+10 pts)
+  - Coolest model (no self-votes) (+10 pts)
+- Points will be split evenly in the event of ties.
 
-For our purposes, final projects that answer causal questions will lean more into discussions of (a) your attempts to match on observables, and (b) how bias might be affecting your results. It's a little less important that your data itself is interesting here. Instead, I'd like you to focus on asking exciting questions. 
+## Grading
+- **TA Grading:** Whether your code runs correctly and is well-commented.  
+- **Instructor Grading:** Content of your project and quality of presentation.
 
-[^6]: No paper yet, check in with me in 2 years.
+## Final Notes
+The goal of this project is to develop a **predictive modeling workflow** from start to finish. By the end, you should demonstrate your ability to **collect data**, **understand a model**, **evaluate performance**, and **communicate findings** effectively.
 
-# Finding Some Data
 
-Finding data stinks. It's really hard and sometimes it costs like $20,000. Below, I've tried to list every public data source I can think of. If nothing here appeals to you, come to my office hours and we can try to figure out how to find data on something that does interest you!
 
-Data Repositories: 
+# Finding the Data
 
-- [Data.gov](https://data.gov/)[^7] 
-- [FRED](https://fred.stlouisfed.org/)[^8]
-- [UNC Libraries](https://library.unc.edu/data/research-analysis/)[^9]
-- [Kaggle](https://www.kaggle.com/datasets)[^10]
-  - Strict requirement: talk with me if you want to use Kaggle data.
-- [Bureau of Labor Statistics](https://data.bls.gov/toppicks?survey=bls) Employment, Productivity, Inflation, and Wages data
-- [ICPSR](https://www.icpsr.umich.edu/web/pages/ICPSR/index.html) huge repository, mostly american data
-- [Google](https://www.google.com/publicdata/directory) a product someone built and forgot about at Google, I assume
-- [IPUMS](https://www.ipums.org/) really cool surveys about demographics, prices, time use, higher ed, and health stuff
-  
-Topic-specific resources:
+For return data, you can use the code in class or the code in the base model.
 
-- Industrial Organization (I currently use some of these things)
-  - [Airplanes](https://www.transtats.bts.gov/DatabaseInfo.asp?QO_VQ=EFI&Yv0x=D) 10% sample of all domestic air travel passengers! Many other resources on the website too. Check out the T100 database as well.
-  - [Solar Panels](https://emp.lbl.gov/tracking-the-sun) Crazy survey of most solar panel owners in the domestic US
-  - [Health stuff](https://www.shepscenter.unc.edu/data/) Several databases maintained by UNC. Might not have enough time to access these resources.
-  - [Medical Expenditures](https://meps.ahrq.gov/mepsweb/data_stats/data_overview.jsp) Household and insurance summary data about healthcare spending over time
-- Labor and other applied microeconomics
-  - [NLSY](https://www.bls.gov/nls/nlsy97.htm) yearly survey of youth jobs/time use/crime/earnings/school stuff. Incredible resource
-- Macroeconomics
-  - I would probably stick to FRED? And additionally stuff from the Bureau of Labor Statistics
-- Sports
-  - Football: [nflfastR](https://www.nflfastr.com/)
-  - Basketball: [hoopR](https://hoopr.sportsdataverse.org/) - men's college and professional basketball data, [wehoop](https://github.com/sportsdataverse/wehoop) - women's college and professional basketball data
-  - Hockey: [nhlapi](https://cran.r-project.org/web/packages/nhlapi/readme/README.html)
-  - Baseball: [baseballr](https://billpetti.github.io/baseballr/)
-- Something you scraped
-- A Monte Carlo simulation you ran
-  - Chat with me if you're interested in this, we can try to figure something out
+Finding data stinks. Below, I've tried to list every public data source I can think of. If nothing here appeals to you, come to my office hours and we can try to figure out how to find data on something that does interest you!
 
-[^7]: Phenomenal resource. I'd recommend viewing datasets by popularity. I can think of a bunch of incredibly successful projects based on even the first few datasets listed there
-[^8]: Maintained by the Federal Reserve Board of St. Louis, has incredible data on mostly macro-economic time-series. Likely a source for additional data for you (e.g., if you want to know how local greenhouse gas emissions affect electric vehicle adoption, might also be helpful to know how inflation changed over the time period you're looking at.)
-[^9]: We have an economics department affiliated data person as well. Her name is Nancy Lovas. Let me know if you'd like me to put you in contact with her. 
+### **General Economic Research**
+- [FRED](https://fred.stlouisfed.org/) – Federal Reserve Economic Data  [^7]
+- [Bureau of Labor Statistics (BLS)](https://www.bls.gov/data/) – Employment, productivity, inflation, wages
+- [Penn World Table](https://www.rug.nl/ggdc/productivity/pwt/) – International macroeconomic data  
+- [NBER](https://back.nber.org/releases/) – Releases and leading indicators  
+
+### **Financial Econometrics**
+- [Ken French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html) – Factor data and returns  
+- [Open Source Asset Pricing Data](https://www.openassetpricing.com/data/) – Academic finance datasets  
+- [Global Factor Data](https://jkpfactors.com/) – International factor datasets  
+- [WRDS](https://wrds.wharton.upenn.edu/) – Subscription-based professional database  
+
+### **Additional Public Data Resources**
+- [Data.gov](https://data.gov/) – U.S. government open data  [^8]
+- [UNC Libraries Data Services](https://library.unc.edu/data/research-analysis/) – UNC-specific resources and subscriptions  [^9]
+- [Kaggle Datasets](https://www.kaggle.com/datasets) – **Strict requirement**: speak with me before using Kaggle data  [^10]
+- [ICPSR](https://www.icpsr.umich.edu/web/pages/ICPSR/index.html) – Large repository, mostly U.S.-based data
+- [Google Public Data Explorer](https://www.google.com/publicdata/directory) – Visualization-ready datasets 
+- [IPUMS](https://www.ipums.org/) – Surveys on demographics, prices, time use, higher education, health, etc.  
+
+> **Note:** Ensure that all data sources are **documented clearly** in your project report and code.
+
+
+[^7]: Phenomenal resource. I'd recommend viewing datasets by popularity.
+[^8]: Maintained by the Federal Reserve Board of St. Louis, has incredible data on mostly macro-economic time-series. Likely a source for additional data for you.
+[^9]: We have an economics department affiliated data person as well. Her name is Nancy Lovas. She will come and give a short presentation about library data source on 10/9. Let me know if you'd like me to put you in contact with her. 
 [^10]: Also a great place for you to practice data science coding in general!
 
-# Data Processing and Analysis 
 
-It's hard for me to be prescriptive here - what's required of you will depend on your question and your data. In general, it is hard for me to think of a project that wouldn't benefit from multiple data sources or datasets.[^11] Additionally, your project will almost certainly involve "cleaning" the data. To do so, you should deal with missing or incorrect information, create variables where needed, and normalize units where relevant.[^12] Be thoughtful about how each observation in your data relates to the question you're asking. 
+# Data Processing and Analysis
 
-Let's look at an example. Consider a project about solar panel manufacturers and technology choices. A bit of background: for our purposes, there are two main technologies used in solar panels, multicrystalline silicon and monocrystalline silicon. Both have been produced for the past 15 years, though monocrystalline silicon is becoming increasingly popular. Multicrystalline silicon is cheaper but less efficient. If consumers have preferences over price and efficiency, you can imagine producers wanting to sell one cheap, low-efficiency panel, and one expensive, high-efficiency panel. 
+It's hard for me to be prescriptive here - what's required of you will depend on the data you choose. In general, it is hard for me to think of a project that wouldn't benefit from multiple data sources or datasets. Additionally, your project will almost certainly involve "cleaning" the data. To do so, you should deal with missing or incorrect information, create variables where needed, and normalize units where relevant.[^11]
 
-Before thinking about a research question and formal regression model, we might want to start with some graphs. Over the past 15 years, for each manufacturer in the data, what did their newly developed products look like? How did the efficiency of their low-cost multicrystalline products and their high-cost monocrystalline products develop over time?
+**look-ahead bias**: Since this is a prediction task, be mindful that you can only use data available to the date for prediction. For example, the Q1 US GDP growth rate is labeled to be at the end of march, but it is not announced until Thursday, September 25, 2025! If you are predicting April returns, you cannot use this number.
 
-Let's take a look at the Tracking the Sun database to get a sense of this: 
-```{r}
-library(tidyverse)
-library(data.table)
-library(ggrepel)
+In general, if you are uncertain about the announcement lag (if there is any), you can use this rule for finance/econ data: 1 month lag for monthly data, 4 month lag for quarterly data and 6 month lag for annual data. Therefore,to predict returns at month $t+1$, you can use most recent monthly data at the end of month $t-1$, most recent quarterly data by end $t-4$, and most recent annual data by end $t-6$.
 
-### goal: create single-dimension plots of efficiencies by technology type and 
-###       firm identity for each year of the data. subset to firms with X%
-###       market share.
+Note that there are real-time information which do not require lag, such as prices (asset prices or portfolio prices). Therefore, if you are trying to use March return to predict April return, you do not need to lag it!
 
-###
-# note to students: the tracking the sun data file is saved to our sharepoint folder if you're interested in running 
-# this code on your own machine. be careful though, the file is pretty large (>1gb)
-path <- '~/Desktop/Research/solar/data/raw/Tracking the Sun 2023 Data File/'
-# Read in TTS data
-tts_raw = read_csv(paste0(path,'/TTS_LBNL_public_file_27-Oct-2023_all.csv'))
+**training, validation and test**: For machine learning model estimations in general, we need to divide data into training, validation and test sets. There is no definite rule for the size ratio of the three sets, but For this project, you need to have: 40% training, 20% validation, 40% testing.
 
-glimpse(tts_raw)
-```
+- Training set: We use this set to estimate the model parameters.
+- Validation set: We use this set to select the tuning parameters for machine learning models.
+- Testing set: We use this set to evaluate the model.
 
-That's a lot of -1s. If we look at the documentation, we see that missing data is coded as -1! 
+For cross-sectional data (no time), we can just randomly split the data into three sets by drawing their index. For time-series, there are a few different approaches. With the example of year 1985 to 2024, I will introduce three approaches here:
 
-When is an observation missing just too much data? It's probably fine if we don't have any azimuth data. On the other hand, if we don't have a date of purchase, it'll be literally impossible for us to put the observation into a graph. We probably also want to subset to observations where the manufacturer is available, the quantity purchased is available, and which include only solar panels:
-```{r}
-# subset - missing years are encoded as NaT
-tts_sub = tts_raw |> filter(!near(efficiency_module_1, -1, 0.01)) |>
-                     filter(technology_type == "pv-only", 
-                            module_manufacturer_1 != "-1", 
-                            module_quantity_1 > -1, 
-                            installation_date != "NaT") |>
-  mutate(year = year(dmy(installation_date)))
+1. Fixed window: 1985-2000 as training, 2001-2008 as validation, and 2009-2024 as testing. This is not recommended if you know the model parameters are changing.
 
-glimpse(tts_sub)
-```
+2. Rolling window: Have a 12-year rolling-window and 1 additional year for testing at a time, then move everything forward by 1 year:
+  - 1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
+  - 1986-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model
+  ...
+  - 2000-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
+  - You can show the evaluation performance as a plot over time, or simply average the evaluation metric.
 
-Looks a lot better. Some of these manufacturers are a little weird though: Sanyo Electric and CSI Solar are big-name manufacturers, ET Solar is really not. 
+3. Expanding window: Have a 12-year rolling-window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:
+  - 1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
+  - 1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model
+  ...
+  - 1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
+  - You can show the evaluation performance as a plot over time, or simply average the evaluation metric.
 
-We could look up a list of big solar manufacturers and subset to that list, but that method would be a little ad hoc. Instead, we can go and calculate yearly market shares. Then we can use a market share threshold to select big manufacturers over time. 
-```{r}
-# manuf market shares 
-shares = tts_sub |> group_by(year) |> 
-  mutate(market_sales = sum(module_quantity_1, na.rm=TRUE)) |>
-  group_by(module_manufacturer_1, year, market_sales) |> 
-  summarize(manuf_sales = sum(module_quantity_1, na.rm = TRUE),
-            shares = manuf_sales / first(market_sales),
-            .groups = "drop") |>
-  select(year, module_manufacturer_1, manuf_sales, market_sales, shares)
-head(shares)
+For this project, I will require the use of **expanding window**.
 
-# subset to firms with 10% market share, get list of names
-top_firm_data = shares |> filter(shares >= 0.10, year >= 2010) |> 
-  group_by(year) |> mutate(top_firm_share = sum(shares)) |> ungroup()
-top_firms = top_firm_data |> select(module_manufacturer_1) |> distinct()
-flist = as.list(top_firms$module_manufacturer_1)
-print(flist)
-```
 
-CSI made our cut, but Sanyo didn't! Good thing we didn't trust the Panasonic name - they must not be a big player in the US.
+**Missing data**: There are different ways to address missing data. You can use historical mean, the previously observed value, or some other advanced techniques to do it. You can use previously observed value for simplicity.
 
-Okay. Next: subset to firms only in the top firm list and find their top efficiency module per year:
-```{r}
-# subset tts_sub to firm list, find top efficiency module per year
-module_efficiency = tts_sub |> filter(module_manufacturer_1 %in% flist) |>
-  group_by(module_manufacturer_1, technology_module_1, year) |>
-  mutate(manuf_max_eff = max(efficiency_module_1)) |> 
-  group_by(year, module_manufacturer_1, module_model_1, 
-           manuf_max_eff, technology_module_1) |>
-  summarize(price = mean(total_installed_price), 
-            efficiency = mean(efficiency_module_1), 
-            .groups = "drop")
-# generate year-manufacturer-technology-max efficiency df
-manuf_tech_eff = module_efficiency |> 
-  select(year, module_manufacturer_1, technology_module_1, manuf_max_eff) |>
-  distinct() |>
-  filter(year >= 2010, str_detect(technology_module_1,regex("Monocrystalline|Polycrystalline")))
-head(manuf_tech_eff)
-```
+**Mixed frequency**: We are trying to predict monthly returns, but variables like GDP growth rate is a quarterly data. There are different ways to deal with mixed frequency too. You can use previously observed value for simplicity.
 
-We're almost there. Now we know the max panel efficiency for each manufacturer-year-technology group in our data. All that's left is to plot that data!
+That means, if we see 1.2% GDP growth rate for March (Q1) and 1.5% GDP growth rate for June (Q2), we can fill in 1.2% for April and May.
+
+[^11]: Different projects will have different cleaning requirements. Please have the proper amount of cleaning totally depends on your data. Almost all datasets require *some* cleaning though.
+
+
+# Base model
+
+Here, I will use a linear regression model to illustrate this. I will only have *GDP growth rate* and *current monthly SP500 return* as predictors for *next month SP500 return*. You are required to have at least 10 variables for prediction and use more advanced model than linear regression.
+
+This base model will also be the model you should beat with more variables and more sophisticated models. Make sure you compare the prediction accuracy between your model and the base model!
+
+## Variable Reasoning
+
+If the economy is in good shape, it would provide more business opportunities. People would be willing to invest in stocks and the stock price would be higher, achieving higher returns. Therefore, *GDP growth rate* might be a useful predictor for stock returns.
+
+There are some momentum reasoning for using past return to predict future return. If the stock market is performing well, more people would buy it and price is pushed higher, achieving higher returns.Therefore, *lagged monthly SP500 return* might be a useful predictor for stock returns.
+
+Note that returns is a rate, we need to use rate to predict it. Instead of GDP level, I would use *GDP growth rate* here. ***It is generally a bad idea to use level to predict rate!***
+
+## Data Extraction, Cleaning and Combining
+
+Now, we need to work with data cleaning. We need to fill in in-between-quarter months values and we need to deal with look-ahead of bias for GDP growth rate. For simplicity, so we will fill in the previously observed value for in-between-quarter months and lag observations by 4 months for prediction.
+
+The model would not start on January 1985. But to predict the return on January 1985, we will need the GDP growth rate from 1984. This means that you need to extract prediction variables starting probably 1984, or even earlier!
 
 ```{r}
-# create ladder plot for 2010
-years = 2010:2022
-manuf_tech_eff$technology_module_1 = as.factor(manuf_tech_eff$technology_module_1)
+# Data for prices, I would like to extract slightly before 1985
+library(tidyquant)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
 
-plot_maxes <- function(z) ggplot(manuf_tech_eff[manuf_tech_eff$module_manufacturer_1 == z,],
-                                 aes(x=year,y=manuf_max_eff, col=technology_module_1, 
-                                     shape=technology_module_1)) +
-                              labs(title=paste("Yearly Max Model Efficiencies for ",z),
-                                   x="Year",y="Module Efficiency", shape="Technology",
-                                   col="Technology") + 
-                              geom_point() + 
-                              theme_minimal()
-p <- lapply(flist,plot_maxes)
-p[[1]]
+# Get S&P500 daily data
+SP500_simple_returns = tq_get("^GSPC",
+                               from = "1984-01-01",
+                               to   = "2024-12-31",
+                               get  = "stock.prices") |>
+  tq_transmute(
+    select     = adjusted,       # adjusted price for accuracy
+    mutate_fun = periodReturn,   # calculate period returns
+    period     = "monthly",      # monthly returns
+    type       = "arithmetic",   # simple return (percentage change)
+    col_rename = "monthly_return"
+  ) |>
+  mutate(monthly_return = monthly_return*100) # Convert to percentage
+
+head(SP500_simple_returns)
+
+# We can use tq_get to get FRED data as well!
+# Download real GDP data from FRED
+# You can go to FRED to find what the symbol is for GDP growth rate
+gdp_data = tq_get("A191RL1Q225SBEA",
+                   get  = "economic.data",
+                   from = "1984-01-01") # start date
+
+head(gdp_data)
 ```
 
-[^11]: For a lot of potential projects, this could include stuff like demographic information from the American Community Survey, price indices from the BLS, or macro-economic variables from FRED. 
-[^12]: Different projects will have different cleaning requirements. A paper I'm writing using the DB1B airline data has about ~3,000 lines of (admittedly inefficient) cleaning code in Stata; for the descriptive airline paper I'm writing, cleaning another data source (scraped information from Google Flights) only required ~100 lines of cleaning code. Note: I am ***not*** suggesting you should write 3,000 or even 100 lines of cleaning code! Just that the proper amount of cleaning totally depends on your application. Almost all datasets require *some* cleaning though.
+**Be careful** about the GDP growth rate! The variable name is `price` somehow, so we need to correct it. It is labeled 1984-01-01 for Q1 of 1984. However, we should put it at the quarter end, which should be labeled at the end of March! We need to move the dates 2 month forward.
+
+```{r}
+# Correct GDP growth rate name and date to quarter end
+gdp_data = gdp_data |>
+  rename(GDP_g = price) |>
+  mutate(date = date %m+% months(2))
+```
+
+You can see that SP500_simple_returns has the date to be month end, but gdp_data has the date to be month begin. There are several ways to deal with this. One way is to use `floor_date(d, unit = "month")` from `lubridate` to make the date to be month begin.
+
+```{r}
+# Use left join to join gdp data to SP500 returns
+Total_data = SP500_simple_returns |>
+  mutate(date = floor_date(date, unit = "month")) |>
+  left_join(gdp_data)
+  
+head(Total_data)
+```
+
+
+I will use a simple approach to make the quarterly data monthly, that is use the early values fill the in-between months. We can achieve this by using `fill` from `tidyr`.
+
+```{r}
+# Fill the GDP_g downward
+Total_data = Total_data |>
+  tidyr::fill(GDP_g, .direction = "down") |>
+  # We do not need the symbol
+  select(-symbol)
+
+head(Total_data)
+```
+
+Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the `GDP_g` by 4 additional months. (This is why we need to extract ealier data.)
+
+```{r}
+# Lag GDP_g further by 4 months
+Total_data = Total_data |>
+  mutate(GDP_g = lag(GDP_g, 4))
+
+head(Total_data)
+```
+
+
+Now, it is time to establish the variable to predict and corresponding predicting months. At 1984-01-01, we would try to predict returns on 1984-02-01, which means we need to create a column of predicting values using `lead`.
+
+```{r}
+# Creating predicting_date and predicting_return using lead
+Total_data = Total_data |>
+  mutate(predicting_date = lead(date),
+         predicting_return = lead(monthly_return))
+
+head(Total_data)
+```
+
+Now, you can see everything is lined up! We are using information available on 1984-01-01 (which is actually the end of January 1984) to predict return on 1984-02-01 (which is the February 1984 monthly returns). We will establish predictive model from 1985 to 2024, so we will only need the data with predicting date from 1985-01-01 to 2024-12-01. Let's subset that:
+
+```{r}
+# Subset predicting date from 1985-01-01 to 2024-12-01
+# MAKE SURE IT IS predicting_date!
+Total_data = Total_data |>
+  filter(predicting_date >= "1985-01-01",
+         predicting_date <= "2024-12-01")
+
+# see the first and last 3 observations
+head(Total_data, n = 3)
+tail(Total_data, n = 3)
+```
+
+
+Based on the first and last three observations, we can confirm that we are prediciting returns from 1985-01-01 to 2024-12-01.
+
+Now, it is a good time to check whether we have any missing data by `is.na`:
+
+```{r}
+# Check if there is any NA in the data
+any(is.na(Total_data))
+```
+
+Great! No missingness! If there is, you can use `tidyr::fill` again to fill it up.
+
+# Exploration of raw data
+
+Here are just some exploration about the relationship each of our predictors and the predicting_return. I will demonstrate two things:
+
+1. Does the variable I choose have a relationship with the predicting_return?
+
+2. Is this relationship changing over time?
+
+For both, I will use `cor` to calculate the pairwise correlation between variables. To examing whether the relationship is changing, I will use a rolling correlation and plot how the relationship evolute overtime.
+
+**Correlation**
+
+```{r}
+# Correlation works between vectors. We can do vectorization with matrix here.
+cor(Total_data$predicting_return, Total_data[, c("monthly_return", "GDP_g")])
+```
+
+Both previous month return and GDP growth rate are all positively correlated with return. The correlation is low, but don't worry too much as long as it is not too close to 0. Stock returns usually has a low correlation with other variables.
+
+**Rolling Correlation**
+
+I will conduct 5-year rolling window correlations between predicting_return and other variables. I will use the predicting_date of the end of 5-year window as the date for correlation. We can use `for` loop to do the calculation.
+
+```{r}
+# Preallocate the result, same shape as Total_data, no predicting_return and no date
+Rolling_corr = Total_data |>
+  select(-c("predicting_return", "date"))
+
+# Variable_names (all names except "predicting_date", use logical indexing)
+Variable_names = names(Rolling_corr)[names(Rolling_corr) != "predicting_date"]
+
+# Make all the variables to NA as part of preallocate
+Rolling_corr[,Variable_names] = NA
+
+# A for loop to calculate the rolling correlations, vectorize inside loop
+# 5-year correlation or 60 months
+# The first window would be 1st to 60th (1+59) row, and last would be (nrow(Rolling_corr)-59)-th to nrow(Rolling_corr)-th row
+for (i in 1:(nrow(Rolling_corr)-59)) {
+  Rolling_corr[i+59, Variable_names] = cor(Total_data[i:(i+59), "predicting_return"], Total_data[i:(i+59), Variable_names])
+}
+
+# Note there are 59 rows of NA's due to the rolling window
+
+# We need to make the table to a long table and then use ggplot to plot the rolling correlation
+Rolling_corr |>
+  # Remove the missing rows
+  na.omit() |>
+  # Except predicting_date, make this a long table, 
+  pivot_longer(-predicting_date,
+               names_to = "Variable",
+               values_to = "rolling_corr") |>
+  ggplot(aes(x = predicting_date, y = rolling_corr, color = Variable)) +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  labs(
+    title = "Rolling Correlation with predicting return (5-year Window)",
+    x = "Date",
+    y = "Rolling Correlation",
+    color = "Variable"
+  ) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(hjust = 0.5)  # <-- Center the title
+  )
+
+```
+
+It seems that the relationship is changing over time. It is better to have a rolling window/expanding window to do the prediction. I will choose an expanding window and require you to use an expanding window. This is just make it easier to compare everyone's result.
+
+I just did correlation, you can explore more aspects if you would like.
+
+
+## Linear Model Estimation
+
+This section, we will finally estimate the linear model. Remember that we should have an expanding window, split the dataset into training, validation and testing. However, since linear model does not have tuning parameters, we would just put the validation set into training set:
+  - 1985-2008 as training, and 2009 to evaluate the model
+  - 1985-2009 as training, and 2010 to evaluate the model
+  ...
+  - 1985-2023 as training, and 2024 to evaluate the model
+
+```{r}
+# Preallocate the fitted data from 2009 to 2024
+Testing_result = Total_data |>
+  filter(predicting_date >= "2009-01-01") |>
+  # Only keep the predicting_date, predicting_return, and create fitted_return
+  select(predicting_date, predicting_return) |>
+  rename(actual_return= predicting_return) |>
+  mutate(fitted_return = NA)
+
+
+# Use a for loop to estimate each model and lm for linear regression
+# Start from the end year 2008 to 2023 which are the end of training periods
+for (i in 2008:2023) {
+  # Extract the Training data
+  Training_data = Total_data |>
+    # before i+1 year
+    filter(year(predicting_date) < i+1) |>
+    # Only keep the predictors and the predicting_return
+    select(c(predicting_return, all_of(Variable_names)))
+  
+  # Estimate the model
+  Model = lm(predicting_return ~ ., data = Training_data)
+  
+  # New data to predict
+  Testing_data = Total_data |>
+    # at i+1 year
+    filter(year(predicting_date) == i+1) |>
+    # Only keep the predictors
+    select(all_of(Variable_names))
+
+  # Make predictions and save to year i+1 using logical indexing
+  # Use predict to estimate the fitted data based on model and test data
+  Testing_result[year(Testing_result$predicting_date) == i+1, "fitted_return"] = predict(Model, newdata = Testing_data)
+}
+```
+
+
+## Analyze the Result
+
+Now, let's look at how the predicted return and actual return are related.
+
+```{r}
+Testing_result |>
+  ggplot(aes(actual_return, fitted_return)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = TRUE, color = "red")  # Fitted regression line
+```
+
+If the fitting is good, we should have fitted_return to be roughly equal to actual_return. The line should be around slope 1.
+
+The linear model performs extremely poorly here!
+
+Estimate the out of sample $R^2$ ($R^2_{OOS}$, based on the testing period). Usually, we assume the return to be 0 average. The R squared for return is defined as:
+
+$$R^2_{OOS} = 1-\frac{\sum(y_{actual} - y_{predict})^2}{\sum y_{actual}^2}$$
+
+The closer it is to 1, the better the prediction accuracy.
+
+```{r}
+# calculate OOS r squared based on the formula
+R_sq_oos = 1 - sum((Testing_result$actual_return - Testing_result$fitted_return)^2)/sum((Testing_result$actual_return)^2)
+R_sq_oos
+```
+
+We get negative out of sample $R^2$! If we predict 0, we would get $R^2_{OOS} = 0$, so the linear model is doing a worse job than just simply guessing 0 return!
+
+We can further explore which years are doing the worst and which years the model is fine. Let's calculate the $R^2_{OOS}$ based on every 4 years. (Use 4 years is to have sufficient amount of data to estimate the $R^2_{OOS}$, while having several periods for comparison.)
+
+```{r}
+# Create a function to estimate R_Sq_oos
+R_Sq_oos_func = function(actual_return, fitted_return) {
+  return(1 - sum((actual_return - fitted_return)^2)/sum((actual_return)^2))
+}
+
+# Estimate every 4-year R_sq_oos
+R_sq_oos_table = Testing_result |>
+  # first break the dates into 4 year periods
+  mutate(
+    year = year(predicting_date),
+    period_4yr = cut(year, breaks = seq(min(year), max(year) + 3, by = 4), right = FALSE)
+  ) |>
+  group_by(period_4yr) |>
+  summarise(R_Sq_oos = R_Sq_oos_func(actual_return, fitted_return))
+
+R_sq_oos_table
+```
+
+The goodness of fit is good during 2013-2016. It is not good right after crashes (2008 and 2020). Period 2017-2020 contains crash during Covid (year 2020) and that might be the cause of low predictability.
+
+To verify that, let's calculate $R^2_{OOS}$ for 2017-2019, before the covid crash:
+
+```{r}
+# Get the logical index for 2017 to 2019
+Ind_17_19 = year(Testing_result$predicting_date)<=2019 & year(Testing_result$predicting_date)>=2017
+# We can just apply R_Sq_oos_func function
+R_Sq_oos_func(Testing_result$actual_return[Ind_17_19], Testing_result$fitted_return[Ind_17_19])
+```
+
+Here, we verified our conjecture that the linear model is actually doing okay during normal times. This number is close to the 2013-2016 period.
+
+
+
+**Now, it is your turn to use some awesome data and better methods to predict better!**
+
+**Note that different model might perform differently during different times.**
+
 
 # Presentations
 
-Your final project will consist of the code you wrote and two presentations you created. The first presentation will be a 5-slide, 5-minute presentation you deliver during our scheduled exam time. The second presentation will be a final work product. While you'll never present it per se, the grader and I will use it to assess your final project. 
+Your final project will consist of the code and analysis in Rmd, corresponding knitted html file, and a short presentation created by another Rmd. The presentation will be a 7-slide, 7-minute presentation you deliver during our scheduled exam time. The project report will be a final work product.
 
-I'm going to be fairly prescriptive about what's in the in-class presentation. I expect 5 slides in total: an introduction slide, which contains your research question and a brief motivation as to why we should care about your question; a data slide, which describes the datasets you're using; 2 slides for findings - your discretion as to what's included here, but this would be a nice place to show a graph and/or a regression table; and one slide to wrap up. Think about this as being similar to a presentation you'd give in a workplace. Remember not to use too many words on your slides!
+I'm going to be fairly prescriptive about what's in the in-class presentation. I expect 7 slides in total: 
 
-The 20-slide presentation, your final work product, can be more involved. In it, I'd like you to be more explicit about your project: show us what the data looks like, what kind of cleaning you did, what the assumptions and drawbacks are to your regression, and so on. Think of it as an essay in slide deck format. 
+- an introduction slide, which briefly talks about the type of predictors (such as 3 finance predictors, 2 macro predictors, etc.), what complex model you are using, and do you have an improvement relative to the base model;
+- a data slide, contains your predictors why we should believe they have predicting power;
+- a model slide, explaining what model you have been using and why do you think this model can predict better;
+- one slides about the out of sample $R^2$ and the actual vs. fitted returns plot (also comparing with the base model)
+- 3 slides for other findings - your discretion as to what's included here, but this would be a nice place to show a graph and/or a result table discussing how the model and data of your choice predict better; and one slide to wrap up. Think about this as being similar to a presentation you'd give in a workplace. Remember not to use too many words on your slides!
 
-I'd like both presentations to be done in RMarkdown. You can use my slides from this semester as a template. 
+The Rmd file, your final work product, needs to be more involved. In it, I'd like you to be more explicit about your project: show us what the data looks like (summary statistics etc.), what kind of cleaning you did, what is the model you use and the result, and so on. 
 
+I'd like the presentations to be knitted by RMarkdown. I will provide you with the template during lec6.
 
 
