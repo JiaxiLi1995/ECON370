@@ -20,7 +20,7 @@ The final project aims to apply everything we learn about coding, data wrangling
 
 You will work progressively throughout the semester, applying key concepts learned in class.  
 
-A **base model** is provided below, but you are expected to enhance it with additional variables (You are required to have **at least 10 variables** for prediction), advanced modeling techniques, and insightful analysis.
+A **base model** is provided below, but you are expected to enhance it with additional variables (You are required to have **at least 10 variables** from **at least 4 different sources** for prediction), advanced modeling techniques, and insightful analysis.
 
 The final deliverable includes:
 - One Rmd file and corresponding knitted html file using this template
@@ -32,7 +32,7 @@ I describe each component in detail below. As a general rule: if you have questi
 Note: LLMs are ***allowed*** on your final project. Please include information (an extra slide in your presentation at the end) about what you used the LLM to do! 
 
 [^1]: No group work! You can knit a html file using this template as final project report.
-[^2]: Presentations should be written using RMarkdown.
+[^2]: Presentations should be written using RMarkdown. Scheduled final exam period: 8:00AM - 11:00AM, Thursday, December 11, 2025.
 
 
 ## Project Requirements
