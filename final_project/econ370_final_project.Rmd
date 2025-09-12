@@ -18,21 +18,24 @@ library(tufte)
 
 The final project aims to apply everything we learn about coding, data wrangling and data analysis. You will estimate and evaluate the **prediction model** using **monthly S&P 500 index returns** from **1985** to **2024** (40 years). The final report would be done using this Rmd template and knitted into html.
 
-You will work progressively throughout the semester, applying key concepts learned in class.  
+You will work progressively throughout the semester, applying key concepts learned in class.
 
 A **base model** is provided below, but you are expected to enhance it with additional variables (You are required to have **at least 10 variables** from **at least 4 different sources** for prediction), advanced modeling techniques, and insightful analysis.
 
+The **raw data**, before any cleaning, must be reproducible directly using your R code with **standard R functions**, **without requiring an API** (for example, `tidyquant` package). If you obtain data through an API or another external method, please **upload the raw data as a CSV file to GitHub** and have your R code **load the raw data from there**. You must include all your data cleaning code and procedures in the final report.[^1]
+
 The final deliverable includes:
 - One Rmd file and corresponding knitted html file using this template
-- The files need to provide the **full** workflow/code needed to replicate your results and your analysis step by step. [^1]
-- A short (~7 slide) **in-person presentation** during the scheduled final exam period.[^2]
+- The files need to provide the **full** workflow/code needed to replicate your results and your analysis step by step. [^2]
+- A short (~7 slide) **in-person presentation** during the scheduled final exam period.[^3]
 
 I describe each component in detail below. As a general rule: if you have questions, please ask them. If you feel lost, ***please come to my office hours***. I am more than happy to be a resource for you and help you through problems as they arise. 
 
 Note: LLMs are ***allowed*** on your final project. Please include information (an extra slide in your presentation at the end) about what you used the LLM to do! 
 
-[^1]: No group work! You need to write your project details in this Rmd template and knit it into html as final project report. To ensure smooth grading, the final project Rmd and corresponding html are due 11:59PM December 9th, 2025.
-[^2]: Presentations should be written using RMarkdown but you are not required to turn it in. Scheduled final exam period: 8:00AM - 11:00AM, Thursday, December 11, 2025.
+[^1]: We will talk about how to work with GitHub data in lecture 6.
+[^2]: No group work! You need to write your project details in this Rmd template and knit it into html as final project report. To ensure smooth grading, the final project Rmd and corresponding html are due 11:59PM December 9th, 2025.
+[^3]: Presentations should be written using RMarkdown but you are not required to turn it in. Scheduled final exam period: 8:00AM - 11:00AM, Thursday, December 11, 2025.
 
 
 ## Project Requirements
