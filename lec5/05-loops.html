@@ -3,7 +3,7 @@
   <head>
     <title>Data Science for Economists</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Drew Van Kuiken" />
+    <meta name="author" content="Jiaxi Li" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
@@ -20,10 +20,10 @@ class: center, middle, inverse, title-slide
 ## Lecture 5: Loops in R
 ]
 .author[
-### Drew Van Kuiken
+### Jiaxi Li
 ]
 .date[
-### University of North Carolina | <a href="https://github.com/drewvankuiken/ECON370">ECON 370</a>
+### University of North Carolina | <a href="https://github.com/JiaxiLi1995/ECON370">ECON 370</a>
 ]
 
 ---
@@ -38,9 +38,15 @@ name: toc
 
 2. [Loops](#loops)
 
-3. [The Apply Family](#control)
+3. [The Apply Family](#apply)
 
 4. [Vectorization](#vector)
+
+5. [Parallelization with `future.apply`](#parallelization)
+
+6. [Dynamic Tasks](#dynamic)
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M208 32c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V172.9l122-70.4c15.3-8.8 34.9-3.6 43.7 11.7l16 27.7c8.8 15.3 3.6 34.9-11.7 43.7L352 256l122 70.4c15.3 8.8 20.5 28.4 11.7 43.7l-16 27.7c-8.8 15.3-28.4 20.6-43.7 11.7L304 339.1V480c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V339.1L86 409.6c-15.3 8.8-34.9 3.6-43.7-11.7l-16-27.7c-8.8-15.3-3.6-34.9 11.7-43.7L160 256 38 185.6c-15.3-8.8-20.5-28.4-11.7-43.7l16-27.7C51.1 98.8 70.7 93.6 86 102.4l122 70.4V32z"/></svg> Slides adapted from Drew Van Kuiken and Alex Marsh's ECON 370 and originally based on materials by Grant McDermott's EC 607 at University of Oregon.
 
 ---
 class: inverse, center, middle
@@ -56,25 +62,28 @@ name: intro
 
 This class will cover loops in R and their quirks
 
-While loops are fundamental to programming, they are slow in R and should be avoided when possible.
+**Historically:**
 
-There is a nice family of functions called the apply family that can condense loops into better looking code.
- - However, they are still ultimately loops and are just as slow as standard loops.
- 
-When in doubt, make sure your code is vectorized when possible!
+- Loops in R were traditionally considered **slow**.
+- The **`apply` family** of functions provided cleaner code and was often recommended over explicit loops.
+- However, the `apply` functions are still **loops under the hood**, and not fundamentally faster.
+- Best practice was to **vectorize operations** whenever possible for efficiency.
+
 --
 
 &lt;/br&gt;
 
-**Drew's thoughts:** iiiiiiiii don't know? Loops are not necessarily slow. They can be. 
+**Today:**
 
-They're also easier than putting stuff in a matrix and less error prone.
-
-Overall: develop your own intuitions about when to vectorize vs when to loop. But err towards vectorization, especially when you're learning.
+- **Modern R loops are not inherently slow**:
+  - Performance is comparable to other languages when written efficiently.
+  - Key improvements come from **proper structure** and **pre-allocation**.
+- For **computationally heavy tasks**, **parallelization** can drastically reduce runtime.
+- We will focus on **`future.apply`**, which simplifies parallelization.
 
 ---
 class: inverse, center, middle
-name: logic
+name: loops
 
 # Loops
 
@@ -82,22 +91,51 @@ name: logic
 
 ---
 
-# Motivation: For loop
+# Motivation: Parallel and Dynamic Tasks
 
-At times we would look to do the same task multiple times that only changes slightly each iteration.
+***Parallel tasks***: Each task is independent and similar in nature.
 
-This can be done with a for loop. 
+Example1.1: Calculate the mean for 10 random numbers **100 times**.
 
-With for loops, you need something to "loop over" and an index that indicates which iteration you're on.
+Example1.2: Calculate the mean for 10 random numbers **until find one mean is above 1**.
+
+&lt;/br&gt;
+
+***Dynamic Tasks***: Later task depends on the result of previous task but use similar principle.
+
+Example2.1: Generate the **first 20** Fibonacci sequence, starting from `\(X_1 = 0\)` and `\(X_2 = 1\)`: `\(X_{n+2} = X_{n+1} + X_{n}\)` for `\(n \geq 1\)`.
+
+Example2.2: Generate Fibonacci sequence **less than 100**, starting from `\(X_1 = 0\)` and `\(X_2 = 1\)`: `\(X_{n+2} = X_{n+1} + X_{n}\)` for `\(n \geq 1\)`.
+
+--
+
+All these tasks can be done with loops!
+
+1.1 and 2.1 stops with a pre-specified number of times. -- use `for` loop.
+
+1.2 and 2.2 stops with some logical criteria. -- use `while` loop.
+
+---
+# For Loop (Looping Over Index)
+
+At times we would look to do the same task for a fixed number of times that only changes slightly each iteration.
+
+This can be done with a `for` loop.
+
+We can loop over indexes for that vector, list, data.frame, etc.
 
 &lt;img src="pics/for_loop.png" width="25%" style="display: block; margin: auto;" /&gt;
 
 ---
 # Our First Loop
 
+Adding numbers from 1 to 10.
+
 
 ``` r
+# Preset the variable
 sum_val = 0
+# Use for loop to add one number at a time
 for(i in 1:10){
   sum_val = sum_val + i
 }
@@ -109,52 +147,63 @@ sum_val
 ```
 
 ``` r
-sum(1:10)
+# Compare with built in R function sum
+sum_val == sum(1:10)
 ```
 
 ```
-## [1] 55
+## [1] TRUE
 ```
+
+
+---
+# For Loop (Looping Over Objects)
+
+We can also loop over objects in a vector, list, data.frame, etc. It works when you just have a list to go over.
+
+For example, with a list of names, I want to add "UNC-" in front of every name.
+
 
 ``` r
-11*10/2
+# Here is the vector name list
+Names_vec = c("James", "Julia", "John", "Jasmine", "Jack")
+
+for (Name in Names_vec) {
+  # Use cat to combine and print
+  cat("UNC-", Name, "\n", sep = "")
+}
 ```
 
 ```
-## [1] 55
+## UNC-James
+## UNC-Julia
+## UNC-John
+## UNC-Jasmine
+## UNC-Jack
 ```
-Note: for sequence of integers, Sum = n(a+l)/2 = 10*(1+10)/2
----
-# Two Approaches to Loops
 
-There are two approaches to loops, and more specifically, what to loop over.
-1. Loop over objects in a vector, list, data.frame, etc.
-2. Loop over indexes for that vector, list, data.frame, etc.
 
-For ease of understanding *what* is being looped over, 1. is usually best.
- - However, it requires keeping track of indexes in another variable.
- 
-For ease of storing variables, 2. is usually easier.
- - However, what exactly is being looped over can be obscured.
- 
-Neither is always better than another and at some point comes down to personal preference.
+I personally prefer looping over index since we can keep better track of the progress or save your result!
+
+Here, we might not need a loop. (`cat` can apply to vectors, so...)
+
 ---
 # Two Approaches: An Example
 
 
 ``` r
-Nsim       = 100         #set number of simulations/draws
-norm_draws = rnorm(Nsim) #draw N(0,1) random variables
-out1       = rep(0,Nsim) #initialize output 1: MORE ON THIS LATER
-out2       = rep(0,Nsim) #initialize output 2: MORE ON THIS LATER
-n          = 1           #initialize counter
+N          = 100         #set number of draws
+norm_draws = rnorm(N)    #draw N(0,1) random variables
+out1       = rep(NA,N)   #preallocate output 1: MORE ON THIS LATER
+out2       = rep(NA,N)   #preallocate output 2: MORE ON THIS LATER
+i          = 1           #initialize counter
 
 for(draw in norm_draws){
-  out1[n] = draw^2       #square the draw and store it
-  n       = n + 1        #advance the counter
+  out1[i] = draw^2       #square the draw and store it
+  i       = i + 1        #advance the counter
 } #NOTE THAT A COUNTER IS NEEDED
 
-for(i in 1:Nsim){
+for(i in 1:N){
   out2[i] = norm_draws[i]^2 #square the ith draw and store it
 } #notice no counter needed
 
@@ -172,10 +221,13 @@ Suppose we wanted to calculate `$$\sum_{a=1}^{20}\sum_{b=1}^{15} \frac{e^{\sqrt{
 
 
 ``` r
+# Preset the variable
 val = 0
-for(a in 1:20){
-  for(b in 1:15){
-    val = val + (exp(sqrt(a))*log(a^5))/(5+cos(a)*sin(b))
+# Loop over a
+for(A in 1:20){
+  # Loop over b
+  for(B in 1:15){
+    val = val + (exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B))
   }
 }
 val
@@ -185,35 +237,54 @@ val
 ## [1] 25922.81
 ```
 
-The loop works, but it is not needed in R!
+The loop works, but we can do better here!
  - Will return to this at the end of the lecture.
 
 ---
 # Preallocation
 
-Many times you'll want to use a loop to "fill up" a matrix or vector. 
+Many times you'll want to use a loop to "fill up" a matrix or vector. Or you want to keep a complete copy of the results for each iteration.
 
 It is best practice to "preallocate" this object to the correct size before filling it up.
 
 There are a few reasons for this, but it ultimately comes down to speed:
- - Changing the size of the object inside the loop each iteration makes loops even slower than they already are in R!
+ - Changing the size of the object inside the loop each iteration makes loops much slower!
+ 
+--
+
+&lt;/br&gt;
+
+**I would recommend you to preallocate with `NA`.**
+
+Some people preallocate with 0. However, when 0 is in the final result, we do not know whether it is from preallocation or computation.
+
+'NA' is flexible with different data types. And with `NA`, it is easy to track down problems with computation.
  
 ---
 # Preallocation: Example
 
 
 ``` r
-N          = 100000
-my_vec     = c(0)
-my_vec_pre = rep(0,N)
+N          = 10000 # number of iterations
+my_vec     = c(NA) # No Preallocation
+my_vec_pre = rep(NA,N) # Preallocation
 
+# Use for loop to assign new values to my_vec without preallocation
+# Each iteration increases the size of my_vec.
 for(i in 1:N){
   my_vec[i] = i^2
 }
 
+# We can also use 1:N here, but length() is more flexible in some situations
 for(i in 1:length(my_vec_pre)){
   my_vec_pre[i] = i^2
 }
+
+all.equal(my_vec, my_vec_pre) # compare results
+```
+
+```
+## [1] TRUE
 ```
 
 --
@@ -225,14 +296,15 @@ Both run! But let's look at the speed.
 
 
 ``` r
+# Use microbenchmark to test the speed of no preallocation vs. preallocation
 mbm = microbenchmark(
   "no_preal"={
-    my_vec     = c(0)
+    my_vec     = c(NA)
     for(i in 1:N){
       my_vec[i] = i^2
       }},
   "preal"={
-    my_vec_pre = rep(0,N)
+    my_vec_pre = rep(NA,N)
     for(i in 1:length(my_vec_pre)){
       my_vec_pre[i] = i^2
       }},times=1000)
@@ -241,21 +313,21 @@ mbm
 
 ```
 ## Unit: milliseconds
-##      expr       min        lq      mean    median        uq       max neval
-##  no_preal 29.230398 33.371610 37.326908 36.693882 39.136462 253.64305  1000
-##     preal  7.515862  8.042438  8.973442  8.390997  9.075575  72.41635  1000
+##      expr    min      lq     mean  median      uq     max neval
+##  no_preal 2.7248 2.82270 3.167060 2.88030 2.99895 66.4240  1000
+##     preal 1.8740 1.94115 2.095453 1.98255 2.05235  8.2964  1000
 ```
 
 --
 
-Bottom line: Preallocate objects whenever possible!
+Bottom line: **Always preallocate** if you are saving the result of each iteration.
 
 ---
 # While loops
 
 - For loops are not the only types of loops in R!
 - Another type is while loops.
-- Instead of looping through objects or indexes, we continue to do something *until* a condition is no longer met.
+- Instead of looping through objects or indexes, we continue to do something ***until* a condition is no longer met**.
 - This can be really useful for some of the things we will use later on.
 - Can be dangerous though: infinite loop!
  - Not so much in RStudio, though.
@@ -265,59 +337,36 @@ Bottom line: Preallocate objects whenever possible!
 ---
 # Our First While Loop
 
+Again, we try to add the number from 1 to 10
+
 
 ``` r
-val = 0
-n   = 1
-while(n &lt; 31){
-  val = val + n
-  n   = n + 1
+# Preset the variable
+sum_val = 0
+# Set a counter
+i = 1
+
+# Use while loop, keep adding while n is less or equals 10
+while(i &lt;= 10){
+  sum_val = sum_val + i
+  i   = i + 1 #update the counter
 }
-val
+
+# Compare with built in R function sum
+sum_val == sum(1:10)
 ```
 
 ```
-## [1] 465
+## [1] TRUE
 ```
 
-``` r
-30*31/2
-```
+The `while` loop continues to increase `\(n\)` by one and add it to `val` until `\(n &gt; 10\)`.
 
-```
-## [1] 465
-```
-
-The while loop continues to increase `\(n\)` by one and add it to `val` until `\(n \geq 31\)`.
-
----
-# Econ Application: English Auctions
-
-Art and other valuable objects are often sold in an ascending auction where the price starts low and bidders continue to increase the price until only one bidder remains.
-
-We can "simulate" these auctions using while loops.
-
---
-
-Suppose there are `\(N\)` bidders and each bidder `\(i\)` has a "valuation" `\(v_i\)` that summarizes how much she values the object. 
-
-As well, suppose there is some fixed amount `\(\Delta\)` that bidders must increase the price by each round (no more and no less) and bidders continue to alternate until only one bidder remains. Also suppose that the initial price `\(p_0 = \Delta\)`.
-
---
-
-So each round `\(t\)`, if a bidder is willing to bid, the price increases to `\(p_t = p_{t-1} + \Delta\)`.
-
---
-
-Bidder `\(i\)` is willing to bid if `\(v_i \geq p_t\)` or `\(v_i \geq p_{t-1}+\Delta\)`.
-
---
-
-Let's go to R.
+This is really a `for` loop!
 
 
 ---
-# Another Application: An Easy Fixed Point
+# Application: An Easy Fixed Point
 
 In math, a fixed point, `\(x^*\)`, of a function `\(f\)` is defined as a value where `\(f(x^*)=x^*\)`
  - So a fixed point is a point where when we apply the function to it, we get the original value back!
@@ -328,10 +377,9 @@ While loops can be used to calculate these when they exist.
 
 The idea is to keep applying the function over and over again until the values are "close enough"
 
-So `\(x_{n+1} = f(x_n)\)`. If `\(| x_{n+1} - x_n |\)` is "small," we stop. 
+So `\(x_{n+1} = f(x_n)\)`. If `\(| x_{n+1} - f(x_{n+1}) |\)` is "small," we stop. 
 
-If not, replace `\(x_n\)` with `\(x_{n+1}\)`, and continue.
- - So `\(x_{n+2} = f(x_{n+1})\)` and then compare `\(x_{n+2}\)` and `\(x_{n+1}\)`.
+If not, `\(x_{n+2} = f(x_{n+1})\)`, and compare `\(x_{n+2}\)` and `\(f(x_{n+2})\)`.
 
 --
 
@@ -348,13 +396,12 @@ However, we will only get to one of them no matter which starting values we star
 ``` r
 eps   = .Machine$double.eps #set tolerance 
 x_n   = 5000                #starting guess
-x_np1 = sqrt(x_n)           #apply function
 
-while(abs(x_n - x_np1) &gt; eps){
-  x_n   = x_np1     #update guess
-  x_np1 = sqrt(x_n) #apply function
+# Keep looping until x_n is sufficiently close to sqrt(x_n)
+while(abs(x_n - sqrt(x_n)) &gt; eps){
+  x_n = sqrt(x_n) #update guess
 }
-x_np1
+x_n
 ```
 
 ```
@@ -364,30 +411,167 @@ x_np1
 
 ``` r
 x_n   = 0.00001             #starting guess
-x_np1 = sqrt(x_n)           #apply function
 
-while(abs(x_n - x_np1) &gt; eps){
-  x_n   = x_np1     #update guess
-  x_np1 = sqrt(x_n) #apply function
+# Keep looping until x_n is sufficiently close to sqrt(x_n)
+while(abs(x_n - sqrt(x_n)) &gt; eps){
+  x_n = sqrt(x_n) #update guess
 }
-x_np1
+x_n
 ```
 
 ```
 ## [1] 1
 ```
+
+---
+# Finance Application: Stock Returns
+
+If you invest in stock market, you can generate `returns`, which is the amount extra money you make divided by your investment amount.
+
+For demonstration purpose, let's get SP500 index data (with symbol `^GSPC`) from Yahoo Finance. We can use `tidyquant` package to extract the data (`tidyquant` can be used to extract more than just Yahoo Finance data).
+
+Let's suppose that you can buy and sell the SP500 index at the adjusted closing price (you can look into the details of different variables and what is adjusted closing price if you are interested in finance).
+
+---
+# SP500 Monthly Price
+
+Let's extract the stock price since 12/29/2017:
+
+
+``` r
+library(tidyquant)
+
+# Get daily S&amp;P 500 data (or Global Standard &amp; Poor's Composite, symbol: ^GSPC)
+SP500_monthly = tq_get("^GSPC",
+                       from = "2017-12-29",
+                       to = "2025-08-29",
+                       get  = "stock.prices") |&gt;
+  # only keep the data at the end of each month
+  tq_transmute(select = adjusted,         # use adjusted closing price
+               mutate_fun = to.monthly,   # collapse to monthly
+               indexAt = "lastof",        # use last day of month for date
+               col_rename = "price") |&gt;   # create new name for the column
+  as.data.frame() # change to data frame since tq_get would produce a tibble
+
+head(SP500_monthly)
+```
+
+```
+##         date   price
+## 1 2017-12-31 2673.61
+## 2 2018-01-31 2823.81
+## 3 2018-02-28 2713.83
+## 4 2018-03-31 2640.87
+## 5 2018-04-30 2648.05
+## 6 2018-05-31 2705.27
+```
+
+
+---
+# Stock Returns
+
+The stock price is the price of one share. However, in reality, people rarely just hold one share. So it is more useful to look at the stock returns instead of stock prices:
+
+`$$r_{t+1} = \frac{P_{t+1} - P_{t}}{P_t} = \frac{P_{t+1}}{P_t} - 1$$`
+
+
+```
+##         date   price
+## 1 2017-12-31 2673.61
+## 2 2018-01-31 2823.81
+```
+
+If we buy one share of S&amp;P500 index at the end of December 2017 and sell it at the end of January 2018, how much do we make? What is the percentage of money increase (return)?
+
+--
+
+If instead, we buy two shares of S&amp;P500 index at the end of December 2017 and sell them at the end of January 2018, how much do we make? What is the percentage of money increase (return)?
+
+---
+# Calculate Monthly Returns in R
+
+Therefore, we can just use stock return to see how my money is growing, regardless of how much stock I buy. Let's try to calculate the monthly returns each month.
+
+--
+
+
+``` r
+# Preallocate as a new variable in data.frame, set value as NA
+# Try not to set value at 0 if 0 has meanings
+SP500_monthly$Return = NA
+
+# Use for loops from the second index to the last
+for (i in 2:nrow(SP500_monthly)) {
+  SP500_monthly$Return[i] = SP500_monthly$price[i]/SP500_monthly$price[i-1] - 1
+}
+
+head(SP500_monthly, n=3)
+```
+
+```
+##         date   price      Return
+## 1 2017-12-31 2673.61          NA
+## 2 2018-01-31 2823.81  0.05617870
+## 3 2018-02-28 2713.83 -0.03894737
+```
+
+--
+
+Why there is an `NA` at the beginning?
+
+What would happen if we preallocated using 0?
+
+---
+# Useful Functions and Controls in Loops
+
+Here’s a compact list of useful functions and controls often used in R loops:
+
+- `cat()` – Concatenates and prints text without extra formatting (no quotes, no line breaks unless added manually).
+- `message()` / `warning()` - Print message/warning. Can use `suppressMessages()`/`suppressWarnings()` to suppress them.
+- `stop()` – Immediately halts the loop (and the whole function/script) with an error.
+- `break` – Exits the loop early and skips all remaining iterations. (but still operate things after loop.)
+- `next` – Skips the current iteration and jumps to the next one.
+- `tryCatch()` – Lets the loop continue even if an error occurs in one iteration, useful for error handling.
+
+---
+# Keep track of the progress
+
+Sometimes, the number of total iteration is too large. We want to know how whether the computer freezes or it is still working in progress.
+
+We can simply use `cat` to paste and print the progress. You can use `message` or `warning` as well.
+
+
+``` r
+# Print the progress every 20th iteration
+for (i in 1:100) {
+  # Make the system stop for 0.05 second
+  Sys.sleep(0.05)
+  # Print the progress with cat (You can try print, but I prefer cat here)
+  # cat can combine and print the character, but without quotation mark and [1]
+  # "\n" means start a new line, you can try what happens without it
+  if (i %% 20 == 0) cat("Completed", i, "iterations out of 100\n")
+}
+```
+
+```
+## Completed 20 iterations out of 100
+## Completed 40 iterations out of 100
+## Completed 60 iterations out of 100
+## Completed 80 iterations out of 100
+## Completed 100 iterations out of 100
+```
+
+
+Note: Auto print does not work in loops!
+
 ---
 # Implementing Fail-Safes
 
-When writing while loops, it is often good practice to implement a fail-safe so that the while loop doesn't run for forever.
+When writing while loops, it is often good practice to implement a **fail-safe** so that the while loop doesn't run for forever.
 
 --
 
-This could be because the code isn't converging as quickly as we'd like or there's an error and the code will never converge because you wrote it wrong.
-
---
-
-I did not need one above because that question has really good convergence properties (and I trust my code <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>).
+This could be because the code isn't converging as quickly as we'd like or there's an error and the code will never converge because we wrote it wrong.
 
 --
 
@@ -399,47 +583,43 @@ Ideas?
 
 --
 
-We want it to stop when `\(|x_{n+1}-x_n|&lt;\varepsilon\)` **or** `\(n &gt; \bar{N}\)` where `\(\bar{N}\)` is some maximum number of iterations we set. 
+Besides `\(|x_n-f(x_n)|&lt;\varepsilon\)` in the while condition, we also want to stop when `\(n &gt; \bar{N}\)` where `\(\bar{N}\)` is some maximum number of iterations we set. 
 
-So what is the "while condition?" Hint: DeMorgan's Law!
 
 ---
 # Implementing a Fail-Safe
 
 
 ``` r
-x_n   = 50000               #starting guess
-x_np1 = sqrt(x_n)           #apply function
-n     = 1
-MaxIt = 100000
+x_n   = 50000  #starting guess
+i     = 1      #initialize counter
+MaxIt = 100000 # max iteration
 
-while(abs(x_n - x_np1) &gt; eps &amp; n &lt; MaxIt){
-  x_n   = x_np1     #update guess
-  x_np1 = sqrt(x_n) #apply function
-  n     = n + 1     #increase counter
-}
+while(abs(x_n - sqrt(x_n)) &gt; eps){
+  x_n = sqrt(x_n)   #update x_n
+  i     = i + 1     #increase counter
 
-#check to see why loop stopped
-if(abs(x_n - x_np1) &gt; eps){
-  stop("Did not find fixed point!")
-} else{
-  print(c(x_np1,n))
+  # Stop the code if it takes too many iterations
+  if(i &gt;= MaxIt) stop("Did not find fixed point!")
+  # Have a message if the loop stops due to condition met
+  if(abs(x_n - sqrt(x_n)) &lt;= eps) message(paste("The estimated fix point is approximately", x_n, "with", i, "iterations."))
 }
 ```
 
 ```
-## [1]  1 55
+## The estimated fix point is approximately 1 with 55 iterations.
 ```
+
 ---
 # Fail-Safes (Fixed Points)
 
 Fixed points don't always exist, and even when they do, we're not always guaranteed to find them via the iterative procedure I described.
 
-That's where these fail safes can come into play. 
+That's where these fail safes can come into play.
 
 --
 
-Consider the function `\(f(x)=2x\)`. `\(f\)` has a fixed point (and only one fixed point) at `\(x=0\)`; however, we are not guaranteed to ever find it via the iterative procedure.
+Consider the function `\(f(x)=2x\)`. `\(f\)` has a fixed point (and only one fixed point) at `\(x=0\)`; however, we are not guaranteed to ever find it via the iterative procedure above.
 
 Therefore, the fail safe needs to be triggered so our loop doesn't go on forever.
 
@@ -449,25 +629,90 @@ Therefore, the fail safe needs to be triggered so our loop doesn't go on forever
 
 ``` r
 x_n   = 0.0001 #starting guess
-x_np1 = 2*x_n  #apply function
-n     = 1      #initialize counter
+i     = 1      #initialize counter
 MaxIt = 1000   #fix max iterations
 
-while(abs(x_n - x_np1) &gt; eps &amp; n &lt; MaxIt){
-  x_n   = x_np1     #update guess
-  x_np1 = 2*x_n     #apply function
-  n     = n + 1     #increase counter
-}
+while(abs(x_n - 2*x_n) &gt; eps){
+  x_n = 2*x_n   #update x_n
+  i     = i + 1     #increase counter
 
-if(abs(x_n - x_np1) &gt; eps){
-  stop("Did not find fixed point!")
-} else{
-  print(c(x_np1,n))
+  # Stop the code if it takes too many iterations
+  if(i &gt;= MaxIt) stop("Did not find fixed point!")
+  # Have a message if the loop stops due to condition met
+  if(abs(x_n - 2*x_n) &lt;= eps) message(paste("The estimated fix point is approximately", x_n, "with", i, "iterations."))
 }
 ```
 
 ```
-## Error in eval(expr, envir, enclos): Did not find fixed point!
+## Error: Did not find fixed point!
+```
+
+---
+# Skipping some lines
+
+Sometimes, we would like to skip some lines. For example, for `\(f(x) = 2x\)`, how about just step in some random direction and only keep the steps that is favorable to us?
+
+--
+
+
+``` r
+x_n   = 0.0001 #starting guess
+i     = 1      #initialize counter
+MaxIt = 1000   #fix max iterations
+UpdateStep = 0.000002   #make the UpdateStep relatively small
+
+while(abs(x_n - 2*x_n) &gt; eps){
+  x_temp = x_n + UpdateStep*sample(c(-1,1), 1) # have the temporary x that is x updated with a random step
+  i = i + 1 #increase counter
+  
+  # Stop the code if it takes too many iterations
+  if(i &gt;= MaxIt) stop("Did not find fixed point!")
+  if(abs(x_temp - 2*x_temp) &lt;= eps) message(paste("The estimated fix point is", x_temp, "with", i, "iterations."))
+  
+  # skip updating x if it not in favorable direction
+  if(abs(x_temp - 2*x_temp) &gt;= abs(x_n - 2*x_n)) next
+  
+  x_n = x_temp # update x_n
+}
+```
+
+```
+## The estimated fix point is 8.72443935671929e-20 with 91 iterations.
+```
+
+
+---
+# tryCatch
+
+Sometimes, we would have only a few error break the entire loop. It would be nice to finish the loop and then look back.
+
+
+``` r
+# Use tryCatch to suppress error and print a message instead
+# We can save the index and come back later
+Warning_ind = NULL
+for (i in 1:5) {
+  tryCatch({
+    if (i == 2) stop("Error at i=2")
+    if (i %in% 3:4) warning("Warning at i=3 and i=4")
+  }, error = function(e) {
+    message("Skipping error at i=", i)
+  }, warning = function(e) {
+    Warning_ind &lt;&lt;- c(Warning_ind, i) # Append index to Warning_ind
+  })
+}
+```
+
+```
+## Skipping error at i=2
+```
+
+``` r
+Warning_ind
+```
+
+```
+## [1] 3 4
 ```
 
 ---
@@ -477,7 +722,7 @@ In R, there is a third kind of loop: the repeat loop.
 
 The repeat loop will continue to do something until you manually break it.
 
-These are slightly different than while loops; however, while loops can be used to replicate their behavior quite easily. 
+These are slightly different than while loops; however, while loops can be used to replicate their behavior quite easily.
 
 I would mostly recommend avoiding repeat loops.
 
@@ -486,12 +731,14 @@ I would mostly recommend avoiding repeat loops.
 
 
 ``` r
+# Preset value and index
 val = 0
 n   = 1
+# Repeat will keep running until manual break
 repeat{
   val = val + n
   n   = n + 1
-  if(val &gt; 30) break
+  if(val &gt; 30) break  # Condition for manual break
 }
 print(c(val, n))
 ```
@@ -501,12 +748,13 @@ print(c(val, n))
 ```
 
 ``` r
+# Preset value and index
 val = 0
 n   = 1
-while(TRUE){
+# Break when val &gt; 30 (i.e. not break when val &lt;= 30)
+while(val &lt;= 30){
   val = val + n
   n   = n + 1
-  if(val &gt; 30) break
 }
 print(c(val, n))
 ```
@@ -514,6 +762,9 @@ print(c(val, n))
 ```
 ## [1] 36  9
 ```
+
+
+
 
 ---
 
@@ -527,18 +778,18 @@ name: apply
 ---
 # The Apply Family
 
-In R, there are a family of functions called the apply family.
+In R, there are a family of functions called the `apply` family.
 
 They can be used to write loops in a much more compact format. 
 
 The idea is to have some vector-like object that you would to do something to in a for-loop like manner, and then "apply" some function to each element of the object.
 
-If you'd like to see more about the apply family, I would recommend following the `swirl` tutorial for more.
+If you'd like to see more about the `apply` family, you can follow the `swirl` tutorial for more.
 
 ---
 # The Apply Function
 
-The first one we will look at is the apply function.
+The first one we will look at is the `apply` function.
 
 It takes three arguments:
 1. an array (matrix, vector, etc.)
@@ -554,14 +805,16 @@ It takes the array and then applys the function over the dimension that is speci
 
 
 ``` r
+# Create a random matrix with rnorm. Remember to use set.seed.
+set.seed(42)
 rand_mat = matrix(rnorm(3*2),ncol=3)
 rand_mat
 ```
 
 ```
-##            [,1]       [,2]         [,3]
-## [1,]  1.1837459  0.7296892 0.0007641864
-## [2,] -0.7715014 -0.5870856 2.2144653193
+##            [,1]      [,2]       [,3]
+## [1,]  1.3709584 0.3631284  0.4042683
+## [2,] -0.5646982 0.6328626 -0.1061245
 ```
 
 ``` r
@@ -569,7 +822,7 @@ apply(rand_mat,1,sum)
 ```
 
 ```
-## [1] 1.9141993 0.8558783
+## [1]  2.13835518 -0.03796008
 ```
 
 ``` r
@@ -577,7 +830,7 @@ apply(rand_mat,2,sum)
 ```
 
 ```
-## [1] 0.4122445 0.1426036 2.2152295
+## [1] 0.8062603 0.9959910 0.2981438
 ```
 
 - MARGIN = 1, the sum function is applied to each row.
@@ -590,10 +843,11 @@ apply(rand_mat,2,sum)
 
 It might not be entirely obvious apply's connection to loops. 
 
-When MARGIN = 1, this is what apply is doing:
+When MARGIN = 1, this is what `apply` is doing:
 
 ``` r
-out = rep(0,nrow(rand_mat))
+# Preallocation with NA
+out = rep(NA,nrow(rand_mat))
 for(i in 1:nrow(rand_mat)){
   out[i] = sum(rand_mat[i,])
 }
@@ -601,16 +855,17 @@ out
 ```
 
 ```
-## [1] 1.9141993 0.8558783
+## [1]  2.13835518 -0.03796008
 ```
 
 --
 
-Likewise, when MARGIN = 2, this is what apply is doing:
+Likewise, when MARGIN = 2, this is what `apply` is doing:
 
 
 ``` r
-out = rep(0,ncol(rand_mat))
+# Preallocation with NA
+out = rep(NA,nrow(rand_mat))
 for(i in 1:ncol(rand_mat)){
   out[i] = sum(rand_mat[,i])
 }
@@ -618,7 +873,7 @@ out
 ```
 
 ```
-## [1] 0.4122445 0.1426036 2.2152295
+## [1] 0.8062603 0.9959910 0.2981438
 ```
 
 ---
@@ -627,25 +882,26 @@ out
 As seen above, apply can simplify loops and results in much cleaner code.
  - Though, is it more readable?
 
-While the apply function is useful, it has its limitations. 
+While the `apply` function is useful, it has its limitations. 
 
 1. It can only be used on array-like objects. 
 2. It will only return a vector or array.
 
 There are other functions that can be used on a wider class of objects along with return non-arrays.
-- lapply: returns a list the same length as the object
-- sapply: returns the "most simple" version of the output of lapply that makes sense.
+- `lapply`: returns a list the same length as the object
+- `sapply`: returns the "most simple" version of the output of lapply that makes sense.
  - I know, this sounds ambiguous because it is!
-- vapply: the same as sapply, but an output type must be specified.
+- `vapply`: the same as sapply, but an output type must be specified.
  - Generally, safer to use.
-- tapply
- - I have never used this one. Just know it exists.
+- `replicate`: Repeat some operation multiple times
+ - Great for simulation or repeated process
 
 ---
 # x-apply Examples
 
 
 ``` r
+# Create a list to apply functions
 my_list = list(a = 1:10, beta = exp(-3:3), logic = c(TRUE,FALSE,FALSE,TRUE))
 my_list
 ```
@@ -662,7 +918,12 @@ my_list
 ## [1]  TRUE FALSE FALSE  TRUE
 ```
 
+---
+# x-apply Examples (Cont.)
+
+
 ``` r
+# calculate the mean of each object in the list with lapply
 lapply(my_list, mean)
 ```
 
@@ -676,11 +937,9 @@ lapply(my_list, mean)
 ## $logic
 ## [1] 0.5
 ```
----
-# x-apply Examples (Cont.)
-
 
 ``` r
+# sapply default returns a vector or matrix
 sapply(my_list, mean)
 ```
 
@@ -689,7 +948,12 @@ sapply(my_list, mean)
 ## 5.500000 4.535125 0.500000
 ```
 
+---
+# x-apply Examples (Cont.)
+
+
 ``` r
+# lapply quantile function and `probs = (1:3)/4` is the argument for quantile
 lapply(my_list, quantile, probs = (1:3)/4)
 ```
 
@@ -707,11 +971,8 @@ lapply(my_list, quantile, probs = (1:3)/4)
 ## 0.0 0.5 1.0
 ```
 
----
-# x-apply Examples (Cont.)
-
-
 ``` r
+# sapply default returns a vector or matrix
 sapply(my_list, quantile)
 ```
 
@@ -727,9 +988,9 @@ sapply(my_list, quantile)
 ---
 # x-apply Examples (Cont.)
 
-By default, sapply will apply functions to columns (across rows) of data.frames. i.e. MARGIN =  2 in the apply function. 
+By default, `sapply` will apply functions to columns (across rows) of data.frames. i.e. MARGIN =  2 in the apply function. 
 
-Note, there is no MARGIN argument for sapply, lapply, or vapply.
+Note, there is no MARGIN argument for `sapply`, `lapply`, or `vapply.`
 
 
 ``` r
@@ -755,6 +1016,43 @@ sapply(mtcars,summary)
 ```
 
 ---
+# replicate
+
+We can replicate some process, this usually happens in simulation.
+
+
+``` r
+# Draw 10 random numbers with rnorm. Repeat this 6 times and save into a matrix. Do not forget to set seed
+set.seed(42)
+Rep_matrix = replicate(4, rnorm(6))
+Rep_matrix
+```
+
+```
+##            [,1]        [,2]       [,3]       [,4]
+## [1,]  1.3709584  1.51152200 -1.3888607 -2.4404669
+## [2,] -0.5646982 -0.09465904 -0.2787888  1.3201133
+## [3,]  0.3631284  2.01842371 -0.1333213 -0.3066386
+## [4,]  0.6328626 -0.06271410  0.6359504 -1.7813084
+## [5,]  0.4042683  1.30486965 -0.2842529 -0.1719174
+## [6,] -0.1061245  2.28664539 -2.6564554  1.2146747
+```
+
+``` r
+# Draw 6*4 random numbers with rnorm and then reshape it into a matrix. Do not forget to set seed
+set.seed(42)
+Reshaped_matrix = matrix(rnorm(6*4), ncol = 4)
+
+all.equal(Rep_matrix, Reshaped_matrix)
+```
+
+```
+## [1] TRUE
+```
+
+The reshaped matrix is faster and preferred though. Why?
+
+---
 
 class: inverse, center, middle
 name: vector
@@ -765,21 +1063,19 @@ name: vector
 ---
 # To Loop or Not To Loop
 
-Generally in R, you want to avoid loops at all costs. This is because they are slow!
-
-Developing your programming style in R requires learning when to use loops.
+Vector operations are much faster than loops!
 
 
 ``` r
 mbm = microbenchmark(
   "loop"={
-    N   = 100000    #set size of vector
+    N   = 10000    #set size of vector
     out = rep(0, N) #preallocate vector
     for(i in 1:N){
       out[i] = i^2  #fill in vector with square of index
       }},
   "vectorized"={
-    N   = 100000    #set size of vector
+    N   = 10000    #set size of vector
     out = 1:N       #preallocate vector
     out = out^2     #square each index
    },times=1000)
@@ -788,9 +1084,9 @@ mbm
 
 ```
 ## Unit: microseconds
-##        expr      min        lq      mean   median       uq      max neval
-##        loop 7119.313 7807.3000 10539.793 8412.680 9873.459 149863.4  1000
-##  vectorized  272.527  727.9515  1252.171  770.984  882.128 103328.6  1000
+##        expr    min     lq      mean  median     uq    max neval
+##        loop 1720.2 1772.3 1881.4015 1798.50 1842.6 6042.3  1000
+##  vectorized   14.6   16.9   26.2618   19.35   23.0  161.1  1000
 ```
 
 ---
@@ -801,39 +1097,44 @@ While we used a loop, it was not necessary. If we expand out every combination o
 
 
 ``` r
-aANDb = expand.grid(a=1:20,b=1:15)
-a     = aANDb$a
-b     = aANDb$b
-sum((exp(sqrt(a))*log(a^5))/(5+cos(a)*sin(b)))
+# "Vectorize a matrix". Now, aANDb contains all pairs of a and b
+aANDb = expand.grid(A=1:20,B=1:15)
+A     = aANDb$A
+B     = aANDb$B
+# Run the sum on all pairs of a and b
+sum((exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B)))
 ```
 
 ```
 ## [1] 25922.81
 ```
+
 ---
 # Benchmarking These Sums
 
+
 ``` r
+# Test the speed of loop vs. vectorized advanced sum
 mbm = microbenchmark(
   "loop"={
     val = 0
-    for(a in 1:20){
-      for(b in 1:15){
-        val = val + (exp(sqrt(a))*log(a^5))/(5+cos(a)*sin(b))}}},
+    for(A in 1:20){
+      for(B in 1:15){
+        val = val + (exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B))}}},
   "vectorized"={
-    aANDb = expand.grid(a=1:20,b=1:15)
-    a     = aANDb$a
-    b     = aANDb$b
-    sum((exp(sqrt(a))*log(a^5))/(5+cos(a)*sin(b)))
-   },times=1000)
+    aANDb = expand.grid(A=1:20,B=1:15)
+    A     = aANDb$A
+    B     = aANDb$B
+    sum((exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B)))
+  },times=1000)
 mbm
 ```
 
 ```
 ## Unit: microseconds
-##        expr      min        lq       mean   median        uq       max neval
-##        loop 5971.643 6595.8195 12901.8845 7383.849 10190.610 302949.23  1000
-##  vectorized  112.349  132.3815   325.7309  179.524   205.061  58437.08  1000
+##        expr    min      lq      mean  median      uq     max neval
+##        loop 4892.4 5024.45 5385.5191 5107.15 5301.90 14343.8  1000
+##  vectorized  131.3  147.60  183.3199  191.80  216.05   359.1  1000
 ```
 
 ``` r
@@ -841,16 +1142,171 @@ mean(mbm[mbm$expr=="loop","time"])/mean(mbm[mbm$expr=="vectorized","time"])
 ```
 
 ```
-## [1] 39.60903
+## [1] 29.37771
 ```
 
 ---
-# When Must We Use Loops?
+# Vectorization with Matrix/Array
 
-Sometimes, the use of a loop cannot be avoided. This might be for the following reasons:
+We just see that operating on a vector can be much faster than a loop!
+
+This is also true for higher dimensional data type: matrix and array.
+
+*This is why linear algebra is important for more advanced data science.*
+
+For a data.frame with the same data type across all columns, it is essentially a matrix. Let's look back at the data.frame we used in lecture4.
+
+
+``` r
+# Create a data.frame with three variables
+# Set seed due to randomness
+set.seed(2025)
+# x is from uniform distribution, y is from normal distribution and z is from chi squared distribution
+d = data.frame(x=runif(6),y=rnorm(6),z=rchisq(6,1))
+```
+
+---
+# Vectorization with Matrix/Array
+
+We can take the column mean one column at a time with loop, but we can also use matrix operating functions (we still call this vectorization, but with matrix)!
+
+
+``` r
+# We can use apply to demonstrate here since it is basically a loop
+apply(d, 2, mean)
+```
+
+```
+##         x         y         z 
+## 0.5842611 0.2421279 1.1808079
+```
+
+``` r
+# colMeans is a function for matrix
+colMeans(d)
+```
+
+```
+##         x         y         z 
+## 0.5842611 0.2421279 1.1808079
+```
+
+---
+# Compare Speeds
+
+
+``` r
+# Create a large numeric matrix
+set.seed(123)
+big_mat = matrix(rnorm(1e7), nrow = 1000, ncol = 10000)  # 1000 x 10000
+
+benchmark_result = microbenchmark(
+  base_colMeans = colMeans(big_mat),   # Optimized base R function
+  apply_mean = apply(big_mat, 2, mean),# General-purpose apply
+  times = 10                           # Repeat each test 10 times
+)
+
+# Print detailed timing results
+print(benchmark_result)
+```
+
+```
+## Unit: milliseconds
+##           expr      min       lq      mean   median       uq      max neval
+##  base_colMeans   9.3672   9.5098   9.87787   9.5687   9.7685  12.3943    10
+##     apply_mean 139.0726 146.0562 148.04820 147.4354 148.7114 159.5839    10
+```
+
+Note: You can use `replicate` to create the big matrix, but it would be slower.
+
+Note: If you know linear algebra, you can also compare speed of matrix multiplication (`%*%`) and corresponding loops.
+
+
+---
+class: inverse, center, middle
+name: parallelization
+
+# Parallelization with future.apply
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+# Parallelization
+
+Parallelization in R means splitting work across multiple CPU cores to make things faster. By default, R only uses one core, even if you have many.
+
+There are many ways to conduct parallel computation. We will work with the easy parallel apply with `future.apply`.
+
+This package makes it super easy—just replace `x-apply()` with `future_x-apply()`.
+
+
+``` r
+library(future.apply)
+
+# Detect the number of cores on your laptop
+parallel::detectCores()  # from base R's parallel package
+```
+
+```
+## [1] 20
+```
+
+``` r
+plan(multisession, workers = 4)  # use 4 cores
+
+my_list = list(a = 1:10, beta = exp(-3:3), logic = c(TRUE,FALSE,FALSE,TRUE))
+
+# future_lapply(my_list, mean)
+
+all.equal(unlist(lapply(my_list, mean)), unlist(future_lapply(my_list, mean)))
+```
+
+```
+## [1] TRUE
+```
+
+
+---
+# Best Practice with future.apply
+
+Don’t oversubscribe: If you have 8 cores, don’t always use all 8—leave some for your system.
+
+Large tasks benefit most: Parallel overhead is costly, so use it for heavier tasks (like simulations, bootstrapping, large data processing).
+
+Same as apply family, `future.apply` only work with parallel tasks.
+
+**When generating random numbers, make sure to use `future.seed = xxx` to avoid unintended overlap (duplication) and non-reproducibility.**
+
+--
+
+Benchmark Different Approaches: I have included the benchmarking code in the script. I will just show the result:
+
+
+```
+## Unit: milliseconds
+##         expr       min        lq      mean    median        uq       max neval
+##   for_loop() 1288.1779 1293.9699 1314.7966 1299.7620 1328.1059 1356.4498     3
+##  apply_seq() 1331.6848 1332.9895 1356.9916 1334.2942 1369.6450 1404.9958     3
+##  apply_par()  516.6633  529.5994  535.2828  542.5355  544.5925  546.6495     3
+```
+
+---
+class: inverse, center, middle
+name: dynamic
+
+# Dynamic Tasks
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+# When Should We Use Loops?
+
+Sometimes, especially for dynamic tasks, the use of a loop is hard to avoid. Here are some examples:
 
 1. Calculations depend on previous calculations.
+
 2. The size of an "inner loop" changes based on the values of the "outer loop."
+
 3. Too difficult to do the "prep-work" mentally for the vectorized operations.
 
 ---
@@ -864,11 +1320,16 @@ In math, that is `$$y_t = \delta + \rho y_{t-1}+\varepsilon_t$$`
 
 
 ``` r
+# Set parameters, number of period N, set seed for randomness
 rho       = 0.5
 delta     = 2
 N         = 1000
-AR1_ts    = rep(0,N)
-AR1_ts[1] = delta + rho*(delta/(1-rho)) + rnorm(1)
+set.seed(42)
+
+# Preallocate and set first value at 0
+AR1_ts    = rep(NA,N)
+AR1_ts[1] = 0
+# Use for loop updating remaining values
 for(i in 2:N){
   AR1_ts[i] = delta + rho*AR1_ts[i-1] + rnorm(1)
 }
@@ -878,12 +1339,55 @@ Note: I did not use `\(t\)` as the loop variable because of the function `t()`. 
 ---
 # AR(1) Plot
 
-&lt;img src="05-loops_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="05-loops_files/figure-html/unnamed-chunk-38-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# Temporarily Saved Values
+
+Sometimes, we only want to save the **final result** of a dynamic task instead of saving all results. We already see them in the fixed point example with *Skipping some lines*.
+
+If we will need more than one previous value for calculation later, it is common to temporarily save a variable such as `Val_pre`. If we use up to `k`th previous value in dynamic task, we might want to have a vector of length `k`.
+
+For example, for AR(3) process,
+
+`$$y_t = \delta + \rho_1 y_{t-1} + \rho_2 y_{t-2} + \rho_3 y_{t-3} + \varepsilon_t$$`
+
+We would need three `Val_pre`. Let's only keep the final value of the AR(3) process:
+
+---
+# AR(3) at N=1000
+
+
+``` r
+# Set parameters, number of period N, set seed for randomness
+rho1      = 0.3
+rho2      = 0.2
+rho3      = 0.1
+delta     = 2
+N         = 1000
+set.seed(42)
+
+# set pre_value at 0 for the three most recent history (t-1, t-2, t-3)
+AR1_ts_pre = rep(0,3)
+# Use for loop updating N times
+for(i in 1:N){
+  AR1_ts = delta + rho1*AR1_ts_pre[1] + rho2*AR1_ts_pre[2] + rho3*AR1_ts_pre[3] + rnorm(1)
+  # Then, we need to update the most recent 3 values
+  AR1_ts_pre = c(AR1_ts, AR1_ts_pre[-length(AR1_ts_pre)])
+}
+
+AR1_ts
+```
+
+```
+## [1] 4.8121
+```
+
 
 ---
 # Inner Loop Dependency
 
-Sometimes when loops are nested (like our advanced sums), the inner loops will depend on values of the outer loop. 
+Sometimes when loops are nested (like our advanced sums), the inner loops will depend on values of the outer loop.
 
 In this case, loops cannot be entirely avoided.
  - Though, they can be minimized.
@@ -892,18 +1396,20 @@ Consider a slight modification of the advanced sum we saw earlier `$$\sum_{a=1}^
 
 Instead of looping b from `\(1\)` to `\(15\)`, now the max value of `\(b\)` depends on the current value of `\(a\)`.
 
-In this case, a loop cannot be avoided.
- - At least, without making a specialized grid which will be very tedious.
+In this case, a loop cannot is hard to avoid. You need to think hard to vectorize.
 
 ---
 # Dependent Loops
 
 
 ``` r
+# Preset val
 val = 0
-for(a in 1:20){
-  for(b in 1:a){
-    val = val + (exp(sqrt(a))*log(a^5))/(5+cos(a)*sin(b))
+# loop over a
+for(A in 1:20){
+  # loop over b, notice the inner loop is from 1 to a (depends on the value of a)
+  for(B in 1:A){
+    val = val + (exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B))
   }
 }
 val
@@ -913,17 +1419,49 @@ val
 ## [1] 27100
 ```
 
-With some thinking and brute force, the loops might be able to be eliminated. But it will be tedious.
+If the speed of your code matters, it is worth spending the time to vectorize!
 
-However, if the speed of your code matters, it is worth spending the time to do this!
+How should we vectorize this?
+
+---
+# Vectorized Dependent Loops
+
+This is a relatively simple case since b cannot be bigger than a. We can obtain the grid like before, and then remove any b&gt;a.
+
+
+``` r
+# "Vectorize a matrix". Now, aANDb contains all pairs of a and b
+aANDb = expand.grid(A=1:20,B=1:15)
+# Use logical index to select b&lt;=a
+aANDb_depend = aANDb[aANDb$B&lt;=aANDb$A, ]
+A     = aANDb_depend$A
+B     = aANDb_depend$B
+# Run the sum on all pairs of a and b
+sum((exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B)))
+```
+
+```
+## [1] 23597.56
+```
+
+
 ---
 # In Conclusion
 
-Loops are very valuable to understand conceptually, but should be avoided when implementing code in R.
+Loops:
 
-There are variations on loops called while loops that can be very useful when computing things.
+- Very valuable to understand conceptually.
+- Pre-allocation is very important to ensure speed.
+- Work for parallel and dynamic tasks.
 
-There are a family of functions called the apply family which condense loops into more compact syntax. However, they are still loops at heart (and just as slow).
+Apply family :
+
+- Condense loops into more compact syntax. However, they are still loops at heart.
+
+For Parallel Tasks (not Dynamic):
+
+- For large amount of parallel computations, use `future.apply` to do parallel computation.
+- **Vectorize if you can!**
 
 For further experience, use `swirl` for loops and the apply functions.
 
@@ -943,9 +1481,9 @@ class: inverse, center, middle
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

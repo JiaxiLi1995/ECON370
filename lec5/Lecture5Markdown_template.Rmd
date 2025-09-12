@@ -1,8 +1,22 @@
-################################################################################
-# Loops
+---
+title: "Lecture 5 Script Template"
+author: "Jiaxi Li"
+date: "2025-09-25"
+output: pdf_document
+---
 
-## For loop
-# First for loop, adding from 1 to 10
+```{r setup, include=FALSE}
+# This is global set up for all later chunks
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loops
+
+#### For loop
+
+First for loop, adding from 1 to 10
+
+```{r}
 # Preset the variable
 sum_val = 0
 # Use for loop to add one number at a time
@@ -13,8 +27,11 @@ sum_val
 
 # Compare with built in R function sum
 sum_val == sum(1:10)
+```
 
-# Loop over character vectors
+Loop over a character vector:
+
+```{r}
 # Here is the vector name list
 Names_vec = c("James", "Julia", "John", "Jasmine", "Jack")
 
@@ -23,7 +40,11 @@ for (Name in Names_vec) {
   # Use cat to combine and print
   cat("UNC-", Name, "\n", sep = "")
 }
+```
 
+Loop over a list:
+
+```{r}
 # We can also loop over list...
 # Create a simple list
 my_list <- list(
@@ -36,10 +57,15 @@ my_list <- list(
 for (item in my_list) {
   print(item)
 }
+```
 
-# What does it do?
-# Answer: this is similar to loop over the names of the list
+What does it do?
 
+**Advanced Sums:**
+
+$$\sum_{a=1}^{20}\sum_{b=1}^{15} \frac{e^{\sqrt{a}}\log{(a^5)}}{5+\cos(a)\sin(b)}$$
+
+```{r}
 # Advanced sum with for loop
 # Preset the variable
 val = 0
@@ -51,9 +77,11 @@ for(A in 1:20){
   }
 }
 val
+```
 
+**Preallocation:**
 
-# Preallocation
+```{r}
 # calculating squares of 1 to 1000 with and without preallocation
 N          = 10000 # number of iterations
 my_vec     = c(NA) # No Preallocation
@@ -71,7 +99,9 @@ for(i in 1:length(my_vec_pre)){
 }
 
 all.equal(my_vec, my_vec_pre) # compare results
+```
 
+```{r}
 # Use microbenchmark to test the speed of no preallocation vs. preallocation
 library(microbenchmark) 
 mbm = microbenchmark(
@@ -86,14 +116,13 @@ mbm = microbenchmark(
       my_vec_pre[i] = i^2
     }},times=1000)
 mbm
+```
 
+#### While loop
 
+Add number from 1 to 10 using while loop
 
-
-
-
-## while loop
-# Add number from 1 to 10 using while loop
+```{r}
 # Preset the variable
 sum_val = 0
 # Set a counter
@@ -107,30 +136,27 @@ while(i <= 10){
 
 # Compare with built in R function sum
 sum_val == sum(1:10)
+```
 
+**Example: Fixed Point**
 
-# Example: Fixed Point
+```{r}
 eps   = .Machine$double.eps #set tolerance 
 x_n   = 5000                #starting guess
+# x_n   = 0.00001                #starting guess
 
 # Keep looping until x_n is sufficiently close to sqrt(x_n)
 while(abs(x_n - sqrt(x_n)) > eps){
   x_n = sqrt(x_n) #update guess
 }
 x_n
+```
 
+Change the above starting guess and see what happens.
 
-# A different starting guess
-x_n   = 0.00001             #starting guess
+**Finance Application: Stock Returns**
 
-# Keep looping until x_n is sufficiently close to sqrt(x_n)
-while(abs(x_n - sqrt(x_n)) > eps){
-  x_n = sqrt(x_n) #update guess
-}
-x_n
-
-
-# Finance Application: Stock Returns
+```{r}
 # use tidyquant to extract stock from the end of 2017
 library(tidyquant)
 
@@ -147,7 +173,11 @@ SP500_monthly = tq_get("^GSPC",
   as.data.frame() # change to data frame since tq_get would produce a tibble
 
 head(SP500_monthly)
+```
 
+$$r_{t+1} = \frac{P_{t+1} - P_{t}}{P_t} = \frac{P_{t+1}}{P_t} - 1$$
+
+```{r}
 # Calculate the return as a new column in the data.frame
 # Preallocate as a new variable in data.frame, set value as NA
 # Try not to set value at 0 if 0 has meanings
@@ -155,17 +185,21 @@ SP500_monthly$Return = NA
 
 # Use for loops from the second index to the last
 for (i in 2:nrow(SP500_monthly)) {
-  SP500_monthly$Return[i] = SP500_monthly$price[i]/SP500_monthly$price[i-1] - 1
+  ?
 }
 
 head(SP500_monthly, n=3)
+```
 
-# Why there is an NA at the beginning?
-# What would happen if you preallocated using 0?
+Why there is an NA at the beginning?
 
+What would happen if you preallocated using 0?
 
+#### Other Features
 
+**Progress tracking with `cat`:**
 
+```{r}
 # Print the progress every 20th iteration
 for (i in 1:100) {
   # Make the system stop for 0.05 second
@@ -174,15 +208,17 @@ for (i in 1:100) {
   if (i %% 20 == 0) cat("Completed", i, "iterations out of 100\n")
 }
 
+# How about without the "\n"?
+```
+
+```{r}
 # Let's try auto print
-for (i in 1:100) {
-  # Make the system stop for 0.05 second
-  Sys.sleep(0.05)
-  # Print the progress
-  if (i %% 20 == 0) paste("Completed", i, "iterations out of 100")
-}
 
+```
 
+**Fail-safe with `break`:**
+
+```{r}
 # For the previous fixed-point example, stop if we reach MaxIt numbers of iterations
 x_n   = 50000  #starting guess
 i     = 1      #initialize counter
@@ -193,28 +229,32 @@ while(abs(x_n - sqrt(x_n)) > eps){
   i     = i + 1     #increase counter
   
   # Stop the code if it takes too many iterations
-  if(i >= MaxIt) stop("Did not find fixed point!")
+  if(?) stop("Did not find fixed point!")
   # Have a message if the loop stops due to condition met
-  if(abs(x_n - sqrt(x_n)) <= eps) message(paste("The estimated fix point is approximately", x_n, "with", i, "iterations."))
+  if(?) message(paste("The estimated fix point is approximately", x_n, "with", i, "iterations."))
 }
+```
 
+This does not matter too much for $f(x) = \sqrt{x}$. Let's try $f(x) = 2x$.
 
+```{r}
 # Finding fixed-point for f(x)=2x, stop if we reach MaxIt numbers of iterations
 x_n   = 0.0001 #starting guess
 i     = 1      #initialize counter
 MaxIt = 1000   #fix max iterations
 
-while(abs(x_n - 2*x_n) > eps){
-  x_n = 2*x_n   #update x_n
-  i     = i + 1     #increase counter
-  
-  # Stop the code if it takes too many iterations
-  if(i >= MaxIt) stop("Did not find fixed point!")
-  # Have a message if the loop stops due to condition met
-  if(abs(x_n - 2*x_n) <= eps) message(paste("The estimated fix point is approximately", x_n, "with", i, "iterations."))
+while(abs(?) > eps){
+  ?
 }
+```
 
+What happened?
 
+**Only updates when it is good with `next`**:
+
+How about try a different way to update. Instead of applying the function to update, let's just move $x_n$slightly to the right/left randomly each step and only keep the steps heading to the right direction ($x$ and $f(x)$ are getting closer).
+
+```{r}
 # Skip some lines
 # An alternative to the previous approach by stepping to a random direction and only keep the favorable steps.
 x_n   = 0.0001 #starting guess
@@ -235,8 +275,11 @@ while(abs(x_n - 2*x_n) > eps){
   
   x_n = x_temp # update x_n
 }
+```
 
+**Avoid loop stop in the middle with `tryCatch`:**
 
+```{r}
 # tryCatch
 # Use tryCatch to suppress error and print a message instead
 # We can save the index and come back later
@@ -253,11 +296,13 @@ for (i in 1:5) {
 }
 
 Warning_ind
+```
 
+## Apply
 
-################################################################################
-# Apply
+**apply**
 
+```{r}
 # Create a random matrix with rnorm. Remember to use set.seed.
 set.seed(42)
 rand_mat = matrix(rnorm(3*2),ncol=3)
@@ -266,8 +311,11 @@ rand_mat
 # Use apply function to operate the matrix with margin
 apply(rand_mat,1,sum)
 apply(rand_mat,2,sum)
+```
 
+**lapply and sapply**
 
+```{r}
 # Create a list to apply functions
 my_list = list(a = 1:10, beta = exp(-3:3), logic = c(TRUE,FALSE,FALSE,TRUE))
 my_list
@@ -277,20 +325,26 @@ lapply(my_list, mean)
 
 # sapply default returns a vector or matrix
 sapply(my_list, mean)
+```
 
-
+```{r}
 # We can use a function whose output is a vector
 # lapply quantile function and `probs = (1:3)/4` is the argument for quantile
 lapply(my_list, quantile, probs = (1:3)/4)
 
 # sapply default returns a vector or matrix
 sapply(my_list, quantile)
+```
 
+```{r}
 # For data.frame or list, we do not need margin
 data(mtcars)
 sapply(mtcars,summary)
+```
 
+**replicate**
 
+```{r}
 # Draw 10 random numbers with rnorm. Repeat this 6 times and save into a matrix. Do not forget to set seed
 set.seed(42)
 Rep_matrix = replicate(4, rnorm(6))
@@ -301,11 +355,11 @@ set.seed(42)
 Reshaped_matrix = matrix(rnorm(6*4), ncol = 4)
 
 all.equal(Rep_matrix, Reshaped_matrix)
+```
 
+## Vectorization
 
-################################################################################
-# Vectorization
-
+```{r}
 # Compare the for loop and vector operation
 mbm = microbenchmark(
   "loop"={
@@ -320,15 +374,18 @@ mbm = microbenchmark(
     out = out^2     #square each index
   },times=1000)
 mbm
+```
 
-
+```{r}
 # "Vectorize a matrix". Now, aANDb contains all pairs of a and b
 aANDb = expand.grid(A=1:20,B=1:15)
 A     = aANDb$A
 B     = aANDb$B
 # Run the sum on all pairs of a and b
 sum((exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B)))
+```
 
+```{r}
 # Test the speed of loop vs. vectorized advanced sum
 mbm = microbenchmark(
   "loop"={
@@ -344,8 +401,11 @@ mbm = microbenchmark(
   },times=1000)
 mbm
 mean(mbm[mbm$expr=="loop","time"])/mean(mbm[mbm$expr=="vectorized","time"])
+```
 
+**Vectorization for matrix/array:**
 
+```{r}
 # Create a data.frame with three variables
 # Set seed due to randomness
 set.seed(2025)
@@ -356,8 +416,9 @@ d = data.frame(x=runif(6),y=rnorm(6),z=rchisq(6,1))
 apply(d, 2, mean)
 # colMeans is a function for matrix
 colMeans(d)
+```
 
-
+```{r}
 # Track speed
 # Create a large numeric matrix
 set.seed(123)
@@ -371,11 +432,11 @@ benchmark_result = microbenchmark(
 
 # Print detailed timing results
 print(benchmark_result)
+```
 
+## Parallelization with future.apply
 
-################################################################################
-# Parallelization with future.apply
-
+```{r}
 # The library is called future.apply
 library(future.apply)
 
@@ -383,22 +444,18 @@ library(future.apply)
 parallel::detectCores()  # from base R's parallel package
 
 plan(multisession, workers = 4)  # use 4 cores
+```
 
+```{r}
 my_list = list(a = 1:10, beta = exp(-3:3), logic = c(TRUE,FALSE,FALSE,TRUE))
 
-# future_lapply(my_list, mean)
+future_lapply(my_list, mean)
 
 all.equal(unlist(lapply(my_list, mean)), unlist(future_lapply(my_list, mean)))
+```
 
-
-
-# Compare speed between loop, apply, and future.apply
-library(future.apply)
-library(microbenchmark)
-
-# Use 4 cores for parallelization (adjust as needed)
-plan(multisession, workers = 4)
-
+```{r}
+# Compare the speed using a heavy task
 # Easier heavy task: generate 1 million random numbers and sort them
 heavy_task = function(n = 1e6) {
   x = runif(n)     # generate random numbers between 0 and 1
@@ -434,12 +491,13 @@ microbenchmark(
   apply_par(),
   times = 3
 )
+```
 
+## Dynamic Tasks
 
-################################################################################
-# Dynamic Tasks
+Simulate values for an AR(1) model
 
-# Simulate values for an AR(1) model
+```{r}
 # Set parameters, number of period N, set seed for randomness
 rho       = 0.5
 delta     = 2
@@ -456,9 +514,11 @@ for(i in 2:N){
 
 plot_data = data.table(y=AR1_ts,x=1:N)
 ggplot(plot_data,aes(x=x,y=y))+geom_line()
+```
 
+AR(3) example, but only want the final value after 1000 iterations:
 
-# AR(3) example, but only want the final value after 1000 iterations
+```{r}
 # Set parameters, number of period N, set seed for randomness
 rho1      = 0.3
 rho2      = 0.2
@@ -476,9 +536,11 @@ for(i in 1:N){
   AR1_ts_pre = c(AR1_ts, AR1_ts_pre[-length(AR1_ts_pre)])
 }
 AR1_ts
+```
 
+Inner loop dependency, hard to do without loop:
 
-# Inner loop dependency, hard to do without loop
+```{r}
 # Preset val
 val = 0
 # loop over a
@@ -489,7 +551,11 @@ for(A in 1:20){
   }
 }
 val
+```
 
+Vectorize this by looking at a matrix and with logical index:
+
+```{r}
 # "Vectorize a matrix". Now, aANDb contains all pairs of a and b
 aANDb = expand.grid(A=1:20,B=1:15)
 # Use logical index to select b<=a
@@ -498,3 +564,4 @@ A     = aANDb_depend$A
 B     = aANDb_depend$B
 # Run the sum on all pairs of a and b
 sum((exp(sqrt(A))*log(A^5))/(5+cos(A)*sin(B)))
+```

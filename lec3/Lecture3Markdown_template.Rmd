@@ -91,7 +91,7 @@ library(ggplot2)
 filter = stats::filter
 ```
 
-## Clearn up
+## Clean up
 
 ```{r}
 # Cleaning up
