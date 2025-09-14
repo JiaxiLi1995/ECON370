@@ -329,7 +329,7 @@ Now, it is a good time to check whether we have any missing data by `is.na`:
 
 ```{r}
 # Check if there is any NA in the data
-any(is.na(Total_data))
+anyNA(Total_data)
 ```
 
 Great! No missingness! If there is, you can use `tidyr::fill` again to fill it up.
@@ -515,10 +515,67 @@ R_Sq_oos_func(Testing_result$actual_return[Ind_17_19], Testing_result$fitted_ret
 Here, we verified our conjecture that the linear model is actually doing okay during normal times. This number is close to the 2013-2016 period.
 
 
+**Note that different model might perform differently during different times.**
+
+
+
+## A Simple Trading Strategy Based on the Simple Model
+
+The actual meaning of such predictive model is that we can implement trade on it! (You can think of this as a way to evaluate the predictive model. The more money we can make, the better the model is.)
+
+For example, let's have a strategy that:
+- We buy/hold the SP500 index if we predict positive returns next month.
+- We sell/not buy the SP500 index if we predict negative/zero returns next month.
+
+In reality, you can choose a more complicated threshold for buying/selling. Or even allow short selling. For demonstration purpose, we will stick to the simplest one.
+
+To see whether our combination of predictive model and trading strategy is effective, we will compare our linear model + simple strategy's cumulative return (buyLMpositive) vs. buy and hold cumulative return (buyANDhold):
+
+```{r}
+# Create a dataset for trading strategy comparison: buyLMpositive vs. buyANDhold
+Trading_Strategy = Testing_result |>
+  # Create a logical index of whether we realize the monthly return based on our trading strategy
+  mutate(Trade = (fitted_return > 0)) |>
+  # Create a buyLMpositive strategy 
+  mutate(buyLMpositive_ret = Trade*actual_return)
+
+
+# Now, use for loop to calculate the cumulative gross returns
+# Preset the two strategy
+Trading_Strategy$buyLMpositive = NA
+Trading_Strategy$buyLMpositive[1] = 1
+Trading_Strategy$buyANDhold = Trading_Strategy$buyLMpositive
+
+# Loop
+for(i in 2:nrow(Trading_Strategy)) {
+  Trading_Strategy$buyLMpositive[i] = Trading_Strategy$buyLMpositive[i-1] * (1+Trading_Strategy$buyLMpositive_ret[i]/100)
+  Trading_Strategy$buyANDhold[i] = Trading_Strategy$buyANDhold[i-1] * (1+Trading_Strategy$actual_return[i]/100)
+}
+
+# Plot the cumulative returns
+# Only select buyLMpositive and buyANDhold; and make the data longer
+Trading_Strategy %>%
+  pivot_longer(c(buyLMpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
+  ggplot(aes(predicting_date, CR, color = Strategy)) +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  labs(
+    title = "Cumulative Returns with Different Trading Strategies",
+    x = "Date",
+    y = "Cumulative Returns",
+    color = "Trading Stategy"
+  ) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(hjust = 0.5)  # <-- Center the title
+  )
+```
+
+We can see that the simple trading strategy + the LM predictive model is performing much worse than simply buy and hold the SP500 index!
+
+
 
 **Now, it is your turn to use some awesome data and better methods to predict better!**
-
-**Note that different model might perform differently during different times.**
 
 
 # Presentations
