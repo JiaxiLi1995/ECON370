@@ -846,6 +846,8 @@ tax_bracket(8000)
 
 For the tax calculator function, I also want the `effective tax rate = tax paid/income`.
 
+--
+
 ```{r}
 # Define a function to calculate tax based on income, also effective tax rate
 tax_bracket <- function(income) {
