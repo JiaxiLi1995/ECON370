@@ -865,7 +865,7 @@ Likewise, when MARGIN = 2, this is what `apply` is doing:
 
 ``` r
 # Preallocation with NA
-out = rep(NA,nrow(rand_mat))
+out = rep(NA,ncol(rand_mat))
 for(i in 1:ncol(rand_mat)){
   out[i] = sum(rand_mat[,i])
 }
