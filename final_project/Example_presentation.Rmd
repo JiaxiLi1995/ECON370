@@ -1,0 +1,148 @@
+---
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Example Presentation"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts] 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(knitr)
+opts_chunk$set(
+  fig.align="center", 
+  fig.height=5, fig.width=10, 
+  # out.width="748px", #out.length="520.75px",
+  dpi=300, #fig.path='Figs/',
+  cache=F, echo=F, warning=F, message=F
+  )
+library(fontawesome)
+library(microbenchmark)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+set.seed(123)
+
+# This function is used to color text
+color_text <- function(text, color){
+  if (knitr::is_html_output()) {
+    paste0('<span style="color:', color, '">', text, '</span>')
+  } else {
+    paste0('\\textcolor{', color, '}{', text, '}')
+  }
+}
+```
+
+# Introduction
+
+In this section, you would ***briefly*** summarize the highlights of your project. Think that this is a project report to your boss. Convince that person why your model and strategy is worth to invest in and this slide is to catch your boss's eyes!
+
+An example:
+
+**Hightlight of the project**:
+- Data: 5 Macro predictors, 5 financial market indicators, 1 geopolitical indicator.
+- Model: *Linear Model* as benchmark and *Neural Network Model* as the advanced model
+- Achievement: With the more complex model, I am able to move the predictive $R^2$ from `r color_text("XX", "blue")` to `r color_text("XX", "red")`. With a strategy of XXX, I was able to boost the overall return in the period XXX from XX to XX.
+
+---
+# Data
+
+Here is a table of data that I am using with brief reasoning:
+
+
+### Table: Possible Data Related to Stock Returns
+
+| Variable | Type | Reason |
+|----------------|------------|-----------------------|
+| GDP | Macro | Reflects economic growth |
+| Lag Return | Financial | Captures return persistence |
+| ... | ... | ... | | ... | ... | ... |
+
+--
+
+I would particularly point out XX variable. Although it is not standard, due to XXX, I believe that it has value to predict returns.
+
+---
+# Model
+
+Beyond linear model, I also used XX model for the analysis.
+
+XX model is a XX model and it uses XX technique to get a better fit of the data.
+
+There are some considerations of the XX model and it uses XX as tuning parameters.
+
+
+---
+# Main Result
+
+With an expanding window from XX to XX date, and XX model, here is the out of sample $R^2$ and the actual vs. fitted returns plot:
+
+(Here, you can save the plot from your main script, upload it onto GitHub, and then load the data here. I will demonstrate using this method.)
+
+```{r, message = F}
+library(ggplot2)
+# Put your mouse on "Raw" and right click, then "copy link address"
+Testing_result <- readRDS(url("https://github.com/JiaxiLi1995/Final_proj_data/raw/refs/heads/main/Testing_result.rds"))
+
+Testing_result |>
+  ggplot(aes(actual_return, fitted_return)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = TRUE, color = "red")  # Fitted regression line
+```
+
+
+
+---
+# Other Results (name your own title)
+
+Here, you can compare different trading strategies, explore the strong point and weak point of your model etc... I will show the result of trading strategies here:
+
+With the buy/hold when there is positive predicted return and sell/stay out otherwise, the performance of the XX model is better than the linear model:
+
+```{r}
+Trading_Strategy <- readRDS(url("https://github.com/JiaxiLi1995/Final_proj_data/raw/refs/heads/main/Trading_Strategy.rds"))
+
+Trading_Strategy |>
+  pivot_longer(c(buyLMpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
+  ggplot(aes(predicting_date, CR, color = Strategy)) +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  labs(
+    title = "Cumulative Returns with Different Trading Strategies",
+    x = "Date",
+    y = "Cumulative Returns",
+    color = "Trading Stategy"
+  ) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(hjust = 0.5)  # <-- Center the title
+  )
+
+
+```
+
+---
+
+class: inverse, center, middle
+
+
+### Disclaimer: I have used ChatGPT to help me create tables in Rmd and making some of my code more efficient.
+
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+# Here should be the correct html file name
+infile = "Example_presentation.html"
+pagedown::chrome_print(input = infile, timeout = 1000)
+```

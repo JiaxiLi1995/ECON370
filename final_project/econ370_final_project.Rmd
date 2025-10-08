@@ -72,7 +72,7 @@ Your final project will be graded out of **200 points**, broken down into **five
 | **Conceptual Understanding** | Data acquisition is complete and relevant | 10 |
 | | Reasonable and well-justified model(s) | 15 |
 | | Clear explanation of variable selection and treatment (including lagging to prevent forward-looking bias) | 15 |
-| | Relevant graphs and tables included | 10 |
+| | Suitable exploratory analysis | 10 |
 | | Thoughtful comparison with baseline model | 10 |
 | **Subtotal** |  | **60** |
 | **Coding** | Code achieves project objectives correctly | 15 |
@@ -460,6 +460,9 @@ Testing_result |>
   ggplot(aes(actual_return, fitted_return)) +
   geom_point() + 
   geom_smooth(method = "lm", se = TRUE, color = "red")  # Fitted regression line
+
+# # Save the result
+# saveRDS(Testing_result, "Testing_result.rds")
 ```
 
 If the fitting is good, we should have fitted_return to be roughly equal to actual_return. The line should be around slope 1.
@@ -554,7 +557,7 @@ for(i in 2:nrow(Trading_Strategy)) {
 
 # Plot the cumulative returns
 # Only select buyLMpositive and buyANDhold; and make the data longer
-Trading_Strategy %>%
+Trading_Strategy |>
   pivot_longer(c(buyLMpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
   ggplot(aes(predicting_date, CR, color = Strategy)) +
   geom_line(linewidth = 1) +
@@ -569,6 +572,9 @@ Trading_Strategy %>%
     legend.position = "top",
     plot.title = element_text(hjust = 0.5)  # <-- Center the title
   )
+
+# # Save the result
+# saveRDS(Trading_Strategy, "Trading_Strategy.rds")
 ```
 
 We can see that the simple trading strategy + the LM predictive model is performing much worse than simply buy and hold the SP500 index!
@@ -592,6 +598,6 @@ I'm going to be fairly prescriptive about what's in the in-class presentation. I
 
 The Rmd file, your final work product, needs to be more involved. In it, I'd like you to be more explicit about your project: show us what the data looks like (summary statistics etc.), what kind of cleaning you did, what is the model you use and the result, and so on. 
 
-I'd like the presentations to be knitted by RMarkdown. I will provide you with the template during lec6.
+I'd like the presentations to be knitted by RMarkdown with the provided template.
 
 
