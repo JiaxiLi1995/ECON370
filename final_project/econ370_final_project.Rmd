@@ -33,7 +33,7 @@ I describe each component in detail below. As a general rule: if you have questi
 
 Note: LLMs are ***allowed*** on your final project. Please include information (an extra slide in your presentation at the end) about what you used the LLM to do! 
 
-[^1]: We will talk about how to work with GitHub data in lecture 6.
+[^1]: We will talk about how to work with GitHub data when we go over presentation template.
 [^2]: No group work! You need to write your project details in this Rmd template and knit it into html as final project report. To ensure smooth grading, the final project Rmd and corresponding html are due 11:59PM December 9th, 2025.
 [^3]: Presentations should be written using RMarkdown but you are not required to turn it in. Scheduled final exam period: 8:00AM - 11:00AM, Thursday, December 11, 2025.
 
