@@ -3,7 +3,7 @@
   <head>
     <title>Data Science for Economists</title>
     <meta charset="utf-8" />
-    <meta name="author" content="Drew Van Kuiken" />
+    <meta name="author" content="Jiaxi Li" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
@@ -20,10 +20,10 @@ class: center, middle, inverse, title-slide
 ## Lecture 6: Misc Base R
 ]
 .author[
-### Drew Van Kuiken
+### Jiaxi Li
 ]
 .date[
-### University of North Carolina | <a href="https://github.com/drewvankuiken/ECON370">ECON 370</a>
+### University of North Carolina | <a href="https://github.com/JiaxiLi1995/ECON370">ECON 370</a>
 ]
 
 ---
@@ -37,13 +37,17 @@ name: toc
 
 1. [Introduction](#intro)
 
+2. [Pipeline](#pipeline)
+
 2. [Dates and Times](#dates)
 
-3. [Reading in Files](#read)
+3. [Read/Write Files](#read)
 
-4. [Regular Expressions](#regular)
+4. [Webscrapping](#webscrap)
 
-5. [Functions I use a lot](#funs)
+5. [Regular Expressions](#regular)
+
+6. [Functions I use a lot](#funs)
 
 ---
 class: inverse, center, middle
@@ -59,6 +63,67 @@ name: intro
 Today we will cover a bunch of miscellaneous topics that don't quite fit anywhere else. 
 
 I will also mention some functions and tips and tricks that I find useful.
+
+---
+class: inverse, center, middle
+name: pipeline
+
+# Pipeline
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+# We're in (New) Pipe-land Now
+
+Now, there is a pipe `|&gt;` (|&gt;) even in basic R (no package needed)! It lets you send (i.e. "pipe") intermediate output to another command.
+
+In other words, it allows us to chain together a sequence of simple operations and thereby implement a more complex operation.
+  
+I want to reiterate how cool pipes are, and how using them can dramatically improve the experience of reading and writing code. Compare:
+
+
+``` r
+## These next two lines of code do exactly the same thing.
+mpg |&gt; subset(manufacturer=="audi") |&gt; aggregate(hwy ~ model, FUN = mean)
+aggregate(subset(mpg, manufacturer=="audi"), hwy ~ model, FUN = mean)
+```
+
+--
+
+The first line reads from left to right, exactly how I thought of the operations in my head. 
+- Take this object (`mpg`), do this (`filter`), then do this (`group_by`), etc.
+
+The second line totally inverts this logical order (the final operation comes first!) 
+- Who wants to read things inside out?
+
+
+---
+
+# An aside on pipes: |&gt; (cont.)
+
+The piped version of the code is even more readable if we write it over several lines. Here it is again and, this time, I'll run it for good measure so you can see the output:
+
+
+``` r
+mpg |&gt;
+  subset(manufacturer=="audi") |&gt;
+  aggregate(hwy ~ model, FUN = mean)
+```
+
+```
+##        model      hwy
+## 1         a4 28.28571
+## 2 a4 quattro 25.75000
+## 3 a6 quattro 24.00000
+```
+
+Remember: Using vertical space costs nothing and makes for much more readable/writeable code than cramming things horizontally.
+
+--
+
+PS — The pipe is originally from the [**magrittr**](https://magrittr.tidyverse.org/) package, which can do some other cool things if you're inclined to explore. It's been so popular that even SQL is adopting a pipe syntax. SQL!
+
+It is a very powerful tool. People used to use `%&gt;%` in **magrittr**. However, it is so popular that the base R starts to have it as `|&gt;` after R version 4.1.0 in 2021!
 
 ---
 class: inverse, center, middle
@@ -82,6 +147,7 @@ Understanding exactly how dates work requires understanding a bit more about the
 The default format for dates in R is `YYYY-MM-DD.`
 
 ``` r
+# Convert to date with base function
 as.Date("2021-09-14")
 ```
 
@@ -89,18 +155,17 @@ as.Date("2021-09-14")
 ## [1] "2021-09-14"
 ```
 
+``` r
+Sys.Date()
+```
+
+```
+## [1] "2025-10-09"
+```
+
 --
 
 If you have a date not in the format listed above, you have to give the `as.Date()` function the "format" argument. [See this link for different formats.](https://www.stat.berkeley.edu/~s133/dates.html)
-
-
-``` r
-as.Date("09/14/2021",format="%m/%d/%Y")
-```
-
-```
-## [1] "2021-09-14"
-```
 
 ---
 # Lubridate
@@ -116,6 +181,7 @@ library(lubridate)
 
 
 ``` r
+# Convert to date using lubridate functions
 ymd("2021-09-14")
 ```
 
@@ -136,7 +202,7 @@ today()
 ```
 
 ```
-## [1] "2024-09-15"
+## [1] "2025-10-09"
 ```
 
 ---
@@ -144,11 +210,12 @@ today()
 
 
 ``` r
+# Extract a specific feature of the date
 year(today())
 ```
 
 ```
-## [1] 2024
+## [1] 2025
 ```
 
 ``` r
@@ -156,7 +223,7 @@ month(today())
 ```
 
 ```
-## [1] 9
+## [1] 10
 ```
 
 ``` r
@@ -164,10 +231,11 @@ week(today())
 ```
 
 ```
-## [1] 37
+## [1] 41
 ```
 
 ``` r
+# More detailed date
 ymd_hms("2017-01-31 20:11:59")
 ```
 
@@ -184,11 +252,52 @@ mdy_hm("01/31/2017 08:01")
 ```
 
 ---
+# Date Comparison
+
+It is easy to do comparison with dates. You can directly use logical comparisons `&gt;` and `&lt;`.
+
+
+``` r
+ymd("2021-09-14") &gt; ymd("2021-08-12")
+```
+
+```
+## [1] TRUE
+```
+
+``` r
+ymd("2021-09-14") &lt; "2021-08-12"
+```
+
+```
+## [1] FALSE
+```
+
+``` r
+# R can understand comparison between characters formatted as Date
+"2021-09-14" &gt; "2021-08-12"
+```
+
+```
+## [1] TRUE
+```
+
+``` r
+"2021-09-14" &lt; "2021-08-12"
+```
+
+```
+## [1] FALSE
+```
+
+This is very handy if you need to do logical indexing with dates!
+
+---
 # More About Dates and Times
 
 There are a lot of little quirks when it comes to dates and times that usually you will not have to know. God bless you if you're ever working with time zones, spring forward, etc. 
 
-This is where the skill of Googling really comes in handy. 
+This is where the skill of Googling/LLM really comes in handy.
 
 I would recommend also reading [Chapter 16](https://r4ds.had.co.nz/dates-and-times.html) in *R for Data Science* that is listed on the syllabus. 
 
@@ -197,51 +306,80 @@ I would recommend also reading [Chapter 16](https://r4ds.had.co.nz/dates-and-tim
 class: inverse, center, middle
 name: reading
 
-# Reading in Files
+# Read/Write Files
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
 ---
 # Reading in Files
 
-Because we've been working with simulated data or preloaded data, we have yet to have to read in data. 
+Because we've been working with simulated data or preloaded data, we have yet to have to read in data. There are four different types of files we will talk about today:
+
+- csv: Work for all programs. Plain text (human-readable). Really close to Excel. Slow to write/read and large size.
+
+- rds: Originated in R. There are special packages to load it into Python and Julia. Fast to write/read and small size.
+
+- feather: Also works for Python and Julia. Very fast to write/read and medium size.
+
+- fst: Originated in R. There are special packages to load it into Python and Julia. Ultra-fast to read/write even for massive datasets; small–medium (adjustable compression).
+
+
+---
+# csv
 
 The most common function you will use is `read.csv()`.
- - While you might want to read in Excel spreadsheets, I would highly recommend minimizing how much you use Excel.
+ - While you might want to read in Excel spreadsheets, I would highly recommend minimizing how much you use Excel for R.
  
 To read in a file, you need to know where the file is located. You will need to set your "working directory."
 
 
 ``` r
+# Get current working directory
 getwd()
 ```
 
 ```
-## [1] "/Users/drewvankuiken/Dropbox/econ370/local/lec6"
+## [1] "D:/R/ECON370/lec6"
 ```
 
 ``` r
-setwd("~/Dropbox/Econ370/local/lec6/")
+# Set a new working directory
+setwd("D:/R/ECON370/lec6/")
 getwd()
 ```
 
 ```
-## [1] "/Users/drewvankuiken/Dropbox/econ370/local/lec6"
+## [1] "D:/R/ECON370/lec6"
 ```
 
 ---
 # See Files in Directory
 
-To see the names of the files in your current working directory, use the `list.files()` functions.
+To see the names of the files in a certain directory, use the `list.files()` functions.
 
 
 ``` r
+# list all files/folders in the current working directory
 list.files()
 ```
 
 ```
-## [1] "06-miscR.html" "06-miscR.pdf"  "06-miscR.Rmd"  "blp_data.csv" 
-## [5] "Lecture 7"     "libs"
+##  [1] "06-miscR.html"                 "06-miscR.pdf"                 
+##  [3] "06-miscR.Rmd"                  "blp_data.csv"                 
+##  [5] "blp_data.rds"                  "blp_data2.csv"                
+##  [7] "Lec6_2024"                     "Lecture6Markdown_complete.Rmd"
+##  [9] "Lecture6Script.R"              "libs"                         
+## [11] "OTC_data.feather"              "OTC_data.fst"
+```
+
+``` r
+# list all files/folders in the specified working directory
+# list.files("D:/R/ECON370")
+list.files("D:/R/ECON370/HW1")
+```
+
+```
+## [1] "2024"            "Assignment1.pdf" "Assignment1.Rmd" "marsh"
 ```
 ---
 # Read in CSV
@@ -250,31 +388,20 @@ To read in the CSV listed above (about market share data and prices), use the fu
 
 
 ``` r
-list.files()
+# OTC_data = read.csv("https://github.com/JiaxiLi1995/ECON370/raw/refs/heads/main/lec6/blp_data.csv")
+# write.csv(OTC_data, file = "blp_data.csv", row.names = F)
+OTC_data = read.csv("blp_data.csv")
 ```
 
-```
-## [1] "06-miscR.html" "06-miscR.pdf"  "06-miscR.Rmd"  "blp_data.csv" 
-## [5] "Lecture 7"     "libs"
-```
+We can save the csv using the function `write.csv()`:
+
 
 ``` r
-OTC_data = read.csv("blp_data.csv")
-head(OTC_data)
-```
-
-```
-##   mkt time firm prod    share  price      x       w
-## 1   1    1    1    1 0.202769 1.5955 1.2640 -0.2258
-## 2   1    1    2    2 0.032901 0.9492 0.8685 -0.8978
-## 3   1    1    3    3 0.139623 1.3500 1.0181 -0.2054
-## 4   1    2    1    1 0.229222 1.4541 1.2292 -0.5836
-## 5   1    2    2    2 0.038348 1.4270 1.0411  0.1160
-## 6   1    2    3    3 0.076592 1.8699 1.0695  0.6043
+write.csv(OTC_data, file = "blp_data2.csv", row.names = F)
 ```
 
 ---
-# A Few Things on Reading in Data
+# A Few Things on CSV
 
 CSV stands for "comma-separated values" i.e. the data values are separated by commas.
 
@@ -284,6 +411,460 @@ If this is not true, you might have to change the sep argument.
  - e.g. Tab separated values are also common.
  
 However, don't worry too much about this. While you need to understand it a little, we will be using `read_csv()` from the `tidyverse` and/or `fread()` from the `data.table` package, which are superior to read.csv.
+
+---
+# rds
+
+The rds files are native to R. We can try to save as rds file and read it with `saveRDS()` and `read.rds()`:
+
+
+``` r
+# rds files
+saveRDS(OTC_data, file = "blp_data.rds")
+OTC_data_rds = readRDS("blp_data.rds")
+```
+
+You can also compress the file when saving it:
+
+
+``` r
+saveRDS(OTC_data_rds, file = "blp_data2.rds", compress = T)
+```
+
+---
+# feather
+
+Feather files are designed for fast, efficient, and easy data interchange between languages. `.feather` is usually the file extension. We will use a special package, `arrow`, to save (`write_feather()`) and load (`read_feather()`) feather file.
+
+
+``` r
+# feather files
+library(arrow)
+write_feather(OTC_data, "OTC_data.feather", compression = T)
+
+OTC_data_feather = read_feather("OTC_data.feather")
+```
+
+---
+# fst
+
+We can also work with `.fst` file in R. We will use `arrow` package to save (`write_fst()`) and load (`read_fst()`) fst file.
+
+
+``` r
+# fst files
+library(fst)
+write_fst(OTC_data, "OTC_data.fst")
+
+OTC_data_fst = read_fst("OTC_data.fst")
+```
+
+
+---
+# Speed Comparison
+
+
+```
+## Unit: microseconds
+##          expr    min     lq    mean  median     uq    max neval
+##      rds_read  372.9  400.0  432.33  408.40  454.2  569.2    10
+##      csv_read 3028.7 3118.7 3360.07 3195.55 3402.9 4256.7    10
+##  feather_read 2734.7 3033.1 3068.33 3071.00 3118.2 3507.8    10
+##      fst_read  271.8  288.3  328.63  320.20  350.0  436.5    10
+```
+
+```
+## Unit: microseconds
+##          expr     min      lq     mean   median      uq     max neval
+##      rds_save  1658.4  1732.8  1765.30  1776.35  1811.0  1844.0    10
+##      csv_save 12876.5 12958.6 13089.78 13011.40 13136.0 13784.5    10
+##  feather_save  2205.6  2257.4  2446.95  2496.75  2561.4  2636.2    10
+##      fst_save   394.7   460.1   490.57   491.40   510.9   637.6    10
+```
+
+
+---
+
+class: inverse, center, middle
+name: webscrap
+
+# Webscrapping
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
+
+---
+# Internet as Data
+
+1. Server-side
+  - Data stored at the server, which sends HTML code with data in it to us
+  - **Our process**: trudging through CSS selectors
+2. Client-side
+  - Our browser requests data from the server, server sends specific info we asked for
+  - **Our process**: pinging an API endpoint
+
+We will only demonstrate one example with `rvest`, which is server-side scrapping. There are more resources on webscrapping:
+  - Grant R. McDermott's lecture on webscrapping [section 1](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html) and [section 2](https://raw.githack.com/uo-ec607/lectures/master/06-web-css/06-web-css.html)
+  - [rvest](https://rvest.tidyverse.org/articles/rvest.html)
+
+
+--
+
+We will use `rvest`, `dplyr` and `janitor` here (`lubridate` is already loaded):
+
+
+``` r
+library(rvest)
+library(dplyr)
+library(janitor)
+```
+
+---
+# Before we get started
+
+1. Be a good internet user
+
+2. It's easy to accidentally kill some poor website
+
+3. It's probably legal? 
+
+--
+
+Some website puts more limit to webscrapping (such as X, formally known as Twitter).
+
+See the warnings from [the writer of `rvest`](https://rvest.tidyverse.org/).
+
+If you request a lot of data with scrapping, be polite with something like `Sys.sleep(2)` in between.
+
+Use Rscript (`.R`) file to scrap data **only once** and save the data to some file (such as `.rds`). Then, read in the data file for your project. **Try not to scrap over and over again in your `.Rmd` file!**
+
+---
+# HTML Basics
+
+Here's some simple HTML:
+
+```html
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Page title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1 id='first'&gt;A heading&lt;/h1&gt; 
+  &lt;p&gt;Some text &amp;amp; &lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt;
+  &lt;img src='myimg.png' width='100' height='100'&gt;
+&lt;/body&gt;
+```
+
+---
+# HTML Basics
+
+Here's some simple HTML:
+
+```html
+&lt;html&gt;
+&lt;head&gt; ## head is an element #&lt;&lt;
+  &lt;title&gt;Page title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1 id='first'&gt;A heading&lt;/h1&gt;  
+  &lt;p&gt;Some text &amp;amp; &lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt;
+  &lt;img src='myimg.png' width='100' height='100'&gt;
+&lt;/body&gt;
+```
+
+---
+# HTML Basics
+
+Here's some simple HTML:
+
+```html
+&lt;html&gt;
+&lt;head&gt; 
+  &lt;title&gt;Page title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt; ## as is body #&lt;&lt;
+  &lt;h1 id='first'&gt;A heading&lt;/h1&gt;  
+  &lt;p&gt;Some text &amp;amp; &lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt;
+  &lt;img src='myimg.png' width='100' height='100'&gt;
+&lt;/body&gt;
+```
+
+---
+# HTML Basics
+
+Here's some simple HTML:
+
+```html
+&lt;html&gt;
+&lt;head&gt; 
+  &lt;title&gt;Page title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt; 
+  &lt;h1 id='first'&gt;A heading&lt;/h1&gt; ## id='first' is an attribute #&lt;&lt; 
+  &lt;p&gt;Some text &amp;amp; &lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt;
+  &lt;img src='myimg.png' width='100' height='100'&gt;
+&lt;/body&gt;
+```
+
+---
+# HTML Basics
+
+Here's some simple HTML:
+
+```html
+&lt;html&gt;
+&lt;head&gt; 
+  &lt;title&gt;Page title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt; 
+  &lt;h1 id='first'&gt;A heading&lt;/h1&gt; 
+  &lt;p&gt;Some text &amp;amp; &lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt; ## stuff in between is contents #&lt;&lt; 
+  &lt;img src='myimg.png' width='100' height='100'&gt;
+&lt;/body&gt;
+```
+
+Lucky for us: we don't need to write HTML. Just read it. 
+
+---
+# HTML Basics - Tags
+
+- Tags all start with `&lt;tag&gt;` and end with `&lt;/tag&gt;`
+- Every page is in an `&lt;html&gt;` element with 2 children: 
+  - `&lt;head&gt;` contains metadata
+  - `&lt;body&gt;` contains content you see
+- Block tags form the overall structure of a page
+  - `&lt;h1&gt;` provides a heading
+  - `&lt;p&gt;` is a paragraph
+- Inline tags like `&lt;b&gt;` (bold), `&lt;i&gt;` (italics), and `&lt;a&gt;` (links) exist
+- Just a sample of tags, can look up others you don't know
+- The rest is the content
+
+---
+# Example: Scraping Wikipedia
+
+Let's imagine we want to scrape the [Men's 100 metres world record progression](https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression) page on Wikipedia.
+
+In particular, we want to get the information from the 3 main tables on the webpage. 
+
+Here's what happens when we give R no instructions at all:
+
+``` r
+raw_wiki &lt;- read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
+raw_wiki
+```
+
+```
+## {html_document}
+## &lt;html class="client-nojs vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-page-tools-pinned-disabled vector-feature-toc-pinned-clientpref-1 vector-feature-main-menu-pinned-disabled vector-feature-limited-width-clientpref-1 vector-feature-limited-width-content-enabled vector-feature-custom-font-size-clientpref-1 vector-feature-appearance-pinned-clientpref-1 vector-feature-night-mode-enabled skin-theme-clientpref-day vector-sticky-header-enabled vector-toc-available" lang="en" dir="ltr"&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
+## [2] &lt;body class="skin--responsive skin-vector skin-vector-search-vue mediawik ...
+```
+
+``` r
+class(raw_wiki)
+```
+
+```
+## [1] "xml_document" "xml_node"
+```
+
+---
+# Parsing HTML: Inspecting Web Pages
+
+We can use `inspect` to get a better sense of what is available on a given webpage. What tags can we use to grab the desired information from our wikipedia page? 
+
+--
+
+It looks like we want to grab information from tables with the class "wikitable."
+
+
+---
+# Brief Aside: CSS Selectors
+
+We can parse HTML using **CSS Selectors**, which define patterns for locating HTML elements. 
+
+CSS Selectors are pretty complex, and we're going to keep it light today. If you want to learn more, check out the [CSS Diner](https://flukeout.github.io/). Additionally, if CSS Selectors are giving you tons of trouble, check out [SelectorGadget](https://selectorgadget.com/).
+
+4 selectors to know:
+1. `p` selects all `&lt;p&gt;` elements
+2. `.title` selects all elements with `class` "title"
+3. `p.special` selects all `&lt;p&gt;` elements with `class` "special"
+4. `#title` selects the unique element with id attribute that equals "title"
+
+---
+# Getting Our Tables
+
+We can use the selector `table` to select all `&lt;table&gt;` elements:
+
+
+``` r
+raw_wiki |&gt; html_elements("table")
+```
+
+```
+## {xml_nodeset (15)}
+##  [1] &lt;table class="box-Unreferenced_section plainlinks metadata ambox ambox-c ...
+##  [2] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/ ...
+##  [3] &lt;table class="wikitable" style="text-align: left;"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;td st ...
+##  [4] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt; ...
+##  [5] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt; ...
+##  [6] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/ ...
+##  [7] &lt;table class="nowraplinks mw-collapsible autocollapse navbox-inner" styl ...
+##  [8] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+##  [9] &lt;table class="nowraplinks hlist mw-collapsible autocollapse navbox-inner ...
+## [10] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+## [11] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+## [12] &lt;table class="nowraplinks mw-collapsible uncollapsed navbox-inner" style ...
+## [13] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+## [14] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+## [15] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+```
+
+--
+
+Alas, so many other things. 
+
+---
+# Trying again
+
+We want tables with class wikitable: `table.wikitable` should work!
+
+
+``` r
+raw_wiki |&gt; html_elements("table.wikitable")
+```
+
+```
+## {xml_nodeset (5)}
+## [1] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/t ...
+## [2] &lt;table class="wikitable" style="text-align: left;"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;td sty ...
+## [3] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt;\ ...
+## [4] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt;\ ...
+## [5] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/t ...
+```
+
+Looks better! 
+
+---
+# Accessing the actual info
+
+We still don't have the table info. `html_table()` can help:
+
+
+``` r
+table_dfs &lt;- raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
+  html_table()
+table_dfs[[1]]
+```
+
+```
+## # A tibble: 21 × 5
+##     Time Athlete               Nationality    `Location of races`     Date      
+##    &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;     
+##  1  10.8 Luther Cary           United States  Paris, France           July 4, 1…
+##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       September…
+##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       August 4,…
+##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany April 13,…
+##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  August 28…
+##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     August 9,…
+##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           September…
+##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           September…
+##  9  10.8 Frank Jarvis          United States  Paris, France           July 14, …
+## 10  10.8 Walter Tewksbury      United States  Paris, France           July 14, …
+## # ℹ 11 more rows
+```
+
+...this is crazy! `R` is cool sometimes. 
+
+---
+# General Workflow
+
+Your workflow using `rvest`: get html --&gt; get desired html elements --&gt; break into individual elements --&gt; turn into table/text/numbers/whatever.
+
+Useful commands for getting individual elements: 
+- `html_text2()` gets plain text contents of an HTML element
+- `html_attr()` gets attributes from an HTML element (e.g., links)
+- `html_table()` creates a data.frame from a table in an HTML element
+
+
+---
+# A Little Cleanup
+
+Let's get our data frames in working order here: 
+
+
+``` r
+table_dfs_int &lt;- raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
+  html_table()
+
+table_dfs &lt;- lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
+                    function(x) x |&gt;
+*                     clean_names() |&gt; ## fix colnames, from the janitor package
+                      mutate(date = mdy(date))) ## from lubridate
+table_dfs[[1]]
+```
+
+```
+## # A tibble: 21 × 5
+##     time athlete               nationality    location_of_races       date      
+##    &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;                   &lt;date&gt;    
+##  1  10.8 Luther Cary           United States  Paris, France           1891-07-04
+##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       1892-09-25
+##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       1893-08-04
+##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany 1895-04-13
+##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  1895-08-28
+##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     1896-08-09
+##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1898-09-11
+##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1899-09-10
+##  9  10.8 Frank Jarvis          United States  Paris, France           1900-07-14
+## 10  10.8 Walter Tewksbury      United States  Paris, France           1900-07-14
+## # ℹ 11 more rows
+```
+
+Let's combine our data frames into one and graph the results. 
+
+---
+# Combined Data
+
+
+``` r
+wr100 &lt;- rbind(
+  table_dfs[[1]] |&gt; select(time, athlete, nationality, date) |&gt; 
+    mutate(era="Pre-IAAF"),
+  table_dfs[[2]] |&gt; select(time, athlete, nationality, date) |&gt; 
+    mutate(era="Pre-automatic"),
+  table_dfs[[3]] |&gt; select(time, athlete, nationality, date) |&gt; 
+    mutate(era="Modern")
+)
+head(wr100)
+```
+
+```
+## # A tibble: 6 × 5
+##    time athlete               nationality    date       era     
+##   &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;date&gt;     &lt;chr&gt;   
+## 1  10.8 Luther Cary           United States  1891-07-04 Pre-IAAF
+## 2  10.8 Cecil Lee             United Kingdom 1892-09-25 Pre-IAAF
+## 3  10.8 Étienne De Ré         Belgium        1893-08-04 Pre-IAAF
+## 4  10.8 L. Atcherley          United Kingdom 1895-04-13 Pre-IAAF
+## 5  10.8 Harry Beaton          United Kingdom 1895-08-28 Pre-IAAF
+## 6  10.8 Harald Anderson-Arbin Sweden         1896-08-09 Pre-IAAF
+```
+
+---
+# Presidential Speech and Fed Annoucement
+
+There are many textual data online are publicly available.
+
+--
+
+If you are interested, you can scrap US presidential speech from The American Presidency Project (which is the most complete archive) using `rvest`.
+
+You can enter "Webscrapping presidential speech from the American Presidency Project (which is the most complete archive) using rvest (R)" in ChatGPT to get the structured code.
+
+--
+
+You can also scrap the Federal Reserve Annoucements.
+
 
 ---
 
@@ -394,7 +975,7 @@ As such, I am only going to briefly touch them and encourage you to look into th
 The plus side is they are pretty universal across languages. That is, whether you're using `R` or `Python`, regular expressions still work the same way!
 
 ---
-# Regular Expressions: Examples
+# Regular Expressions: grepl Examples
 
 Let's say we want to flag character strings that start with "The". The regular expression would be `^The`
 
@@ -408,7 +989,7 @@ grepl("^The",test_char)
 ## [1]  TRUE  TRUE  TRUE FALSE
 ```
 
-Now, let's say we want to flag character strings that end with "end." The regular expression would be `end$`
+Now, let's say we want to flag character strings that end with "end." The regular expression would be `end.$`
 
 
 ``` r
@@ -433,7 +1014,7 @@ grepl("[aeiou]",letters)
 ```
 
 ---
-# Regular Expressions: More Examples
+# Regular Expressions: More grepl
 
 Let's say we have a couple strings to match:
 
@@ -457,6 +1038,43 @@ grepl("[0-9]",c(1:5,"I had 2 coffees today","Hello World!"))
 ```
 ## [1]  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE
 ```
+
+---
+# Regular Expressions: Only csv
+
+We have talked about how to use `list.files()` to get files names in a folder:
+
+
+``` r
+# list all files/folders in the specified working directory
+list.files("D:/R/ECON370/lec6")
+```
+
+```
+##  [1] "06-miscR.html"                 "06-miscR.pdf"                 
+##  [3] "06-miscR.Rmd"                  "blp_data.csv"                 
+##  [5] "blp_data.rds"                  "blp_data2.csv"                
+##  [7] "blp_data2.rds"                 "Lec6_2024"                    
+##  [9] "Lecture6Markdown_complete.Rmd" "Lecture6Script.R"             
+## [11] "libs"                          "OTC_data.feather"             
+## [13] "OTC_data.fst"
+```
+
+Suppose that I only want to have all the files with `.csv` extension (could be multiple files), we can use regular expressions:
+
+
+``` r
+list.files(
+  path = "D:/R/ECON370/lec6",
+  pattern = ".*\\.csv$",
+  full.names = TRUE
+)
+```
+
+```
+## [1] "D:/R/ECON370/lec6/blp_data.csv"  "D:/R/ECON370/lec6/blp_data2.csv"
+```
+
 
 ---
 # Regular Expressions: More
@@ -488,11 +1106,9 @@ name: funs
 ---
 # Misc Functions
 
+We have seen:
 - `rep()`: repeats a vector `\(N\)` times
  - Used a lot for preallocating vectors
-- `unique()`: takes the unique values of a vector
-- `sort()`: sorts a vector
-- `order()`: like sort, but gives the IDs rather than a sorted vector
 - `sum()`: sums up vectors
 - `seq()`: creates sequences
 - `cbind()`: combine matrices or data.frames by columns
@@ -500,6 +1116,11 @@ name: funs
 - `ncol()`: returns number of columns of data.frame or matrix
 - `nrow()`: returns number of rows of data.frame or matrix
 - `dim()`: returns dimensions of an array-like object
+
+New Ones:
+- `unique()`: takes the unique values of a vector
+- `sort()`: sorts a vector
+- `order()`: like sort, but gives the IDs rather than a sorted vector
 - `substr()`: returns a string subsetted by the indexes supplied
 - `strsplit()`: splits a string by a pattern
 
@@ -537,7 +1158,7 @@ letter_samp
 ```
 
 ```
-##  [1] "o" "s" "n" "c" "j" "r" "v" "k" "e" "t" "n" "v"
+##  [1] "n" "y" "w" "c" "h" "p" "l" "y" "n" "c" "n" "g"
 ```
 
 ``` r
@@ -545,7 +1166,7 @@ unique(letter_samp)
 ```
 
 ```
-##  [1] "o" "s" "n" "c" "j" "r" "v" "k" "e" "t"
+## [1] "n" "y" "w" "c" "h" "p" "l" "g"
 ```
 ---
 # Examples (Cont.)
@@ -557,8 +1178,8 @@ norm_draws
 ```
 
 ```
-##  [1]  0.1830826  1.2805549 -1.7272706  1.6901844  0.5038124  2.5283366
-##  [7]  0.5490967  0.2382129 -1.0488931  1.2947633
+##  [1] -0.7729782  2.1499193 -1.3343536  0.4958705  1.2339762  0.6343621
+##  [7]  0.4120223  0.7935853 -0.1524106 -0.2288958
 ```
 
 ``` r
@@ -566,8 +1187,8 @@ sort(norm_draws)
 ```
 
 ```
-##  [1] -1.7272706 -1.0488931  0.1830826  0.2382129  0.5038124  0.5490967
-##  [7]  1.2805549  1.2947633  1.6901844  2.5283366
+##  [1] -1.3343536 -0.7729782 -0.2288958 -0.1524106  0.4120223  0.4958705
+##  [7]  0.6343621  0.7935853  1.2339762  2.1499193
 ```
 
 ``` r
@@ -575,7 +1196,7 @@ order(norm_draws)
 ```
 
 ```
-##  [1]  3  9  1  8  5  7  2 10  4  6
+##  [1]  3  1 10  9  7  4  6  8  5  2
 ```
 
 ``` r
@@ -583,7 +1204,7 @@ sum(norm_draws)
 ```
 
 ```
-## [1] 5.49188
+## [1] 3.231097
 ```
 
 ``` r
@@ -604,10 +1225,10 @@ rand_mat1
 ```
 
 ```
-##             [,1]       [,2]
-## [1,]  0.82553984 -0.7335032
-## [2,] -0.05568601 -0.2158654
-## [3,] -0.78438222 -0.3349128
+##            [,1]         [,2]
+## [1,] -0.9007918  0.619283535
+## [2,] -0.7350262 -0.006198262
+## [3,] -1.4276858 -0.685706846
 ```
 
 ``` r
@@ -615,10 +1236,10 @@ rand_mat2
 ```
 
 ```
-##             [,1]
-## [1,] -1.08569914
-## [2,] -0.08542326
-## [3,]  1.07061054
+##            [,1]
+## [1,] -0.2793335
+## [2,] -0.7827303
+## [3,] -0.7789972
 ```
 
 ``` r
@@ -626,10 +1247,10 @@ cbind(rand_mat1,rand_mat2)
 ```
 
 ```
-##             [,1]       [,2]        [,3]
-## [1,]  0.82553984 -0.7335032 -1.08569914
-## [2,] -0.05568601 -0.2158654 -0.08542326
-## [3,] -0.78438222 -0.3349128  1.07061054
+##            [,1]         [,2]       [,3]
+## [1,] -0.9007918  0.619283535 -0.2793335
+## [2,] -0.7350262 -0.006198262 -0.7827303
+## [3,] -1.4276858 -0.685706846 -0.7789972
 ```
 ---
 # Examples (Cont.)
@@ -641,9 +1262,9 @@ rand_mat1
 ```
 
 ```
-##             [,1]       [,2]       [,3]
-## [1,]  0.82553984 -0.7843822 -0.2158654
-## [2,] -0.05568601 -0.7335032 -0.3349128
+##            [,1]       [,2]         [,3]
+## [1,] -0.9007918 -1.4276858 -0.006198262
+## [2,] -0.7350262  0.6192835 -0.685706846
 ```
 
 ``` r
@@ -651,8 +1272,8 @@ rand_mat2
 ```
 
 ```
-##           [,1]        [,2]     [,3]
-## [1,] -1.085699 -0.08542326 1.070611
+##            [,1]       [,2]       [,3]
+## [1,] -0.2793335 -0.7827303 -0.7789972
 ```
 
 ``` r
@@ -660,10 +1281,10 @@ rbind(rand_mat1,rand_mat2)
 ```
 
 ```
-##             [,1]        [,2]       [,3]
-## [1,]  0.82553984 -0.78438222 -0.2158654
-## [2,] -0.05568601 -0.73350322 -0.3349128
-## [3,] -1.08569914 -0.08542326  1.0706105
+##            [,1]       [,2]         [,3]
+## [1,] -0.9007918 -1.4276858 -0.006198262
+## [2,] -0.7350262  0.6192835 -0.685706846
+## [3,] -0.2793335 -0.7827303 -0.778997240
 ```
 
 ---
@@ -694,7 +1315,7 @@ dim(rand_mat2)
 ```
 
 ``` r
-my_string = "Hello, This is Econ 370, and my name is Drew"
+my_string = "Hello, This is Econ 370, and my name is Jiaxi"
 substr(my_string,1,10)
 ```
 
@@ -708,22 +1329,16 @@ strsplit(my_string,",")
 
 ```
 ## [[1]]
-## [1] "Hello"                " This is Econ 370"    " and my name is Drew"
+## [1] "Hello"                 " This is Econ 370"     " and my name is Jiaxi"
 ```
 
 
----
-# For Next Class
-
-Required reading: Ch. 2, Mastering Metrics (PDF is on Canvas)
-
-Optional Reading: Ch. 3, Introduction to Statistical Learning (course textbook)
 
 ---
 
 class: inverse, center, middle
 
-# Next lecture: Introduction to Regression
+# Next lecture: Tidyverse
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
@@ -733,9 +1348,9 @@ class: inverse, center, middle
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
