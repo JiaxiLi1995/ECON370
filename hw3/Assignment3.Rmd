@@ -57,6 +57,7 @@ Note: we are using the S&P 500 index returns, not individual companies in the S&
 # Data Loading in Section, do not modify
 library(tidyquant)
 library(tidyverse) # ggplot2 is already in tidyverse
+library(lubridate)
 
 # Get S&P500 daily data
 SP500_simple_returns = tq_get("^GSPC",
@@ -139,7 +140,7 @@ In this assignment, I will ask you to pull **three variables each from a differe
 
 ```
 
-3.  What is the situation of **mixed frequency** and **missing data**? If there are, fill in with appropriate method. One reference of mixed frequency is [MIDAS](<https://rady.ucsd.edu/_files/faculty-research/valkanov/midas-touch.pdf>).
+3.  What is the situation of **mixed frequency** and **missing data**? If there are, fill in with appropriate method. One reference of mixed frequency is [MIDAS](https://rady.ucsd.edu/_files/faculty-research/valkanov/midas-touch.pdf).
 
 ```{r}
 # Answer about mixed frequency and missing data issue:
@@ -166,6 +167,13 @@ In this assignment, I will ask you to pull **three variables each from a differe
 
 ```
 
+6.  Filtering the desired dates: predictive date from1985 to 2024.
+
+```{r}
+# Code Below, remember commenting
+
+```
+
 ------------------------------------------------------------------------
 
 # III. Exploration with `tidyverse`
@@ -177,18 +185,23 @@ In this assignment, I will ask you to pull **three variables each from a differe
 
 ```
 
-2.  Use `group_by` to group by different values in "Var_name" and estimate the **mean** for each variable using `summarise`.
+2.  Use `group_by` to group by different values in "Var_name" and estimate the **mean** for each variable using `summarise`. Use `round` to round to 2 decimal places.
 
 ```{r}
 # Code Below, remember commenting
 
 ```
 
-3.  Use **ggplot** to visualize all the series together in a single plot. Examine (with the plot) whether the series fluctuate around a stable level or display a trend that drifts away over time.
+3.  Use **ggplot** to visualize all the series together in a single plot with each series represented in a different color. Examine (with the plot) whether the series fluctuate around a stable level or display a trend that drifts away over time.
 
 ```{r}
-# Code/Explanation Below, remember commenting
+# Code Below, remember commenting
 
 ```
 
-Note: if you find one of your varaible displays a trend that drifts away over time, you should reconsider how to use that variable. (This is called non-stationary series in time series.)
+```{r}
+# Answer:
+
+```
+
+Note: if you find one of your variable displays a trend that drifts away over time, you should reconsider how to use that variable. (This is called non-stationary series in time series.)
