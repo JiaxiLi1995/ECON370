@@ -287,7 +287,7 @@ Total_data = Total_data |>
 head(Total_data)
 ```
 
-Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the `GDP_g` by 4 additional months. (This is why we need to extract ealier data.)
+Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the `GDP_g` by 4 additional months. (This is why we need to extract earlier data.)
 
 ```{r}
 # Lag GDP_g further by 4 months

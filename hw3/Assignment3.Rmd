@@ -1,0 +1,194 @@
+---
+title: "ECON 370: Assignment 3"
+author: "Jiaxi Li"
+date: "Due: Before class on October 28th, 2025"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{geometry}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{caption}
+  - \usepackage{multirow}
+  - \usepackage{array}
+  - \usepackage[affil-it]{authblk}
+  - \usepackage{lscape}
+  - \usepackage[bottom]{footmisc}
+  - \usepackage{amssymb}
+  - \usepackage{amsmath}
+  - \geometry{top=1in, bottom=1in}
+  - \setlength{\parindent}{0pt}
+  - \setlength{\parskip}{12pt}
+---
+
+```{r setup, include=FALSE}
+# Note, this is global setting for all code chunks
+knitr::opts_chunk$set(include = FALSE)
+```
+
+# Directions
+
+## As a reminder, LLMs and AIs are allowed from use on this assignment.
+
+This assignment serves dual purpose: **application of `tidyverse`** and **cleaning and merging some of your data for the final project**. You can check **final project details** as a guide. You can use AI but consider using StackOverflow before asking AI for a solution!
+
+Use the Rmd template and write code to answer the following questions. In order to ensure smooth grading, I will ask you to write both your code and explanation (as comment) in code chunk. Please write your code and answer in the corresponding place.
+
+Each question is worth three points. For each section, a "question" corresponds to a number.
+
+Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
+
+Remember to **host your data on GitHub** if it cannot directly be pulled using functions such as `tq_get`.
+
+There are many ways to clean data. However, I will ask you to apply **pipeline and `dplyr` package** for data wrangling here. 0.5 point per question will be deducted if other method is used while getting the correct answer.
+
+You need to work individually for this homework.
+
+------------------------------------------------------------------------
+
+# O. Return Data
+
+***This is the code to extract return data online. Do not modify.***
+
+Note: we are using the S&P 500 index returns, not individual companies in the S&P 500.
+
+```{r}
+# Data Loading in Section, do not modify
+library(tidyquant)
+library(tidyverse) # ggplot2 is already in tidyverse
+
+# Get S&P500 daily data
+SP500_simple_returns = tq_get("^GSPC",
+                               from = "1984-01-01",
+                               to   = "2024-12-31",
+                               get  = "stock.prices") |>
+  tq_transmute(
+    select     = adjusted,       # adjusted price for accuracy
+    mutate_fun = periodReturn,   # calculate period returns
+    period     = "monthly",      # monthly returns
+    type       = "arithmetic",   # simple return (percentage change)
+    col_rename = "monthly_return"
+  ) |>
+  # Convert to percentage
+  mutate(monthly_return = monthly_return*100)
+
+head(SP500_simple_returns)
+```
+
+------------------------------------------------------------------------
+
+# I. Variables and Reasoning
+
+In this assignment, I will ask you to pull **three variables each from a different source** (you will need to do at least 10 from at least 4 sources in the final project).
+
+1.  Name the three variables, sources and frequency of your data.
+
+```{r}
+# Answer:
+# Variable 1:
+# Source:
+# Frequency:
+
+# Variable 2:
+# Source:
+# Frequency:
+
+# Variable 3:
+# Source:
+# Frequency:
+```
+
+2.  Reason to include each variable(articles or strong logic support).
+
+```{r}
+# Answer:
+# Reason to include Variable 1:
+
+# Reason to include Variable 2:
+
+# Reason to include Variable 3:
+
+```
+
+3.  Upload all your **raw** data on GitHub unless they can be extracted using R functions (without downloading things). Make sure they have **long enough history**. Then download each data as a **tibble**:
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+------------------------------------------------------------------------
+
+# II. Data Cleaing
+
+1.  Check the **date format** of your datasets. Do you see different formats than "yyyy-mm-dd"? Do you different ways of documenting with month end? If so, fix them with **`mutate`** function combined with `lubridate` package.
+
+```{r}
+# Answer about date issue:
+
+
+# Code Below, remember commenting
+
+```
+
+2.  Use `left_join` to **join** all your data with the return data "SP500_simple_returns".
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+3.  What is the situation of **mixed frequency** and **missing data**? If there are, fill in with appropriate method. One reference of mixed frequency is [MIDAS](<https://rady.ucsd.edu/_files/faculty-research/valkanov/midas-touch.pdf>).
+
+```{r}
+# Answer about mixed frequency and missing data issue:
+
+
+# Code Below, remember commenting
+
+```
+
+4.  What is the situation of **publication bias** for all three variables? Are there any? If there are, use `mutate` and `lag` to make appropriate lags.
+
+```{r}
+# Answer about publication bias issue:
+
+
+# Code Below, remember commenting
+
+```
+
+5.  Use `lead` to create predictive date and predictive return.
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+------------------------------------------------------------------------
+
+# III. Exploration with `tidyverse`
+
+1.  Make the data longer using `pivot_longer`, each variable name are stored in a column called "Var_name" and all values are stored in a column called "Var_value".
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+2.  Use `group_by` to group by different values in "Var_name" and estimate the **mean** for each variable using `summarise`.
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+3.  Use **ggplot** to visualize all the series together in a single plot. Examine (with the plot) whether the series fluctuate around a stable level or display a trend that drifts away over time.
+
+```{r}
+# Code/Explanation Below, remember commenting
+
+```
+
+Note: if you find one of your varaible displays a trend that drifts away over time, you should reconsider how to use that variable. (This is called non-stationary series in time series.)

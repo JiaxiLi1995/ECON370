@@ -499,7 +499,7 @@ head(Total_data)</code></pre>
 ## 4 1984-04-01          0.547   8.1
 ## 5 1984-05-01         -5.94    8.1
 ## 6 1984-06-01          1.75    7.1</code></pre>
-<p>Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the <code>GDP_g</code> by 4 additional months. (This is why we need to extract ealier data.)</p>
+<p>Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the <code>GDP_g</code> by 4 additional months. (This is why we need to extract earlier data.)</p>
 <pre class="r"><code># Lag GDP_g further by 4 months
 Total_data = Total_data |&gt;
   mutate(GDP_g = lag(GDP_g, 4))
