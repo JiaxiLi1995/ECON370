@@ -135,6 +135,7 @@ Finding data stinks. Below, I've tried to list every public data source I can th
 - [Open Source Asset Pricing Data](https://www.openassetpricing.com/data/) – Academic finance datasets  
 - [Global Factor Data](https://jkpfactors.com/) – International factor datasets  
 - [WRDS](https://wrds.wharton.upenn.edu/) – Subscription-based professional database  
+- [Fed](https://www.federalreserve.gov/data.htm) - download data from Federal Reserve
 
 ### **Additional Public Data Resources**
 - [Data.gov](https://data.gov/) – U.S. government open data  [^8]
