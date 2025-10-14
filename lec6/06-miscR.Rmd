@@ -90,7 +90,7 @@ aggregate(subset(mpg, manufacturer=="audi"), hwy ~ model, FUN = mean)
 --
 
 The first line reads from left to right, exactly how I thought of the operations in my head. 
-- Take this object (`mpg`), do this (`filter`), then do this (`group_by`), etc.
+- Take this object (`mpg`), do this (`subset`), then do this (`aggregate`), etc.
 
 The second line totally inverts this logical order (the final operation comes first!) 
 - Who wants to read things inside out?
@@ -288,7 +288,7 @@ However, don't worry too much about this. While you need to understand it a litt
 ---
 # rds
 
-The rds files are native to R. We can try to save as rds file and read it with `saveRDS()` and `read.rds()`:
+The rds files are native to R. We can try to save as rds file and read it with `saveRDS()` and `saveRDS()`:
 
 ```{r}
 # rds files

@@ -43,7 +43,7 @@ name: toc
 
 3. [Read/Write Files](#read)
 
-4. [Webscrapping](#webscrap)
+4. [Web Scraping](#webscrap)
 
 5. [Regular Expressions](#regular)
 
@@ -91,7 +91,7 @@ aggregate(subset(mpg, manufacturer=="audi"), hwy ~ model, FUN = mean)
 --
 
 The first line reads from left to right, exactly how I thought of the operations in my head. 
-- Take this object (`mpg`), do this (`filter`), then do this (`group_by`), etc.
+- Take this object (`mpg`), do this (`subset`), then do this (`aggregate`), etc.
 
 The second line totally inverts this logical order (the final operation comes first!) 
 - Who wants to read things inside out?
@@ -160,7 +160,7 @@ Sys.Date()
 ```
 
 ```
-## [1] "2025-10-09"
+## [1] "2025-10-14"
 ```
 
 --
@@ -202,7 +202,7 @@ today()
 ```
 
 ```
-## [1] "2025-10-09"
+## [1] "2025-10-14"
 ```
 
 ---
@@ -364,12 +364,14 @@ list.files()
 ```
 
 ```
-##  [1] "06-miscR.html"                 "06-miscR.pdf"                 
-##  [3] "06-miscR.Rmd"                  "blp_data.csv"                 
-##  [5] "blp_data.rds"                  "blp_data2.csv"                
-##  [7] "Lec6_2024"                     "Lecture6Markdown_complete.Rmd"
-##  [9] "Lecture6Script.R"              "libs"                         
-## [11] "OTC_data.feather"              "OTC_data.fst"
+##  [1] "06-miscR.html"                      "06-miscR.pdf"                      
+##  [3] "06-miscR.Rmd"                       "blp_data.csv"                      
+##  [5] "blp_data.rds"                       "blp_data2.csv"                     
+##  [7] "blp_data2.rds"                      "Lec6_2024"                         
+##  [9] "Lecture6Markdown_complete.Rmd"      "Lecture6Markdown_template.Rmd"     
+## [11] "Lecture6Markdown_template_fill.Rmd" "Lecture6Script.R"                  
+## [13] "libs"                               "OTC_data.feather"                  
+## [15] "OTC_data.fst"
 ```
 
 ``` r
@@ -415,7 +417,7 @@ However, don't worry too much about this. While you need to understand it a litt
 ---
 # rds
 
-The rds files are native to R. We can try to save as rds file and read it with `saveRDS()` and `read.rds()`:
+The rds files are native to R. We can try to save as rds file and read it with `saveRDS()` and `saveRDS()`:
 
 
 ``` r
@@ -466,20 +468,25 @@ OTC_data_fst = read_fst("OTC_data.fst")
 
 ```
 ## Unit: microseconds
-##          expr    min     lq    mean  median     uq    max neval
-##      rds_read  372.9  400.0  432.33  408.40  454.2  569.2    10
-##      csv_read 3028.7 3118.7 3360.07 3195.55 3402.9 4256.7    10
-##  feather_read 2734.7 3033.1 3068.33 3071.00 3118.2 3507.8    10
-##      fst_read  271.8  288.3  328.63  320.20  350.0  436.5    10
+##          expr      min       lq      mean   median       uq      max neval
+##      rds_read  658.501  691.701  815.4910  768.401  826.201 1132.202    10
+##      csv_read 5354.801 5505.301 5948.6911 5635.001 6177.801 7692.801    10
+##  feather_read 5034.802 5060.201 5374.5710 5167.851 5423.001 6551.202    10
+##      fst_read  447.601  542.701  619.1813  602.251  651.502  952.701    10
 ```
 
 ```
 ## Unit: microseconds
-##          expr     min      lq     mean   median      uq     max neval
-##      rds_save  1658.4  1732.8  1765.30  1776.35  1811.0  1844.0    10
-##      csv_save 12876.5 12958.6 13089.78 13011.40 13136.0 13784.5    10
-##  feather_save  2205.6  2257.4  2446.95  2496.75  2561.4  2636.2    10
-##      fst_save   394.7   460.1   490.57   491.40   510.9   637.6    10
+##          expr       min        lq       mean    median        uq       max
+##      rds_save  2791.101  2946.601  3805.5810  3073.551  3329.600 10344.501
+##      csv_save 21772.202 22675.001 24661.7811 23208.551 23503.801 39522.001
+##  feather_save  4173.202  4940.102  5445.3010  5182.650  6142.202  7318.701
+##      fst_save   691.501   808.800   942.8105   838.950   903.601  2038.500
+##  neval
+##     10
+##     10
+##     10
+##     10
 ```
 
 
@@ -488,7 +495,7 @@ OTC_data_fst = read_fst("OTC_data.fst")
 class: inverse, center, middle
 name: webscrap
 
-# Webscrapping
+# Web Scraping
 
 &lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=796px&gt;&lt;/html&gt;
 
@@ -1051,13 +1058,14 @@ list.files("D:/R/ECON370/lec6")
 ```
 
 ```
-##  [1] "06-miscR.html"                 "06-miscR.pdf"                 
-##  [3] "06-miscR.Rmd"                  "blp_data.csv"                 
-##  [5] "blp_data.rds"                  "blp_data2.csv"                
-##  [7] "blp_data2.rds"                 "Lec6_2024"                    
-##  [9] "Lecture6Markdown_complete.Rmd" "Lecture6Script.R"             
-## [11] "libs"                          "OTC_data.feather"             
-## [13] "OTC_data.fst"
+##  [1] "06-miscR.html"                      "06-miscR.pdf"                      
+##  [3] "06-miscR.Rmd"                       "blp_data.csv"                      
+##  [5] "blp_data.rds"                       "blp_data2.csv"                     
+##  [7] "blp_data2.rds"                      "Lec6_2024"                         
+##  [9] "Lecture6Markdown_complete.Rmd"      "Lecture6Markdown_template.Rmd"     
+## [11] "Lecture6Markdown_template_fill.Rmd" "Lecture6Script.R"                  
+## [13] "libs"                               "OTC_data.feather"                  
+## [15] "OTC_data.fst"
 ```
 
 Suppose that I only want to have all the files with `.csv` extension (could be multiple files), we can use regular expressions:
@@ -1088,7 +1096,7 @@ pattern &lt;- (?:[a-z0-9!#$%&amp;'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&amp;'*+/=?^_`{
 
 Regular expressions are very powerful for processing text data. Processing text data is a skill set in-and-of itself. 
 
-At one point, I knew regular expressions (regex) decently well. Now, I have LLMs write my regexs if they're at all complicated. 
+I use LLMs write my regexs and it is usually really accurate. 
 
 Lots of learning when it comes to programming is simply being aware of something so that you can look into it more when you actually need to use it.
 
