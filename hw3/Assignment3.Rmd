@@ -41,7 +41,7 @@ Please **comment** your code clearly. 0.5 point per question will be deducted if
 
 Remember to **host your data on GitHub** if it cannot directly be pulled using functions such as `tq_get`.
 
-There are many ways to clean data. However, I will ask you to apply **pipeline and `dplyr` package** for data wrangling here. 0.5 point per question will be deducted if other method is used while getting the correct answer.
+There are many ways to clean data. However, I will ask you to apply **pipeline and `tidyverse`** **package** for data wrangling here. 0.5 point per question will be deducted if other method is used while getting the correct answer.
 
 You need to work individually for this homework.
 
