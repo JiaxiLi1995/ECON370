@@ -160,7 +160,7 @@ Sys.Date()
 ```
 
 ```
-## [1] "2025-10-14"
+## [1] "2025-10-15"
 ```
 
 --
@@ -202,7 +202,7 @@ today()
 ```
 
 ```
-## [1] "2025-10-14"
+## [1] "2025-10-15"
 ```
 
 ---
@@ -231,7 +231,7 @@ week(today())
 ```
 
 ```
-## [1] 41
+## [1] 42
 ```
 
 ``` r
@@ -468,25 +468,20 @@ OTC_data_fst = read_fst("OTC_data.fst")
 
 ```
 ## Unit: microseconds
-##          expr      min       lq      mean   median       uq      max neval
-##      rds_read  658.501  691.701  815.4910  768.401  826.201 1132.202    10
-##      csv_read 5354.801 5505.301 5948.6911 5635.001 6177.801 7692.801    10
-##  feather_read 5034.802 5060.201 5374.5710 5167.851 5423.001 6551.202    10
-##      fst_read  447.601  542.701  619.1813  602.251  651.502  952.701    10
+##          expr    min     lq    mean  median     uq    max neval
+##      rds_read  485.2  530.5  702.16  643.05  814.9 1005.8    10
+##      csv_read 3813.8 4048.1 4435.59 4315.65 4733.2 5397.2    10
+##  feather_read 3652.0 3980.2 4670.88 4569.40 5370.5 5799.7    10
+##      fst_read  326.3  378.9  461.19  425.60  545.0  622.7    10
 ```
 
 ```
 ## Unit: microseconds
-##          expr       min        lq       mean    median        uq       max
-##      rds_save  2791.101  2946.601  3805.5810  3073.551  3329.600 10344.501
-##      csv_save 21772.202 22675.001 24661.7811 23208.551 23503.801 39522.001
-##  feather_save  4173.202  4940.102  5445.3010  5182.650  6142.202  7318.701
-##      fst_save   691.501   808.800   942.8105   838.950   903.601  2038.500
-##  neval
-##     10
-##     10
-##     10
-##     10
+##          expr     min      lq     mean   median      uq     max neval
+##      rds_save  1708.6  1795.2  1896.22  1804.35  1874.3  2532.5    10
+##      csv_save 12563.5 12660.6 13138.95 12874.15 13397.2 14349.8    10
+##  feather_save  2336.2  2435.1  2832.95  2625.25  2691.2  4574.6    10
+##      fst_save   408.8   485.3   550.08   512.95   557.7   989.6    10
 ```
 
 
@@ -1131,6 +1126,7 @@ New Ones:
 - `order()`: like sort, but gives the IDs rather than a sorted vector
 - `substr()`: returns a string subsetted by the indexes supplied
 - `strsplit()`: splits a string by a pattern
+- `na.omit()`: remove the rows/observations containing NAs
 
 ---
 # Examples
@@ -1340,6 +1336,25 @@ strsplit(my_string,",")
 ## [1] "Hello"                 " This is Econ 370"     " and my name is Jiaxi"
 ```
 
+---
+# Examples
+
+``` r
+# Create a data frame with some missing values
+df &lt;- data.frame(
+  x = c(1, 2, NA, 4, 5),
+  y = c(NA, 10, 15, 20, NA)
+)
+
+# remove all the NAs
+na.omit(df)
+```
+
+```
+##   x  y
+## 2 2 10
+## 4 4 20
+```
 
 
 ---

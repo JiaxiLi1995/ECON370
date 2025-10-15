@@ -812,6 +812,7 @@ New Ones:
 - `order()`: like sort, but gives the IDs rather than a sorted vector
 - `substr()`: returns a string subsetted by the indexes supplied
 - `strsplit()`: splits a string by a pattern
+- `na.omit()`: remove the rows/observations containing NAs
 
 ---
 # Examples
@@ -866,6 +867,18 @@ substr(my_string,1,10)
 strsplit(my_string,",")
 ```
 
+---
+# Examples
+```{r}
+# Create a data frame with some missing values
+df <- data.frame(
+  x = c(1, 2, NA, 4, 5),
+  y = c(NA, 10, 15, 20, NA)
+)
+
+# remove all the NAs
+na.omit(df)
+```
 
 
 ---

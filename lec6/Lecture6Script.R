@@ -221,3 +221,12 @@ substr(my_string,1,10)
 strsplit(my_string,",")
 
 
+# Create a data frame with some missing values
+df <- data.frame(
+  x = c(1, 2, NA, 4, 5),
+  y = c(NA, 10, 15, 20, NA)
+)
+df
+
+# remove all the NAs
+na.omit(df)
