@@ -521,7 +521,7 @@ In particular, we want to get the information from the 3 main tables on the webp
 
 Here's what happens when we give R no instructions at all:
 ```{r}
-raw_wiki <- read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
+raw_wiki = read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
 raw_wiki
 class(raw_wiki)
 ```
@@ -579,7 +579,7 @@ Looks better!
 We still don't have the table info. `html_table()` can help:
 
 ```{r}
-table_dfs <- raw_wiki |> html_elements("table.wikitable") |> 
+table_dfs = raw_wiki |> html_elements("table.wikitable") |> 
   html_table()
 table_dfs[[1]]
 ```
@@ -603,10 +603,10 @@ Useful commands for getting individual elements:
 Let's get our data frames in working order here: 
 
 ```{r}
-table_dfs_int <- raw_wiki |> html_elements("table.wikitable") |> 
+table_dfs_int = raw_wiki |> html_elements("table.wikitable") |> 
   html_table()
 
-table_dfs <- lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
+table_dfs = lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
                     function(x) x |>
                       clean_names() |> ## fix colnames, from the janitor package #<<
                       mutate(date = mdy(date))) ## from lubridate
@@ -619,7 +619,7 @@ Let's combine our data frames into one and graph the results.
 # Combined Data
 
 ```{r}
-wr100 <- rbind(
+wr100 = rbind(
   table_dfs[[1]] |> select(time, athlete, nationality, date) |> 
     mutate(era="Pre-IAAF"),
   table_dfs[[2]] |> select(time, athlete, nationality, date) |> 
@@ -871,7 +871,7 @@ strsplit(my_string,",")
 # Examples
 ```{r}
 # Create a data frame with some missing values
-df <- data.frame(
+df = data.frame(
   x = c(1, 2, NA, 4, 5),
   y = c(NA, 10, 15, 20, NA)
 )

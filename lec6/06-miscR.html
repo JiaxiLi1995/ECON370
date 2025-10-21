@@ -160,7 +160,7 @@ Sys.Date()
 ```
 
 ```
-## [1] "2025-10-15"
+## [1] "2025-10-21"
 ```
 
 --
@@ -202,7 +202,7 @@ today()
 ```
 
 ```
-## [1] "2025-10-15"
+## [1] "2025-10-21"
 ```
 
 ---
@@ -468,20 +468,25 @@ OTC_data_fst = read_fst("OTC_data.fst")
 
 ```
 ## Unit: microseconds
-##          expr    min     lq    mean  median     uq    max neval
-##      rds_read  374.8  417.5  446.87  436.15  488.8  512.0    10
-##      csv_read 3033.1 3101.4 3239.66 3195.35 3245.4 3864.8    10
-##  feather_read 2576.9 2761.2 2972.90 2838.60 3135.0 3979.7    10
-##      fst_read  248.3  280.4  318.52  333.75  354.4  368.5    10
+##          expr      min       lq      mean   median       uq       max neval
+##      rds_read  629.400  692.802  737.5811  753.251  763.200   838.702    10
+##      csv_read 5212.301 5437.301 5736.0307 5622.000 6080.900  6269.501    10
+##  feather_read 4458.400 4600.901 5728.5109 5091.752 6080.601 10104.701    10
+##      fst_read  447.401  486.801  539.3808  555.301  577.500   605.701    10
 ```
 
 ```
 ## Unit: microseconds
-##          expr     min      lq     mean   median      uq     max neval
-##      rds_save  1680.1  1730.6  1910.84  1747.10  1934.2  2852.8    10
-##      csv_save 12460.5 12525.1 12633.29 12589.85 12691.1 12953.1    10
-##  feather_save  2119.5  2187.4  2342.37  2324.50  2398.1  2670.6    10
-##      fst_save   373.9   452.3   476.75   478.20   494.1   628.9    10
+##          expr       min        lq       mean     median        uq       max
+##      rds_save  2568.601  2764.901  2865.5411  2827.4510  2927.101  3331.502
+##      csv_save 18958.601 19596.701 21504.1412 22096.6010 22706.601 24244.602
+##  feather_save  3147.701  3315.800  3949.3211  3752.8515  4566.801  5434.400
+##      fst_save   623.301   681.701   852.6709   772.1005  1082.801  1196.900
+##  neval
+##     10
+##     10
+##     10
+##     10
 ```
 
 
@@ -650,7 +655,7 @@ In particular, we want to get the information from the 3 main tables on the webp
 Here's what happens when we give R no instructions at all:
 
 ``` r
-raw_wiki &lt;- read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
+raw_wiki = read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
 raw_wiki
 ```
 
@@ -753,7 +758,7 @@ We still don't have the table info. `html_table()` can help:
 
 
 ``` r
-table_dfs &lt;- raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
+table_dfs = raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
   html_table()
 table_dfs[[1]]
 ```
@@ -795,10 +800,10 @@ Let's get our data frames in working order here:
 
 
 ``` r
-table_dfs_int &lt;- raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
+table_dfs_int = raw_wiki |&gt; html_elements("table.wikitable") |&gt; 
   html_table()
 
-table_dfs &lt;- lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
+table_dfs = lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
                     function(x) x |&gt;
 *                     clean_names() |&gt; ## fix colnames, from the janitor package
                       mutate(date = mdy(date))) ## from lubridate
@@ -829,7 +834,7 @@ Let's combine our data frames into one and graph the results.
 
 
 ``` r
-wr100 &lt;- rbind(
+wr100 = rbind(
   table_dfs[[1]] |&gt; select(time, athlete, nationality, date) |&gt; 
     mutate(era="Pre-IAAF"),
   table_dfs[[2]] |&gt; select(time, athlete, nationality, date) |&gt; 
@@ -1341,7 +1346,7 @@ strsplit(my_string,",")
 
 ``` r
 # Create a data frame with some missing values
-df &lt;- data.frame(
+df = data.frame(
   x = c(1, 2, NA, 4, 5),
   y = c(NA, 10, 15, 20, NA)
 )
