@@ -55,7 +55,7 @@ ymd("2021-09-14") < "2021-08-12"
 getwd()
 
 # Check files and folders in a new working directory
-file_vec <- list.files()
+file_vec = list.files()
 file_vec
 
 # Use the two lines below to load the data from my Github page and save it locally
@@ -112,7 +112,7 @@ library(dplyr)
 library(janitor)
 
 # read in the web page from wikipedia
-raw_wiki <- read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
+raw_wiki = read_html("https://en.wikipedia.org/wiki/Men%27s_100_metres_world_record_progression")
 raw_wiki
 class(raw_wiki)
 
@@ -122,24 +122,24 @@ raw_wiki |> html_elements("table")
 raw_wiki |> html_elements("table.wikitable")
 
 # Use html_table to view
-table_dfs <- raw_wiki |>
+table_dfs = raw_wiki |>
   html_elements("table.wikitable") |> 
   html_table()
 table_dfs[[1]]
 
 # Clean up the table
-table_dfs_int <- raw_wiki |>
+table_dfs_int = raw_wiki |>
   html_elements("table.wikitable") |> 
   html_table()
 
-table_dfs <- lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
+table_dfs = lapply(table_dfs_int[c(1,3,4)], # drop unwanted tables
                     function(x) x |>
                       clean_names() |> ## fix colnames, from the janitor package #<<
                       mutate(date = mdy(date))) ## from lubridate
 table_dfs[[1]]
 
 # Combine the three table
-wr100 <- rbind(
+wr100 = rbind(
   table_dfs[[1]] |> select(time, athlete, nationality, date) |> 
     mutate(era="Pre-IAAF"),
   table_dfs[[2]] |> select(time, athlete, nationality, date) |> 
@@ -222,7 +222,7 @@ strsplit(my_string,",")
 
 
 # Create a data frame with some missing values
-df <- data.frame(
+df = data.frame(
   x = c(1, 2, NA, 4, 5),
   y = c(NA, 10, 15, 20, NA)
 )
