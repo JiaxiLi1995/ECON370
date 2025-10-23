@@ -645,7 +645,7 @@ Tampa_flights = left_join(
 ```
 
 ---
-# Practice with joins
+# Practice with dplyr
 
 Now, please take one minute to work on the following question.
 
@@ -893,5 +893,5 @@ class: inverse, center, middle
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
-pagedown::chrome_print(input = infile, timeout = 100)
+#pagedown::chrome_print(input = infile, timeout = 100)
 ```
