@@ -622,7 +622,7 @@ DT
 
 --
 
-Uh-oh! It too has been removed... exactly as modifying by reference demands. To avoid this behaviour, use the explicit [`data.table::copy()`](https://rdatatable.gitlab.io/data.table/reference/copy.html) function. Run this next chunk yourself:
+Uh-oh! It too has been removed... exactly as modifying by reference demands. To avoid this behavior, use the explicit [`data.table::copy()`](https://rdatatable.gitlab.io/data.table/reference/copy.html) function. Run this next chunk yourself:
 
 ```{r, highlightSpans = TRUE, eval = FALSE}
 DT[, x_sq := x^2]     
@@ -715,17 +715,6 @@ DT |>
   _[, xyz := x+y+z] |>
   _[, xyz_sq := xyz^2] |>
   _[] 
-```
-
----
-
-# Modifying columns := (cont.)
-
-To remove a column from your dataset, set it to NULL.
-
-```{r mod_cols5, cache=FALSE}
-DT[, y_name := NULL]
-DT
 ```
 
 
@@ -983,7 +972,7 @@ If we instead want to apply the same function on *all* the variables in our data
 As a quick example, recall our earlier DT object that contains only numeric variables.
 
 ```{r, cache=FALSE}
-DT
+DT <- DT[, x:x_sq]
 ```
 
 --
@@ -1191,9 +1180,10 @@ If you run these, you'll see that both methods handle the ambiguous "year" colum
 <b>Possible answer:</b> Use `setnames()`.
 
 ```{r, eval = FALSE}
+setnames(planes_dt, old = "year", new = "year_built") #<< 
 merge(
   flights_dt,
-  setnames(planes_dt, old = "year", new = "year_built"), #<< 
+  planes_dt,
   all.x = TRUE, 
   by = "tailnum")
 ```
@@ -1239,13 +1229,29 @@ So, we get about a **`r mbx_join`x** speed-up for this simple case just by setti
 One subtle point is that using `merge()` to join two datasets will sort the result by the key by default. To preserve the original order of the first dataset-similar to `left_join()`-set sort = FALSE:
 
 ```{r, eval = FALSE}
+# setnames(planes_dt, old = "year", new = "year_built")
 merge(
   flights_dt,
-  setnames(planes_dt, old = "year", new = "year_built"),
+  planes_dt,
   all.x = TRUE, 
   by = "tailnum",
   sort = F) #<< 
 ```
+
+---
+# Practice with data.table
+
+Now, please take one minute to work on the following question (same as the questions in previous lecture using `dplyr`).
+
+</br>
+
+For Tampa Intl airport (Tampa Intl) on Jan 1, 2013, figure out:
+
+Q1. Which carrier flew the most flights into Tampa?
+
+Q2. How many Airbus (AIRBUS) planes did JetBlue (JetBlue Airways) fly into Tampa?
+
+Q3. What manufacturers did Delta (Delta Air Lines Inc.) fly into Tampa?
 
 
 ---
