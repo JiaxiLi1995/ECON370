@@ -1072,5 +1072,5 @@ class: inverse, center, middle
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
-pagedown::chrome_print(input = infile, timeout = 100000)
+#pagedown::chrome_print(input = infile, timeout = 100000)
 ```

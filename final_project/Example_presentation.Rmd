@@ -145,5 +145,5 @@ class: inverse, center, middle
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 # Here should be the correct html file name
 infile = "Example_presentation.html"
-pagedown::chrome_print(input = infile, timeout = 1000)
+#pagedown::chrome_print(input = infile, timeout = 1000)
 ```

@@ -1191,5 +1191,5 @@ abline(fit, col = "red")
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
 infile = list.files(pattern = '.html')
-pagedown::chrome_print(input = infile, timeout = 10000)
+#pagedown::chrome_print(input = infile, timeout = 10000)
 ```
