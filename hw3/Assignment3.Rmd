@@ -167,7 +167,7 @@ In this assignment, I will ask you to pull **three variables each from a differe
 
 ```
 
-6.  Filtering the desired dates: predictive date from1985 to 2024.
+6.  Filtering the desired dates: predictive date from 1985 to 2024.
 
 ```{r}
 # Code Below, remember commenting
