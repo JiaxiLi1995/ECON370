@@ -109,6 +109,21 @@ Result <- glm(am ~ mpg + hp, data = mtcars, family = binomial)
 summary(Result)
 
 
+# Interactions in Regressions
+# Fit logistic regression
+# Predict transmission based on mpg and hp
+Result = glm(am ~ mpg + hp + mpg:hp, data = mtcars, family = binomial)
+# Result = glm(am ~ mpg*hp, data = mtcars, family = binomial)
+# Result = glm(am ~ (mpg + hp)^2, data = mtcars, family = binomial)
+# Using ^2 will create only two-way interactions
+Result = glm(am ~ (mpg + hp + cyl)^2, data = mtcars, family = binomial)
+# Using * can create three-way interactions
+Result = glm(am ~ mpg*hp*cyl, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+
+
 # K-Means Clustering
 # Select two variables
 mtcars2 <- mtcars |> select(mpg, hp)

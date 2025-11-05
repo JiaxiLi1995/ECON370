@@ -590,7 +590,7 @@ Do we need a new R function?
 
 --
 
-Trick: create a new variable called GDPpc_sq and just use `lm`!
+- Trick: create a new variable called GDPpc_sq and just use `lm`!
 
 ```{r}
 # Create new squared variable and run lm
@@ -623,9 +623,9 @@ Sometimes, we have too many variables and only want to keep the "useful" ones. F
 
 There are three methods can be done by manipulate the objective function:
 
-- Ridge: \sum_i e_i^2 + \lambda \sum_k (b_k)^2
-- LASSO: \sum_i e_i^2 + \lambda \sum_k |\beta|
-- Elastic Net: \sum_i e_i^2 + \lambda ((1-\alpha)/2 \sum_k (b_k)^2 + \alpha \sum_k |\beta|)
+- Ridge: $\sum_i e_i^2 + \lambda \sum_k (b_k)^2$
+- LASSO: $\sum_i e_i^2 + \lambda \sum_k |\beta|$
+- Elastic Net: $\sum_i e_i^2 + \lambda ((1-\alpha)/2 \sum_k (b_k)^2 + \alpha \sum_k |\beta|)$
 
 Note that if $\alpha = 1$ in Elastic Net, it becomes LASSO. If $\alpha = 0$ in Elastic Net, it becomes Ridge.
 
@@ -641,10 +641,10 @@ Meanwhile, let's choose $\lambda = 1$. What would be the effect if you increase 
 ```{r}
 library(glmnet)
 #define response variable
-y <- mtcars$hp
+y = mtcars$hp
 
 #define matrix of predictor variables
-x <- data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+x = data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
 
 coef(glmnet(x, y, alpha= 0, lambda = 1))
 ```
@@ -670,11 +670,31 @@ Suppose we want to predict the transmission type (am) (0 = automatic, 1 = manual
 
 ```{r}
 # Convert 'am' to factor
-mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+mtcars$am = factor(mtcars$am, labels = c("Automatic", "Manual"))
 
 # Fit logistic regression
 # Predict transmission based on mpg and hp
-Result <- glm(am ~ mpg + hp, data = mtcars, family = binomial)
+Result = glm(am ~ mpg + hp, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+```
+
+---
+# Interactions in Regressions
+
+We can add higher order terms including interaction terms such as $mpg*hp$. Here, I will provide several ways of doing that with logistic regression.
+
+```{r}
+# Fit logistic regression
+# Predict transmission based on mpg and hp
+Result = glm(am ~ mpg + hp + mpg:hp, data = mtcars, family = binomial)
+# Result = glm(am ~ mpg*hp, data = mtcars, family = binomial)
+# Result = glm(am ~ (mpg + hp)^2, data = mtcars, family = binomial)
+# Using ^2 will create only two-way interactions
+# Result = glm(am ~ (mpg + hp + cyl)^2, data = mtcars, family = binomial)
+# Using * can create three-way interactions
+# Result = glm(am ~ mpg*hp*cyl, data = mtcars, family = binomial)
 
 # View summary
 summary(Result)
@@ -690,21 +710,21 @@ Suppose we want to see what cars are similar in `mtcars` but there is no label. 
 
 ```{r, echo=F, dev='svg'}
 # Select two variables
-mtcars2 <- mtcars |> select(mpg, hp)
+mtcars2 = mtcars |> select(mpg, hp)
 
 # Scale the data (important for k-means)
-mtcars_scaled <- scale(mtcars2)
+mtcars_scaled = scale(mtcars2)
 
 # Set number of clusters
-k <- 3
+k = 3
 
 # Apply k-means clustering
 set.seed(123)  # for reproducibility
-km <- kmeans(mtcars_scaled, centers = k)
+km = kmeans(mtcars_scaled, centers = k)
 
 # Add cluster assignments to original data
-mtcars2$cluster <- factor(km$cluster)
-mtcars2$car <- rownames(mtcars)
+mtcars2$cluster = factor(km$cluster)
+mtcars2$car = rownames(mtcars)
 
 # Plot with car names
 ggplot(mtcars2, aes(x = mpg, y = hp, color = cluster)) +

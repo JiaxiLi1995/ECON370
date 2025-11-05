@@ -643,7 +643,7 @@ Do we need a new R function?
 
 --
 
-Trick: create a new variable called GDPpc_sq and just use `lm`!
+- Trick: create a new variable called GDPpc_sq and just use `lm`!
 
 
 ``` r
@@ -722,9 +722,9 @@ Sometimes, we have too many variables and only want to keep the "useful" ones. F
 
 There are three methods can be done by manipulate the objective function:
 
-- Ridge: \sum_i e_i^2 + \lambda \sum_k (b_k)^2
-- LASSO: \sum_i e_i^2 + \lambda \sum_k |\beta|
-- Elastic Net: \sum_i e_i^2 + \lambda ((1-\alpha)/2 \sum_k (b_k)^2 + \alpha \sum_k |\beta|)
+- Ridge: `\(\sum_i e_i^2 + \lambda \sum_k (b_k)^2\)`
+- LASSO: `\(\sum_i e_i^2 + \lambda \sum_k |\beta|\)`
+- Elastic Net: `\(\sum_i e_i^2 + \lambda ((1-\alpha)/2 \sum_k (b_k)^2 + \alpha \sum_k |\beta|)\)`
 
 Note that if `\(\alpha = 1\)` in Elastic Net, it becomes LASSO. If `\(\alpha = 0\)` in Elastic Net, it becomes Ridge.
 
@@ -741,10 +741,10 @@ Meanwhile, let's choose `\(\lambda = 1\)`. What would be the effect if you incre
 ``` r
 library(glmnet)
 #define response variable
-y &lt;- mtcars$hp
+y = mtcars$hp
 
 #define matrix of predictor variables
-x &lt;- data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+x = data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
 
 coef(glmnet(x, y, alpha= 0, lambda = 1))
 ```
@@ -792,11 +792,11 @@ Suppose we want to predict the transmission type (am) (0 = automatic, 1 = manual
 
 ``` r
 # Convert 'am' to factor
-mtcars$am &lt;- factor(mtcars$am, labels = c("Automatic", "Manual"))
+mtcars$am = factor(mtcars$am, labels = c("Automatic", "Manual"))
 
 # Fit logistic regression
 # Predict transmission based on mpg and hp
-Result &lt;- glm(am ~ mpg + hp, data = mtcars, family = binomial)
+Result = glm(am ~ mpg + hp, data = mtcars, family = binomial)
 
 # View summary
 summary(Result)
@@ -824,6 +824,50 @@ summary(Result)
 ## Number of Fisher Scoring iterations: 7
 ```
 
+---
+# Interactions in Regressions
+
+We can add higher order terms including interaction terms such as `\(mpg*hp\)`. Here, I will provide several ways of doing that with logistic regression.
+
+
+``` r
+# Fit logistic regression
+# Predict transmission based on mpg and hp
+Result = glm(am ~ mpg + hp + mpg:hp, data = mtcars, family = binomial)
+# Result = glm(am ~ mpg*hp, data = mtcars, family = binomial)
+# Result = glm(am ~ (mpg + hp)^2, data = mtcars, family = binomial)
+# Using ^2 will create only two-way interactions
+# Result = glm(am ~ (mpg + hp + cyl)^2, data = mtcars, family = binomial)
+# Using * can create three-way interactions
+# Result = glm(am ~ mpg*hp*cyl, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+```
+
+```
+## 
+## Call:
+## glm(formula = am ~ mpg + hp + mpg:hp, family = binomial, data = mtcars)
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) -30.669402  15.081177  -2.034   0.0420 *
+## mpg           1.063639   0.614525   1.731   0.0835 .
+## hp            0.018423   0.062946   0.293   0.7698  
+## mpg:hp        0.002295   0.003798   0.604   0.5457  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 43.230  on 31  degrees of freedom
+## Residual deviance: 18.842  on 28  degrees of freedom
+## AIC: 26.842
+## 
+## Number of Fisher Scoring iterations: 7
+```
+
 
 ---
 # K-Means Clustering
@@ -832,7 +876,7 @@ K-Means Clustering is a type of unsupervised learning to group observations base
 
 Suppose we want to see what cars are similar in `mtcars` but there is no label. We want to group the similar cars into K groups. 
 
-&lt;img src="09-intro_data_science_and_model_fitting_files/figure-html/unnamed-chunk-20-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="09-intro_data_science_and_model_fitting_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
 
 
 ---

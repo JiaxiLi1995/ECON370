@@ -151,10 +151,10 @@ Note that Elastic Net includes Ridge and LASSO.
 # Ridge, LASSO and Elastic Net
 library(glmnet)
 #define response variable
-y <- mtcars$hp
+y = mtcars$hp
 
 #define matrix of predictor variables
-x <- data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+x = data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
 ```
 
 We can set $\alpha = 0$ for Ridge regression. Check $\lambda = 1, 10, 100, etc.$
@@ -175,11 +175,40 @@ coef(glmnet(x, y, lambda = 1))
 
 ```{r}
 # Convert 'am' to factor
-mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+mtcars$am = factor(mtcars$am, labels = c("Automatic", "Manual"))
 
 # Fit logistic regression
 # Predict transmission based on mpg and hp
-Result <- glm(am ~ mpg + hp, data = mtcars, family = binomial)
+Result = glm(am ~ mpg + hp, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+```
+
+#### Interactions in Regressions
+
+```{r}
+# Fit logistic regression
+# Predict transmission based on mpg and hp
+Result = glm(am ~ mpg + hp + mpg:hp, data = mtcars, family = binomial)
+# Result = glm(am ~ mpg*hp, data = mtcars, family = binomial)
+# Result = glm(am ~ (mpg + hp)^2, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+```
+
+```{r}
+# Using ^2 will create only two-way interactions
+Result = glm(am ~ (mpg + hp + cyl)^2, data = mtcars, family = binomial)
+
+# View summary
+summary(Result)
+```
+
+```{r}
+# Using * can create three-way interactions
+Result = glm(am ~ mpg*hp*cyl, data = mtcars, family = binomial)
 
 # View summary
 summary(Result)
@@ -189,22 +218,22 @@ summary(Result)
 
 ```{r}
 # Select two variables
-mtcars2 <- mtcars |> select(mpg, hp)
+mtcars2 = mtcars |> select(mpg, hp)
 
 # Scale the data (important for k-means)
-mtcars_scaled <- scale(mtcars2)
+mtcars_scaled = scale(mtcars2)
 
 # Set number of clusters
-k <- 3
+k = 3
 
 
 # Apply k-means clustering
 set.seed(123)  # for reproducibility
-km <- kmeans(mtcars_scaled, centers = k)
+km = kmeans(mtcars_scaled, centers = k)
 
 # Add cluster assignments to original data
-mtcars2$cluster <- factor(km$cluster)
-mtcars2$car <- rownames(mtcars)
+mtcars2$cluster = factor(km$cluster)
+mtcars2$car = rownames(mtcars)
 
 # Plot with car names
 ggplot(mtcars2, aes(x = mpg, y = hp, color = cluster)) +

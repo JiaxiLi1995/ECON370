@@ -1551,7 +1551,7 @@ And related packages:
 ---
 class: inverse, center, middle
 
-# Next lecture: Introduction to Regression
+# Next lecture: Introduction to Data Science and Linear Model
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
