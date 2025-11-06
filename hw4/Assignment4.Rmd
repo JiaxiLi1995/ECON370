@@ -1,0 +1,438 @@
+---
+title: "ECON 370: Assignment 4"
+author: "Jiaxi Li"
+date: "Due: Before class on November 18th, 2025"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{geometry}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{caption}
+  - \usepackage{multirow}
+  - \usepackage{array}
+  - \usepackage[affil-it]{authblk}
+  - \usepackage{lscape}
+  - \usepackage[bottom]{footmisc}
+  - \usepackage{amssymb}
+  - \usepackage{amsmath}
+  - \geometry{top=1in, bottom=1in}
+  - \setlength{\parindent}{0pt}
+  - \setlength{\parskip}{12pt}
+---
+
+```{r setup, include=FALSE}
+# Note, this is global setting for all code chunks
+knitr::opts_chunk$set(eval = FALSE, include = FALSE)
+```
+
+Names of all group members:
+
+# Directions
+
+## As a reminder, LLMs and AIs are strictly forbidden from use on this assignment.
+
+Use the Rmd template and write code to answer the following questions. In order to ensure smooth grading, I will ask you to write both your code and explanation (as comment) in code chunk. Please write your code and answer in the corresponding place.
+
+In this homework, we will explore some concerns regarding **inference side** of statistical learning and **Ridge** vs. **LASSO**. We will utilize the existing functions and write our own to get a better understanding. The code should be rather straight forward. **You can Google but NOT LLMs or AIs.**
+
+Each question is worth three points. For each section, a "question" corresponds to a number.
+
+Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
+
+Remember to ***run Section O*** before you proceed. After finishing all code, make sure to **restart** R session and **clear** everything from your workspace. **Rerun** everything to ensure there is no dependency issue in your code.
+
+You may work in groups of three to four people for this homework. Please submit one script per group and clearly indicate who was in your group for the assignment.
+
+------------------------------------------------------------------------
+
+# O. Data
+
+***This is the code to extract data online and load necessary packages. Do not modify. Run this section before you proceed.***
+
+We are also creating some new data based on this formula:
+
+$$
+Y = 0.5 X_1 + 1 X_2 + 1.5 X_3 + 2 X_4+ e
+$$
+
+We would also have $X_1$ to be positively correlated to $X_2, X_5$ and negatively correlated to $X_3$. $X_1$ is not correlated with $X_4$ at all. There are 76 variables have no contribution to $Y$.\
+We are also creating an $Y_2$ to be created by adding random coefficients for all the 80 $X$ variables, saved as "**X_alt**". The actual coefficients are saved as "**b_actual**".
+
+```{r}
+# Data Loading in Section, do not modify
+library(tidyverse) # ggplot2 is already in tidyverse
+library(glmnet) # for many other regressions such as: Ridge, LASSO, logistic, etc.
+library(ggplot2)
+library(ggrepel)  # for non-overlapping labels
+
+# Simulate data based on the model
+set.seed(2025)
+# Set observation size
+Nobs = 10000
+Noise = 3*rnorm(Nobs)
+X = matrix(rnorm(5*Nobs), ncol = 5)
+# Make X_2,X_5 to be positively correlated to X_1
+X[,2] = 0.6*X[,1] + sqrt(1 - 0.6^2) * X[,2]
+X[,5] = 0.6*X[,1] + sqrt(1 - 0.6^2) * X[,5]
+# Make X_3 to be negative correlated to X_1
+X[,3] = -0.6*X[,1] + sqrt(1 - 0.6^2) * X[,3]
+# Create the Y variable
+Y = 0.5*X[,1] + 1*X[,2] + 1.5*X[,3] + 2*X[,4] + Noise
+
+# Create alternative variables who are just random noise
+X_alt = cbind(X, matrix(rnorm(75*Nobs), ncol = 75))
+
+# Add names to X
+colnames(X) = paste0("X", 1:5)
+# Add names to X_alt
+colnames(X_alt) = paste0("X", 1:80)
+
+# Create b_actual
+b_actual = sort(rnorm(80))*0.05
+
+# Create Y_2
+Y_2 = rowSums(sweep(X_alt, 2, b_actual, "*")) + Noise
+
+# Remove the random noise
+rm(Noise)
+
+
+# Economic data
+library(gapminder)
+# Subset the asian countries in 2007
+gp_subset = gapminder[gapminder$continent=="Asia"&gapminder$year==2007,]
+
+# View the subset of the data
+head(gp_subset)
+```
+
+------------------------------------------------------------------------
+
+# I. Outliers
+
+Use the **gp_subset** data for the analysis in this section.
+
+1.  Run regression like in class: **lifeExp** against **gdpPercap**. Save the regression result as "**Result**". Use "**\$residuals**" to extract residuals from "Result" and **mutate** to add residuals to the data, calling it "**Resid**". Plot the **Resid** against the **gdpPercap** via **ggplot**. Mimicking code on slides, use **geom_smooth** to add a **straight line** and use **geom_text_repel** to add country names.
+
+```{r}
+# Code Below, remember commenting
+Result = 
+
+```
+
+2.  Do you see any pattern between **gdpPercap** and **Resid** (is the line with slope 0)? Are there countries seemingly far away from the rest? Specifically, do we have countries far away from the added line?
+
+```{r}
+# Answer: 
+```
+
+3.  Extract fitted value from **Result** by using **\$fitted.values** and save to **gp_subset** as **Fitted**. Plot the **Resid** against the **Fitted** via **ggplot**. Mimicking code on slides, use **geom_smooth** to add a **straight line** and use **geom_text_repel** to add country names.
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+4.  Do you see any pattern between **gdpPercap** and **Resid** (is the line with slope 0)? Are there countries seemingly far away from the rest? Specifically, do we have countries far away from the added line? Do we have concerns about the model here?
+
+Note: this plot is $e$ vs. $y$. In class, we plotted $\hat y$ against $y$ and conclude that a **45 degree line** means perfect fit. Since $e = y - \hat y$, a 45 degree line for $\hat y$ against $y$ means a **horizontal line** for $e$ against $y$.
+
+```{r}
+# Answer: 
+```
+
+5.  Use mutate to calculate the **Residual Squared** as **Ressq** in **gp_subset** and plot them in a histogram using **geom_histogram**. Do you see any **Ressq** standing out from the rest?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+6.  These problematic points are called "*outliers*". They are the ones that out model cannot sufficiently explain. Use **slice_max** and **pull** to find the outlier countries, convert them using **as.character** and save them as "**Outlier_countries**". For the outlier countries (or country) are there something unique happening that might be the cause?
+
+```{r}
+# Code Below, remember commenting
+Outlier_countries = 
+
+print(Outlier_countries)
+
+# Answer: 
+```
+
+7.  Now, let's see if the outliers are causing significant problems by removing them. **Remove the outliers using filter** and run regression again. Save the results as **Result2**. Creating a new data **gp_subset_nooutlier** and save the residual and fitted values from Result2 to it, calling it "**Resid**" and "**Fitted**".
+
+```{r}
+# Code Below, remember commenting
+# Create the data without outliers
+gp_subset_nooutlier = 
+
+```
+
+8.  Plot the **Resid** from **Result2** against the **Fitted** via **ggplot**. Use **geom_smooth** to add a **straight line** and use **geom_text_repel** to add country names. Do you see anything out of ordinary here? Based on the plot, would you say a linear model is suitable?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+9.  Use mutate to calculate the **Residual Squared** as **Ressq** in **gp_subset_nooutlier** and plot them in a histogram using **geom_histogram**. Do you see any **Ressq** standing out from the rest this time?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+10. It is generally **NOT** advised to simply remove the outliers to fit the model better. Let's instead create a indicator for those nations (they probably have something in common if you can identify them). You can use **mutate** with **%in%** to create this indicator as a logic variable, calling it "**Indic**", and save it to **gp_subset**. Run regression for **gp_subset**: **lifeExp** against **gdpPercap** and **Indic**. Save the residual as **Resid2** and plot the histogram. Do you still see outliers after adding this new variable?
+
+Note: We are being heuristic here. In the real world, we need to use formal tests for outliers.
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+------------------------------------------------------------------------
+
+# II. Omitted Variable Bias
+
+In this section, we will look at the created variable $Y$ at the beginning of this homework file. Here is the formula:
+
+$$ Y = 0.5 X_1 + 1 X_2 + 1.5 X_3 + 2 X_4 + e $$
+
+Suppose you know the true variables contributing to $Y$ are among $X_1, X_2, X_3, X_4, X_5$ (Unfortunately, we do not the fact that $X_5$ has no contribution to $Y$ in advance.) and they are orgnized in matrix $X$. $X_1$ is positively correlated to $X_2, X_5$ and negatively correlated to $X_3$. $X_4$ has no correlation with $X_1$.
+
+1.  First combine **Y** and **X** convert the matrix to tibble, calling it **Simple_data**. Regress $Y$ against $X$ (all $X_1, X_2, X_3, X_4, X_5$) with **lm** function. Show the result with **summary**. How are the fits for coefficients?
+
+Warning: Do not remove constant term in **lm**.
+
+```{r}
+# Code Below, remember commenting
+Simple_data = 
+
+
+# Answer: 
+```
+
+2.  Do the regression again. But only regress $Y$ against $X_1, X_3, X_4, X_5$. How does the coefficient of $X_1$ change due to omitting $X_2$ ?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+3.  Do the regression again. But only regress $Y$ against $X_1, X_2, X_4, X_5$. How does the coefficient of $X_1$ change due to omitting $X_3$ ?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+4.  Do the regression again. But only regress $Y$ against $X_1, X_2, X_3, X_5$. How does the coefficient of $X_1$ change due to omitting $X_4$ ?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+5.  Do the regression again. But only regress $Y$ against $X_1, X_2, X_3, X_4$. How does the coefficient of $X_1$ change due to omitting $X_5$ ? Note that $X_5$ is positively correlated with $X_1$ but does not contribute to $Y$.
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+This phenomenon is called **Omitted Variable Bias (OVB)**. If we fail to include some **correlated variables** as controls, the coefficient of $X_1$ will not be accurately estimated! It is especially dangerous when you are trying to establish causal effects. **You might even have a totally wrong conclusion and policy by it might actually do harm**! Again, **correlation** $\neq$ **causation**!
+
+6.  Please summarize the effect you see from 2-5. Could you guess what would happen if the omitted variable has a negative coefficient?
+
+Please structure your answer as: *If the omitted variable is XXX correlated with X1 and has XXX effect on Y, the estimate of coefficient would be XXX actual.*
+
+```{r}
+# Answer: if all variables have positive or zero coefficients on Y
+# From 2: 
+# From 3: 
+# From 4: 
+# From 5: 
+
+
+# Answer: if the omitted variable has a negative coefficient on Y, ...
+```
+
+------------------------------------------------------------------------
+
+# III. Sparse vs. Dense
+
+"**Sparse**" here means only a few variable matters for $Y$. We have 80 $X$'s but only 4 of them matters in the creation of $Y$. Which also means that all coefficients besides $X_1, X_2, X_3, X_4$ are 0. If you estimate the $b$'s, most of them are 0, "empty" or "sparse". Note that $Y$ is sparse with respect to $X$'s:
+
+$$
+Y = 0.5 X_1 + 1 X_2 + 1.5 X_3 + 2 X_4 + 0 X_5 + 0 X_6 + \dots + 0 X_{80} + e
+$$
+
+"**Dense**" means all 80 $X$'s are useful in the creation of $Y$. All $b$'s are non-zero, "full" or "dense". Note that $Y_2$ is dense with respect to $X$'s.
+
+$$
+Y_2 = b_1 X_1 + b_2 X_2 + b_3 X_3 + \dots + b_{79} X_{79} + b_{80} X_{80} + e
+$$
+
+where **b_actual** constitutes $b_1, b_2, \dots, b_{80}$ and all are non-zero.
+
+We will mostly use "**glmnet**" function from "**glmnet**" package. Please refer to Lec 9 for more information. Based on the documentation, the objective function of glmnet is:
+
+$$
+\frac{1}{2}MSE + \lambda*(\frac{1-\alpha}{2}*(\sum_j b_j^2) + \alpha * (\sum_j |b_j|))
+$$
+
+0.  If we set $\alpha = 0$, what is this regression called? If we et $\alpha = 1$, what is this regression called? What would happen if we set $\lambda = 0$?
+
+```{r}
+# alpha = 0: 
+# alpha = 1:  
+# lambda = 0: 
+```
+
+1.  First combine **Y** and **X_alt** convert the matrix to tibble, calling it **Complex_data1**. Regress $Y$ against 80 $X$'s with **lm** function. Show the result with **summary**. How are the fits for coefficients? Any `*` here would indicate significance. Do you see `*` for variables other than the first 4? Should we conclude those "significant" ones have an effect on $Y$? Why?
+
+```{r}
+# Code Below, remember commenting
+Complex_data1 = 
+
+
+# *: 
+# Should we conclude effect: 
+# Why?
+```
+
+2.  Now, combine **Y_2** and **X_alt** convert the matrix to tibble, calling it **Complex_data2**. Regress $Y_2$ against 80 $X$'s with **lm** function and save the result as "**Result2**". Show the result with **summary**. Any `*` here would indicate significance. Do you see `*` for variables other than first and last few? Should we conclude those "insignificant" ones does not have an effect on $Y$? Why?
+
+```{r}
+# Code Below, remember commenting
+# Combine two matrix and convert to tibble
+Complex_data2 = 
+
+
+# *: 
+# Should we conclude no effect: 
+# Why? 
+```
+
+3.  Extract the estimated coefficients from **Result2** with "**coef**" function, save as "**Estimated**", and combine with **b_actual**, as "**Actual**", to a tibble, called "**Coeff**". Plot **Estimated** against **Actual** with ggplot and add a 45 degree line. What does 45 degree line mean? How are the fits for coefficients?
+
+Hint: there is a constant term in the estimated coefficient, you need to add a 0 for the constant term to "Actual".
+
+```{r}
+# Code Below, remember commenting
+Coeff = 
+
+
+# 45 degree line meaning: 
+# The fit of b's: 
+```
+
+4.  Based on the results from 1-3 to answer this question. Suppose you are given a large dataset and you have no idea whether it is sparse or dense, is it safe to conclude all the coefficients with `*` influences Y and all the ones without `*` has nothing to do with Y (I personally call this behavior counting stars)? State your reasoning.
+
+```{r}
+# Yes/No: 
+# Why? 
+```
+
+5.  For the dense data, **Complex_data2** *(You need to use matrices X_alt and Y_2 here)*, estimate a **Ridge** regression instead (using the **glmnet** function in **glmnet** package as we did in class). What if we choose $\lambda = 0$? Run the Ridge regression and save the result as "**Result**", extract the coefficient by **as.numeric** and **coef** function and save it to **Coeff**, as **Ridge0**. Plot **Ridge0** against **Estimated** with ggplot and **add a 45 degree line**. What does 45 degree line mean? What are the relation between linear regression **Estimate** and **Ridge0** estimates? (Ridge regression with $\lambda = 0$ is formally called "*Ridgeless regression*")
+
+```{r}
+# Code Below, remember commenting
+
+
+# 45 degree line meaning: 
+# Relation: 
+```
+
+LASSO with $\lambda = 0$ would also perform the same as linear regression.
+
+6.  We talked about coding these with manually creating objective functions with inputs as variables. Fill in the **?** below and based on the formula at the beginning of this section, write an objective function for **Complex_data2** *(You need to use matrices X_alt and Y_2 here)*. Set $\lambda = 1$ and $\alpha = 0$ as default. You should use **sweep** function presented in **Section O** (or use linear algebra if you know how to do it). Notice that you need **a constant term**.
+
+```{r}
+# Modify Code Below, I have written all the necessary commenting
+# Write the objective function, only one vector input b including a constant term
+# lambda is default at 1 and alpha is default at 0
+Obj_function = function(b, lambda ?, alpha ?) {
+  # b is a vector containing constant at the first term and the rest 80 coefficient after that
+  e = Y_2 - b[1] - ?
+  
+  # Estimate the objective function
+  Output = mean(e^2) + ?
+  
+  # Return the Output
+  return(Output)
+}
+```
+
+7.  Estimate **Complex_data2** Ridge regression coefficients using your **Obj_function** and **optim** with **BFGS**. Use a vector of **0 as initial values**. Save the results as **Own_Ridge_result**. Use **\$par** to extract the coefficients and save to **Coeff** as "**Own_Ridge1**". Use glmnet to perform Ridge regression with $\lambda = 1$ and save results to **Coeff** as "**Ridge1**". Plot **Own_Ridge1** vs. **Ridge1** with **a 45 degree line**.
+
+```{r}
+# Code Below, remember commenting
+Own_Ridge_result = 
+
+```
+
+8.  What happened? We use the same objective function as **glmnet**! Why? Check [this documentation about glmnet](https://glmnet.stanford.edu/articles/glmnet.html) to get some idea.
+
+```{r}
+# Answer: 
+```
+
+9.  **Pivot_longer** (except **Actual**) and create a new variable called **Method** and assign values to "**Fitted".** Use **mutate** and **ifelse** to change the Method of "**Estimated**" to "**LM**". Plot **Ridge1** vs. **Actual** and **LM** vs. **Actual** with different colors(*we do NOT want **Own_Ridge1** or **Ridge0** here*). Based on the plot, what happens if we increase $\lambda$?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+10. Estimate **Complex_data2** **LASOO** regression coefficients with **glmnet** with $\lambda = 1$ and save results to **Coeff** as "**LASSO1**". Plot **LASSO1** vs. **Ridge1**. What is the difference between Ridge and Lasso estimates? Is it more appropriate to use LASSO or Ridge to the **dense** data?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Difference: 
+# Appropriate for dense data, Ridge or LASSO: 
+```
+
+11. Estimate **Complex_data1** *(You need to use matrices X_alt and Y here)* LASOO regression coefficients with **glmnet** with $\lambda = 1$ and save results to **Coeff2** as "**LASSO1**". Plot **LASSO1** vs. **Actual**. Is it more appropriate to use LASSO or Ridge to the **sparse** data?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Appropriate for sparse data, Ridge or LASSO: 
+```
+
+12. Why do you think all estimates are 0 except for the coefficient of $X_4$? What should we do here? Implement your suggestion and save results to **Coeff2** as "**LASSOalt**". Plot **LASSOalt** vs. **Actual**. Do you see improvement? (This action is called *tuning* which we will talk about in lecture 10. This example shows the need for tuning for different data.)
+
+```{r}
+# Problem: 
+# Suggestion: 
+
+# Code Below, remember commenting
+
+
+# Better? 
+```

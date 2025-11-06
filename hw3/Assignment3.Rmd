@@ -24,7 +24,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 # Note, this is global setting for all code chunks
-knitr::opts_chunk$set(include = FALSE)
+knitr::opts_chunk$set(eval = FALSE, include = FALSE)
 ```
 
 # Directions
@@ -42,6 +42,8 @@ Please **comment** your code clearly. 0.5 point per question will be deducted if
 Remember to **host your data on GitHub** if it cannot directly be pulled using functions such as `tq_get`.
 
 There are many ways to clean data. However, I will ask you to apply **pipeline and `tidyverse`** **package** for data wrangling here. 0.5 point per question will be deducted if other method is used while getting the correct answer.
+
+Remember to ***run Section O*** before you proceed. After finishing all code, make sure to **restart** R session and **clear** everything from your workspace. **Rerun** everything to ensure there is no dependency issue in your code.
 
 You need to work individually for this homework.
 
@@ -150,10 +152,10 @@ In this assignment, I will ask you to pull **three variables each from a differe
 
 ```
 
-4.  What is the situation of **publication bias** for all three variables? Are there any? If there are, use `mutate` and `lag` to make appropriate lags.
+4.  What is the situation of **look-ahead bias due to publication lags** for all three variables? Are there any? If there are, use `mutate` and `lag` to make appropriate lags.
 
 ```{r}
-# Answer about publication bias issue:
+# Answer about publication lags issue:
 
 
 # Code Below, remember commenting

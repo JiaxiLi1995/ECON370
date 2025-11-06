@@ -24,7 +24,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 # Note, this is global setting for all code chunks
-knitr::opts_chunk$set(include = FALSE)
+knitr::opts_chunk$set(eval = FALSE, include = FALSE)
 ```
 
 Names of all group members:
@@ -40,6 +40,8 @@ Each question is worth three points. For each section, a "question" corresponds 
 Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
 
 For questions creating functions in this assignment, you must have a "**return**". Otherwise, 0.5 point per question will be deducted. For any question involving a random number generation, you must **set seed**. Otherwise, 0.5 point per question will be deducted. For questions creating loops in this assignment, you must **preallocate**. Otherwise, 0.5 point per question will be deducted.
+
+Remember to ***run Section O*** before you proceed. After finishing all code, make sure to **restart** R session and **clear** everything from your workspace. **Rerun** everything to ensure there is no dependency issue in your code.
 
 You may work in groups of three to four people for this homework. Please submit one script per group and clearly indicate who was in your group for the assignment.
 
