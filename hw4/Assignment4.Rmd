@@ -137,7 +137,7 @@ Result =
 
 4.  Do you see any pattern between **gdpPercap** and **Resid** (is the line with slope 0)? Are there countries seemingly far away from the rest? Specifically, do we have countries far away from the added line? Do we have concerns about the model here?
 
-Note: this plot is $e$ vs. $y$. In class, we plotted $\hat y$ against $y$ and conclude that a **45 degree line** means perfect fit. Since $e = y - \hat y$, a 45 degree line for $\hat y$ against $y$ means a **horizontal line** for $e$ against $y$.
+Note: this plot is $e$ vs. $\hat y$. In class, we plotted $\hat y$ against $y$ and conclude that a **45 degree line** means perfect fit. Since $e = y - \hat y$, a 45 degree line for $\hat y$ against $y$ means a **horizontal line** for $e$ against $\hat y$.
 
 ```{r}
 # Answer: 
@@ -263,7 +263,7 @@ This phenomenon is called **Omitted Variable Bias (OVB)**. If we fail to include
 
 6.  Please summarize the effect you see from 2-5. Could you guess what would happen if the omitted variable has a negative coefficient?
 
-Please structure your answer as: *If the omitted variable is XXX correlated with X1 and has XXX effect on Y, the estimate of coefficient would be XXX actual.*
+Please structure your answer as: *If the omitted variable is XXX correlated with X1 and has XXX effect on Y, the estimate of coefficient would be XXX than actual.*
 
 ```{r}
 # Answer: if all variables have positive or zero coefficients on Y
