@@ -337,7 +337,11 @@ There can be other objective function implemented. Here are two examples:
 
 2. Mean Squared Moment/Expectation Error: We have a set of expectation conditions (moment conditions), maybe from economic theories and equations. We want the data fit as closely to the theory as possible. The method is often called **"Generalized Method of Moments" (GMM)**. (This is Nobel Price stuff!)
 
-3. Have your own customized objective functions! For example, if you think that some points in the linear model is more important, you can weight the points by importance and minimize a weighted MSE, `\(\sum_i w_i*e_i^2\)`. This turns into Weighted Least Square.
+3. Have your own customized objective functions! For example, if you think that some points in the linear model is more important, you can weight the points by importance and minimize a weighted MSE, `\(\sum_i w_i*e_i^2\)`. This turns into **Weighted Least Square**.
+
+--
+
+It is very common to minimize some objective functions. In this case, they are usually referred to as **loss functions**.
 
 ---
 # Optimization
