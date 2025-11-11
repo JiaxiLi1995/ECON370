@@ -1,0 +1,1602 @@
+---
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Lecture 10: Model Tunning and Testing"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts] 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+name: toc
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#4B9CD3",
+  header_font_google = google_font("Fira Sans","600"),
+  text_font_google   = google_font("Fira Sans", "300", "300i"),
+  base_font_size = "20px",
+  text_font_size = "0.9rem",
+  code_inline_font_size = "0.9em",
+  code_font_size = "0.7rem",
+  header_h1_font_size = "2.0rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.25rem",
+  code_font_google   = google_font("Fira Code"),
+  inverse_link_color = "#13294B",
+  link_color = "#4B9CD3"
+)
+data(mtcars)
+
+library(knitr)
+opts_chunk$set(
+  fig.align="center", 
+  fig.height=4, #fig.width=6, 
+  # out.width="748px", #out.length="520.75px",
+  dpi=300, #fig.path='Figs/',
+  cache=F, warning=F, message=F#, echo=F
+  )
+library(fontawesome)
+library(tidyverse)
+library(data.table)
+library(patchwork)
+library(latex2exp)
+set.seed(2025)
+```
+
+# Table of contents
+
+1. [Introduction](#intro)
+
+2. [Simulation](#sim)
+
+3. [Descriptive Statistics and Tests: LM](#stattest)
+
+4. [Training/Testing: LM](#tt)
+
+5. [Training/Validating/Testing: Ridge](#tvt)
+
+6. [Bias Variance Trade-off](#biasvar)
+
+---
+class: inverse, center, middle
+name: intro
+
+# Introduction
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# Motivation
+
+Back in Lecture 9, we fit several models, but a few puzzles still linger in the air:
+
+1. **How do we judge model quality?**
+  Can we quantify how well a model fits the data, and can we say with confidence that a particular variable truly relates to the outcome?
+
+--
+
+2. **How do we choose *hyperparameters*?**
+  Machine learning methods like *Ridge* and *LASSO* introduce *tuning parameters* (sometimes called *hyperparameters*). Different datasets may prefer different settings (as you’ll experience in HW4), so how do we pick these hyperparameters in a principled way?
+
+--
+
+3. **Simple model or complex model?**
+  When is a flexible model justified, and when should we stick to something more restrained? How do we compare models in a fair, data-driven manner?
+
+---
+# Motivation
+
+To build intuition for the statistical tools that help answer these questions, we’ll first introduce two core simulation frameworks:
+
+- **Monte Carlo Simulation**:
+  Used to test theories or methods. Parametric, because we assume a specific model or distribution that generates the data.
+
+- **Bootstrap**:
+  Used to test properties of the data itself. Nonparametric, because it relies entirely on the observed sample without imposing extra distributional assumptions.
+
+---
+class: inverse, center, middle
+name: sim
+
+# Simulation
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+---
+# Review of Statistics
+
+Here are some basic statistics theory that you might need to understand what is going on in this class even before we start doing simulation:
+
+- All probabilities must be in $[0,1]$ and the sum of all possible outcomes equals 1 ($100\%$).
+--
+
+- Random variables (RVs) map random outcomes to real numbers
+--
+
+- RVs are notated with capital letters (e.g. $X$) whereas "realized" (i.e. nonrandom) outcomes are lowercase (e.g. $x$)
+--
+
+- The distribution of an RV has a probability function $f_X(x)$
+  - If $X$ is discrete, $f_X(x)$ is known as a probability mass function (pmf).
+  - If $X$ is continuous, $f_X(x)$ is known as a probability density function (pdf).
+--
+
+- The distribution of an RV also has a Cumulative Distribution Function (CDF) $F_X(x)$
+  - $F_X(x) = \text{Pr}(X\leq x)$
+--
+
+- The quantile function of a random variable gives $q(\alpha)$, the value such that a random draw from the distribution falls at or below $q(\alpha)$ with probability $\alpha$.
+--
+
+- If $X$ is continuous, $\frac{d}{dx} F_X(x) = f_X(x)$ and $F_X(x) = \int_{-\infty}^{x}f_X(t)dt$
+
+---
+# "Moments"
+
+Usually, we use "moments" to describe the characteristics of a random variable. Like the first moment of $X$ is called mean/average and the second (centered) moment of $X$ is called variance:
+
+- The "average value" of an RV is known as it's expectation: 
+  - Discrete: $E[X] = \sum_{i}x_if_X(x_i)$
+  - Continuous: $E[X] = \int_{-\infty}^{\infty}x f_X(x)dx$
+  
+The average/expectation measures the center of data.
+--
+
+- The variance of a distribution is: $\text{Var}(X)=E[(X-E[X])^2]=E[X^2]-E[X]^2$
+
+The variance measures the spread of data.
+--
+
+- For two RVs $X$ and $Y$, the covariance is: $\text{Cov}(X, Y)=E[(X-E[X])(Y-E[Y])]=E[XY]-E[X]E[Y]$
+
+The covariance measures the ***linear*** association (co-movement) between $X$ and $Y$.
+
+Counterexample: circle.
+
+---
+# Scaling/Standardizing
+
+For both comparison and model fitting, it is common to scale or standardize variables. Given a random variable $X$ with mean $\mu$ and variance $\sigma^2$, its standardized form is:
+
+$$\tilde X = \frac{X - \mu}{\sigma}.$$
+
+--
+
+We will see this idea appear in several places: t-statistics use standardized coefficients, and metrics such as $R^2$ follow the same spirit of putting quantities on a comparable scale.
+
+--
+
+For covariance, the standardized version is the correlation, defined as:
+
+$$\text{Corr}(X, Y)=\frac{\text{Cov}(X, Y)}{\sqrt{\text{Var}(X) \text{Var}(Y)}}.$$
+
+
+---
+# Common Distributions: Normal
+
+The Normal Distribution parameters: $\mu$ and $\sigma^2\geq 0$; notated $N(\mu,\sigma^2)$
+- Mean and variance: $\mu$ and $\sigma^2$
+ 
+```{r norm_plot,echo=F, cache=T}
+mus   = c(0,2,4)  # Define the means of the normal distributions
+sig2s = c(1,2,3)  # Define the variances of the normal distributions
+xs    = seq(-3,3,0.05)  # Sequence of standardized x values
+N     = length(xs)  # Number of points in the sequence
+
+# Transform xs for each mu and sigma^2 combination
+xs = sapply(xs,function(x){x*sqrt(sig2s)+mus})  # Scale by sqrt(variance) and shift by mean
+xs = matrix(t(xs),ncol=1)  # Convert to a column vector for data.table
+
+# Create data.table with all combinations of mu, sigma^2, and corresponding X
+plot_data = data.table(
+  mu     = rep(mus,each=N),       # Repeat means for each x
+  sigma2 = rep(sig2s,each=N),     # Repeat variances for each x
+  X      = as.numeric(xs)          # Flatten xs into numeric vector
+)
+
+# Compute normal density values for each combination
+plot_data[,y := dnorm(X,mu,sqrt(sigma2))]  # Density function values
+plot_data[,model:=rep(paste0("mu=",mus,", ","sigma2=",sig2s),each=N)]  # Label for each model
+
+# Define colors using Wes Anderson palette
+dencols = wesanderson::wes_palette("Darjeeling1",5)[c(1,2,5)]  # Select palette colors
+names(dencols) = unique(plot_data$model)  # Assign names to colors for scale
+
+# Create LaTeX-style labels for legend
+mod_labs = paste0("$\\mu = ",mus,", \\sigma^2 = ",sig2s,"$")  
+mod_labs = unname(TeX(mod_labs))  # Convert to TeX expression
+
+# Plot densities using ggplot2
+ggplot(plot_data,aes(x=X,y=y,color=model)) + 
+  geom_line() + 
+  scale_color_manual(name="",values=dencols,labels=mod_labs)+
+  ylab("density") + 
+  theme_minimal() + theme(legend.position = "top")
+```
+
+
+---
+# Simulation
+
+While it sounds fancy, simulation is nothing but running "data generating processes" in `R` with randomly generated data.
+
+- What is a data generating process (DGP)?
+
+--
+
+> "...a data generating process is a process in the real world that "generates" the data one is interested in."
+
+--
+
+Think of a DGP as the "real world model" that produces the data we observe.
+
+We can never observe the true DGP.
+
+Mathematical modeling aims to take what we observe in the real world and create a model that both replicates that data and makes useful predictions in new situations.
+
+We can hypothesize one possible DGP and simulate the DGP to produce "fake" data.
+
+---
+# Monte Carlo Simulation
+
+- Sometimes we would like to examine if a statistical estimation procedure we come up with actually works the way we hope it should.
+
+- To do this, we can simulate the DGP, perform the estimation procedure multiple times, and see if it's right "on average."
+
+- This is called **Monte Carlo simulation**.
+
+- We will generally apply **loops** we learned in Lecture 5 for simulations.
+
+---
+# Review of LLN
+
+- The Law of Large Numbers (LLN) states that if we have i.i.d. data drawn from "well behaved" distributions, as the sample size gets bigger, the population mean converges to the actual mean.
+
+- In math, $$\lim_{n\rightarrow \infty}\frac{1}{n}\sum_{i=1}^{n}X_i = E[X]$$ (Sorta, this is actually not exactly correct; the limit should actually be a probability limit, but this is the right intuition)
+
+--
+
+- Note: we've actually already used this result when using simulations to calculate expectations!
+
+- Let's see an example.
+
+---
+# LLN Example
+
+- Suppose we have $1,000$ draws from $\text{U}(0,1)$.
+- This is uniform distribution with theoretical mean at 0.5.
+- Take cumulative sum to simulate getting an extra draw each time.
+
+```{r make_LLN_plot, cache=T}
+set.seed(2025)  # Set seed for reproducibility
+
+Nsim       = 1000                    # Number of simulations / sample size
+samp_means = cumsum(runif(Nsim))/(1:Nsim)  # Compute cumulative average of uniform(0,1) draws
+
+# Create data table for plotting
+plot_data = data.table(x=1:Nsim, y=samp_means)
+
+# Plot the Law of Large Numbers (LLN) demonstration for Uniform distribution
+LLN_plot = ggplot(plot_data,aes(x=x,y=y)) + 
+  geom_line(size=1.5) + coord_cartesian(ylim=c(0.25,0.75)) +
+  geom_hline(yintercept=1/2, linetype='dotted', col = 'red',size=1.5) +
+  ylab("Sample Mean") + xlab("Sample Size")+theme_minimal()
+```
+
+---
+# LLN Example
+
+- Notice how the line gets closer to the true mean, $1/2$.
+- However, improvement is not monotonic; also, after a bit, improvement is slow.
+
+```{r show_LLN_plot,echo=F,message=F}
+LLN_plot
+```
+
+
+---
+# LLN Example 2
+
+- Suppose we have $1,000$ draws from $\text{Exp}(1/2)$.
+- This is exponential distribution (look up if you are curious) with theoretical mean at 2.
+- Take cumulative sum to simulate getting an extra draw each time.
+
+```{r make_LLN_plot2, cache=T}
+set.seed(2025)  # Set seed for reproducibility
+
+Nsim       = 1000           # Number of simulations / sample size
+lambda     = 1/2            # Rate parameter for Exponential distribution
+samp_means = cumsum(rexp(Nsim, lambda)) / (1:Nsim)  # Cumulative average of exponential draws
+
+# Create data table for plotting
+plot_data = data.table(x = 1:Nsim, y = samp_means)
+
+# Plot the Law of Large Numbers (LLN) demonstration for Exponential distribution
+LLN_plot2 = ggplot(plot_data,aes(x=x,y=y)) + 
+  geom_line(size=1.5) + ylab("Sample Mean") + xlab("Sample Size") +
+  geom_hline(yintercept=2, linetype='dotted', col = 'red',size=1.5) +
+  theme_minimal()
+```
+
+---
+# LLN Example 2
+
+- Notice how the line gets closer to the true mean, $2$.
+- Notice that this one appears to converge faster than the uniform example.
+
+```{r show_LLN_plot2,echo=F,message=F}
+LLN_plot2
+```
+
+
+
+---
+# LLN Example 3
+
+- Suppose we have $1,000$ draws from $\text{Cauchy}(0,1)$.
+- Don't worry about where this comes from; this is just an example
+
+```{r make_LLN_plot3, cache=T}
+set.seed(2025)  # Set seed for reproducibility
+
+Nsim       = 1000                          # Number of simulations / sample size
+samp_means = cumsum(rcauchy(Nsim)) / (1:Nsim)  # Cumulative average of Cauchy draws
+
+# Create data table for plotting
+plot_data = data.table(x = 1:Nsim, y = samp_means)
+
+# Plot the "sample mean" of Cauchy distribution (note: LLN does not hold)
+LLN_plot3 = ggplot(plot_data,aes(x=x,y=y)) + 
+  geom_line(size=1.5) + ylab("Sample Mean: Cauchy") + xlab("Sample Size") +
+  geom_hline(yintercept=0, linetype='dotted', col = 'red',size=1.5)+
+  theme_minimal()
+```
+
+---
+# LLN Example 3
+
+- Huh, doesn't appear to work!
+- The Cauchy distribution is one of the distributions where the LLN breaks down.
+
+```{r show_LLN_plot3,echo=F,message=F}
+LLN_plot3
+```
+
+
+---
+# Review of CLT
+
+- Before finally examining a Monte Carlo simulation, we need to review the **Central Limit Theorem (CLT)**.
+- While the LLN tells us what the **sample mean** converges to, the CLT tells us the **distribution of the sample mean** converges to.
+- An estimator is a function that takes in random variables and spits out an estimate.
+- As such, **estimators are random variables too**! **We call the distribution of the estimator "Sampling Distribution"**.
+- The idea is that the sample mean is a function of random data and is thus random itself.
+  - If you took another sample, the sample mean would be slightly different.
+  - Picture doing this many times; the CLT tells us what this distribution will be.
+- If $\hat{\mu}$ is the sample mean, the CLT tells us that $$\hat{\mu} \sim^{A} N(\mu_X,\sigma^2_X/n)$$
+- Note: 
+  - $E[\hat{\mu}]=E[\frac{1}{n}\sum_{i=1}^{n} X_i]=\frac{1}{n}\sum_{i=1}^{n} E[X_i] = \mu_X$
+  - $Var[\hat{\mu}]=Var[\frac{1}{n}\sum_{i=1}^{n} X_i]=\frac{1}{n^2}\sum_{i=1}^{n} Var[X_i] = \frac{\sigma^2_X}{n}$
+
+---
+# Monte Carlo Simulation
+
+- The idea behind Monte Carlo (MC) simulation is that you can generate data from a DGP, estimate the parameters you're interested in, and then repeat a bunch of times.
+- If your estimator "works," you should get a nice, normal distribution that matches the CLT.
+- With MC, important to keep two different $n$'s separate in your head:
+  1. The **sample size** which is the $n$ that corresponds to the CLT previously.
+  2. The **number of simulations** which is how many times the MC simulation is repeated.
+- To reiterate: the MC simulation algorithm, at a broad level is as follows:
+  1. Generate data by simulating the DGP with a sample size of $N_{\text{samp}}$,
+  2. Estimate the parameters of your model,
+  3. Store the estimates,
+  4. Go back to step 1 until you've repeated it $N_{\text{sim}}$ times.
+
+---
+# Monte Carlo for the Sample Mean
+
+Let's run an MC simulation for the sample mean for data drawn idd from $\text{U}(0,1)$
+
+```{r U_MC_mean,cache=T}
+set.seed(2025)                       # Set seed for reproducibility
+
+Nsim         = 1000                  # Number of Monte Carlo simulations
+Nsamp        = 100                   # Sample size for each simulation
+sample_means = rep(0, Nsim)          # Preallocate vector to store sample means
+
+# Run simulations
+for(sim in 1:Nsim){
+  draws = runif(Nsamp)               # Draw Nsamp values from Uniform(0,1)
+  sample_means[sim] = mean(draws)    # Compute sample mean
+}
+
+# Create density curve for theoretical distribution of the sample mean
+xs = seq(min(sample_means), max(sample_means), length.out = 100)
+ys = dnorm(xs, mean = 1/2, sd = sqrt(1/12/Nsamp))  # Normal approximation using CLT
+
+# Store density data in a data.table for plotting
+den_data = data.table(x = xs, y = ys)
+
+# Store Monte Carlo sample means for plotting
+MC_data = data.table(x = sample_means)
+```
+
+---
+# Monte Carlo for the Sample Mean
+
+```{r U_MC_mean_plot,cache=F,echo=F}
+# Create the color for density label
+den_cols        = wesanderson::wes_palette("Darjeeling1",5)[c(2,4)]
+names(den_cols) = paste(c("Empirical","Theoretical"),"Density")
+
+# Plot the density
+ggplot(data=MC_data,aes(x=x))+
+  geom_histogram(aes(y = after_stat(!!str2lang("density")),fill="Histogram"),
+                 color="black",bins = 20) +
+  geom_density(aes(colour="Empirical Density"),size=0.8)+
+  geom_line(aes(x = x, y = y,color = "Theoretical Density"),size=0.8,data=den_data) + 
+  scale_color_manual(name="Densities",values=den_cols) +
+  scale_fill_manual(name="",values=c("Histogram"=alpha("darkgray",0.5))) +
+  labs(title=paste0("Monte Carlo Simulation for Sample Mean: Nsamp = ",Nsamp))+
+  xlab(TeX("$\\hat{\\mu}$"))+
+  theme_minimal()+theme(legend.position = "top",
+                        plot.title = element_text(hjust=0.5))
+```
+
+---
+# Repeat with Nsamp=1000
+
+```{r U_MC_mean_N1000,cache=T,echo=F}
+set.seed(2025)                        # Ensure reproducibility
+
+Nsim2         = 1000                  # Number of Monte Carlo simulations
+Nsamp2        = 1000                  # Sample size per simulation
+sample_means2 = rep(0, Nsim2)         # Preallocate vector to store sample means
+sample_vars2  = rep(0, Nsim2)         # Preallocate vector to store sample variances
+
+# Run Monte Carlo simulations
+for(sim in 1:Nsim2){
+  draws = runif(Nsamp2)               # Draw Nsamp2 values from Uniform(0,1)
+  sample_means2[sim] = mean(draws)    # Compute sample mean
+  sample_vars2[sim]  = var(draws)     # Compute sample variance
+}
+
+# Create theoretical normal density (CLT approximation for the sample mean)
+xs2 = seq(min(sample_means2), max(sample_means2), length.out = 100)
+ys2 = dnorm(xs2, mean = 1/2, sd = sqrt(1/12/Nsamp2))
+
+# Store density curve in a data.table
+den_data2 = data.table(x = xs2, y = ys2)
+
+# Store Monte Carlo sample means for plotting
+MC_data2 = data.table(x = sample_means2)
+
+# Plot the density
+ggplot(data=MC_data2,aes(x=x))+
+  geom_histogram(aes(y = after_stat(!!str2lang("density")),fill="Histogram"),
+                 color="black",bins=20) +
+  geom_density(aes(colour="Empirical Density"),size=0.8)+
+  geom_line(aes(x = x, y = y,color = "Theoretical Density"),size=0.8,data=den_data2) + 
+  scale_color_manual(name="Densities",values=den_cols) +
+  scale_fill_manual(name="",values=c("Histogram"=alpha("darkgray",0.5))) +
+  labs(title=paste0("Monte Carlo Simulation for Sample Mean: Nsamp = ",Nsamp2))+
+  xlab(TeX("$\\hat{\\mu}$"))+
+  theme_minimal()+theme(legend.position = "top",
+                        plot.title = element_text(hjust=0.5))
+```
+
+---
+# MCs for Other Estimators
+
+- We can use MC simulation with any (consistent) estimator
+- Let's try the two estimator's for the sample variance:
+$$\frac{\sum (x_i - \bar x)^2}{N} vs. \frac{\sum (x_i - \bar x)^2}{N-1}$$
+
+- The theoretical distribution is tedious to derive because you need the theoretical variance of the sample variance (confusing!), but we can still use MC to illustrate a point.
+
+```{r MC_samp_var,cache = T}
+set.seed(2025)
+Nsamp         = 10          # set sample size
+Nsim          = 10000       # set number of MC simulations
+sample_varN   = rep(0,Nsim) # preallocate vector to store MC estimates
+sample_varNm1 = rep(0,Nsim) # preallocate vector to store MC estimates
+
+for(sim in 1:Nsim){
+  draws              = runif(Nsamp)                # draw Nsamp values from U(0,1)
+  sample_varN[sim]   = mean((draws-mean(draws))^2) # sample var dividing by 1/N
+  sample_varNm1[sim] = var(draws)                  # sample var dividing by 1/(N-1)
+}
+```
+---
+# MC Distribution for Sample Variances
+
+```{r MC_samp_var_plot,cache=F,echo=F}
+# Combine sample variances into one data.table for plotting
+MC_data_var = data.table(
+  x = c(sample_varN, sample_varNm1),                   # Sample variances
+  Estimator = rep(c("N","N-1"), each = Nsim)          # Label for each estimator
+)
+
+# Define colors for the two estimators using Wes Anderson palette
+dencols = wesanderson::wes_palette("Darjeeling1", 5)[c(2,4)]
+names(dencols) = c("N", "N-1")
+
+# Define semi-transparent fill colors for histogram/density
+denfills = alpha(dencols, 0.25)
+
+# Plot distribution
+ggplot(data=MC_data_var,aes(x=x,color=Estimator,fill=Estimator))+
+  geom_density(size=0.8) +
+  geom_vline(xintercept=1/12,linetype="dashed",color="black")+
+  scale_color_manual(values=dencols)+
+  scale_fill_manual(values=denfills)+
+  xlab(TeX("$\\hat{\\sigma}^2_X$"))+
+  theme_minimal()+theme(legend.position = "top",
+                        plot.title = element_text(hjust=0.5))
+```
+
+---
+# First Look at the Bias Variance Trade-Off
+
+
+```{r MC_var_mom,cache=F,echo=F}
+# Create a table to show bias and variance
+MCs_var = data.table(groups = c("N","N-1","Theoretical"),
+  "mean"=c(mean(sample_varN),mean(sample_varNm1),1/12),
+                     "variance"=c(var(sample_varN),var(sample_varNm1),0))
+MCs_var
+```
+
+If we calculate variance with $\frac{\sum (x_i - \bar x)^2}{N}$ compared to $\frac{\sum (x_i - \bar x)^2}{N-1}$, we are further away from the true value (more biased) but the estimates are more stable (less variance).
+
+---
+# Inference vs Prediction
+
+A reminder that in Lecture 9, we get estimators $\hat \beta$ for the linear model $\beta$ (ignoring constant for simplicity):
+
+$$y_i = \beta x_i + e_i$$
+
+One approach to estimation is to choose an estimator that minimizes the "mean-squared error" (MSE)
+- The MSE is the average squared difference between the estimate $\hat{\beta}$ and the true value $\beta$ $$\text{MSE}_\beta(\hat{\beta}) = E[(\hat{\beta}- \beta)^2]$$
+
+However, different estimators can minimize the MSE but have different properties. Using algebra, we can write the MSE like so:
+
+$$\text{MSE}_\beta(\hat{\beta}) = Bias(\hat{\beta},\beta)^2  + Var(\hat{\beta})$$
+
+This decomposition of the MSE encapsulates the different goals of traditional statistics (inference) and machine learning (prediction).
+
+---
+# OLS being BLUE
+
+Probably you have learned that OLS is **BLUE** (best linear unbiased estimator). Let's demonstrate here with simulation. Suppose the DGP is:
+
+$$y_i = 0 x_i + e_i$$
+
+where both $x_i$ and $e_i$ are i.i.d. normal.
+
+Suppose our sample size is 100, and We can have two estimators of $\beta$:
+- one is regular OLS, $\hat \beta_{OLS}$
+- the other is a lazy version that I will simply use the first 10 observations to get the OLS estimate, $\hat \beta_{lazy}$.
+
+Let's do the 1000 simulation and compare the estimates. The theory says among all linear unbiased estimators, OLS estimates have the smallest variance. Let's see if it is true in our simulation.
+
+---
+# OLS being BLUE
+
+```{r MC_BLUE,cache=T,echo=F, dev='svg'}
+set.seed(2025)
+Nsamp         = 100         # set sample size
+Nsim          = 10000       # set number of MC simulations
+sample_OLS    = rep(0,Nsim) # preallocate vector to store MC estimates
+sample_lazy   = rep(0,Nsim) # preallocate vector to store MC estimates
+
+for(sim in 1:Nsim){
+  e                 = rnorm(Nsamp)                # draw e values from N(0,1)
+  x                 = rnorm(Nsamp)                # draw x values from N(0,1)
+  y                 = e                           # create y based on x, e, and the model
+  sample_OLS[sim]   = coef(lm(y ~ x - 1))         # Estimate beta use ols without constant
+  sample_lazy[sim]  = coef(lm(y[1:10] ~ x[1:10] - 1)) # Estimate beta use lazy
+}
+
+# Plot the result
+MC_data_ols = data.table(x=c(sample_OLS,sample_lazy),
+                         Estimator=rep(c("OLS","Lazy"),each=Nsim))
+
+dencols        = wesanderson::wes_palette("Darjeeling1",5)[c(2,4)]
+names(dencols) = c("OLS","Lazy")
+denfills       = alpha(dencols,0.25)
+
+ggplot(data=MC_data_ols,aes(x=x,color=Estimator,fill=Estimator))+
+  geom_density(size=0.8) +
+  geom_vline(xintercept=0,linetype="dashed",color="black")+
+  scale_color_manual(values=dencols)+
+  scale_fill_manual(values=denfills)+
+  xlab(TeX("$\\hat{\\beta}$"))+
+  theme_minimal()+theme(legend.position = "top",
+                        plot.title = element_text(hjust=0.5))
+
+```
+
+You can see that although the lazy estimates get the value right on average (no bias), but it has much bigger variance (the estimator generally has larger errors).
+
+
+---
+# Bias Variance Tradeoff
+
+Traditional statistics $\rightarrow$ inference of $\beta$
+- We want to try to infer the value of $\beta$ from the data.
+- Choose an estimator $\hat{\beta}$ that has low variance and low bias to perform "powerful" statistical tests and make conclusions about the value of $\beta$.
+- Usually (though not always) this requires us to choose an unbiased estimator so we aren't "skewing" the estimates $\hat{\beta}$ too much.
+
+--
+
+Machine Learning $\rightarrow$ predicting $y$
+- Estimate some model given "training data" and then predict the value of $y$ given a new value of $x$. 
+- Call this prediction $\hat{y}$. In our example, $\hat{y}=x\hat{\beta}$
+- Usually want the variance of the prediction to be small (noisy predictions are useless).
+- In our example, given a new $x$, we have $Var(\hat{y})=Var(x\hat{\beta})=x^2Var(\hat{\beta})$.
+- To decrease the variance of $\hat{y}$, we must decrease the variance of $\hat{\beta}$.
+- Leads to choosing estimators with some bias if it decreases the variance enough.
+
+
+---
+# Bootstrap
+
+Bootstrapping uses resampling technique to generate the sampling distribution of a estimator. It can be used for multiple purposes. If you are interested, you can check more on this book:
+- Davison, A. C. & Hinkley, D. V. (2009). *Bootstrap methods and their application*. New York, NY: Cambridge University Press.
+
+In this lecture, I will only talk about the spirit and basic use of bootstrap.
+
+
+---
+# Bootstrap Idea
+
+The idea of **sampling distribution** would still be the same:
+
+Each random draw of sample $j$ -> estimator $j$ (e.g. $\hat \beta^j$)
+
+This is perfectly: $\hat \beta^j$ is a  random variables! Collecting those estimators and plot them, we will have the sampling distribution!
+
+In **Monte Carlo Simulation**, we can easily generate new sample based on assumed DGP.
+
+In real world, ideally, we want to draw more samples (conduct more surveys), do estimates for each sample, and plot the sampling distribution. However, what if we are limited to what we have?
+
+--
+
+We can **sample our sample**! This is the spirit of **bootstrap**!
+
+
+---
+# Residual Bootstrap
+
+There are many different types of bootstrap techniques. If we believe the error term is nice, we can use **residual bootstrap**. (If there are heteroskedasticity, you should use **wild bootstrap**.)
+
+
+Here are the steps for a residual bootstrap:
+
+1. Fit a model (as in lecture 9).
+2. Treat the fitted value, $\hat y$, as the true expected value without noise and Residual, $e$, as true noise. Randomly reassign the "noise" to the "expected value" to create new $y = \hat y + rand(e)$.
+3. Rerun the model using the new "sample".
+4. Repeat steps 2 and 3 for $B$ times.
+
+---
+# Residual Bootstrap for Ridge
+
+Let's use mtcars data again to do the Ridge regression like in lecture 9. Suppose that we want to use $\lambda = 5$:
+
+```{r, cache=T, echo=FALSE}
+library(glmnet)
+
+# Response variable
+y = mtcars$hp
+
+# Predictor matrix
+x = data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+
+# Ridge regression example with lambda = 5 (alpha=0)
+ridge_model = glmnet(x, y, alpha = 0, lambda = 5)
+
+# Original ridge coefficient
+orig_coef = as.numeric(coef(ridge_model)["mpg", , drop=FALSE])
+
+# Get fitted values at lambda = 5
+y_hat = predict(ridge_model, newx = x, s = 5)
+
+# Residuals
+resid_ridge = y - y_hat
+
+# --- Bootstrapping to get sampling distribution for mpg coefficient ---
+set.seed(2025)
+nboot = 1000
+boot_coefs = numeric(nboot)
+
+for(i in 1:nboot){
+  error = sample(resid_ridge, nrow(x), replace = TRUE)  # resample rows with replacement
+
+  model_boot = glmnet(x, y_hat + error, alpha = 0, lambda = 5)
+  boot_coefs[i] = coef(model_boot)["mpg",]
+}
+
+# Create a data frame for plotting
+df_boot = data.frame(coef_mpg = boot_coefs)
+
+# Inspect bootstrapped sampling distribution
+ggplot(df_boot, aes(x = coef_mpg)) +
+  geom_histogram(binwidth = 0.5, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = orig_coef, color = "red", linetype = "dashed", size = 1.2) +
+  labs(title = "Bootstrap Distribution of Ridge Coef for mpg",
+       x = "Coefficient",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+---
+# Bias Variance Tradeoff
+
+We can see the bias variance tradeoff with real data! Again, we can bootstrap the OLS estimates sampling distribution and plot them together.
+
+
+```{r, cache=T, echo=FALSE}
+# Original OLS coefficient
+ols_model = lm(y ~ ., data = mtcars[, c("mpg", "wt", "drat", "qsec")])
+orig_ols = coef(ols_model)["mpg"]
+
+# Get fitted values for ols
+y_hat = ols_model$fitted.values
+
+# Residuals
+resid_ols = ols_model$residuals
+
+# --------------------------
+# Bootstrap OLS coefficients
+boot_ols = numeric(nboot)
+for(b in 1:nboot){
+  error = sample(resid_ols, nrow(x), replace = TRUE)  # resample rows with replacement
+  new_y = y_hat + error
+  
+  boot_model = lm(new_y ~ ., data = mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+  boot_ols[b] = coef(boot_model)["mpg"]
+}
+
+# --------------------------
+# Combine into one data.table for ggplot
+plot_dt = data.table(
+  coef = c(boot_ols, boot_coefs),
+  Estimator = rep(c("OLS", "Ridge"), each = nboot)
+)
+
+# --------------------------
+# Plot histogram
+ggplot(plot_dt, aes(x = coef, fill = Estimator)) +
+  geom_histogram(aes(y = ..density..), position = "identity", alpha = 0.5, bins = 50, color = "black") +
+  geom_vline(xintercept = orig_ols, color = "blue", linetype = "dashed", size = 1) +
+  geom_vline(xintercept = as.numeric(orig_coef), color = "red", linetype = "dashed", size = 1) +
+  # Add text labels for the vertical lines
+  annotate("text", x = orig_ols, y = 0.35, 
+           label = "OLS", color = "blue", hjust = -0.2) +
+  annotate("text", x = as.numeric(orig_coef), y = 0.35, 
+           label = "Ridge", color = "red", hjust = 1.2) +
+  scale_fill_manual(values = c("orange", "skyblue")) +
+  xlab("Coefficient for mpg") +
+  ylab("Frequency") +
+  ggtitle("Bootstrap OLS vs Ridge Coefficient for mpg") +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+---
+class: inverse, center, middle
+name: stattest
+
+# Descriptive Statistics and Tests: LM
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# LM Summary
+
+We have seen many results from the summary of `lm`. We were just using the estimates, and now, let's take a look at the rest:
+
+```{r, echo=FALSE}
+# OLS regression results summary
+summary(lm(hp ~ mpg + wt + drat + qsec, data = mtcars))
+```
+
+
+---
+# Inference - Std. Error
+
+**Std. Error** stands for standard error, whose value is from a theoretical formula in the background. It is the standard deviation (square root of variance) of the **sampling distribution**.
+
+In fact, we can use **bootstrap** to show this point:
+
+```{r, cache=T, echo=FALSE}
+# Response variable
+y = mtcars$hp
+
+# Predictor matrix
+x = data.matrix(mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+
+# --- Bootstrapping to get sampling distribution for mpg coefficient ---
+set.seed(2025)
+nboot = 1000
+
+# --------------------------
+# Bootstrap OLS coefficients
+boot_ols = numeric(nboot)
+boot_t = numeric(nboot)
+for(b in 1:nboot){
+  error = sample(resid_ols, nrow(x), replace = TRUE)  # resample rows with replacement
+  new_y = y_hat + error
+  
+  boot_model = lm(new_y ~ ., data = mtcars[, c('mpg', 'wt', 'drat', 'qsec')])
+  boot_ols[b] = coef(boot_model)["mpg"]
+  boot_t[b] = summary(boot_model)$coefficients["mpg", "t value"]
+}
+
+# from bootstrap
+sd(boot_ols)
+```
+
+So, based on bootstrap result, if we "draw 1000 random sample" and conduct OLS on each sample, we will have the estimated mpg coefficient following a distribution whose standard deviation is about 2.153 (or based on the formula with some assumptions: 2.381).
+
+
+---
+# Inference - t value
+
+**t value** stands for t-statistics from Student T Distribution. This is a standardized statistics.
+
+Based on CLT, we know that the sampling distribution almost follows a normal distribution, which means if we standardize with the correct mean $\mu$ and $\sigma$, we should have:
+
+$$\hat z = \frac{\hat \beta - \mu}{\sigma} \sim N(0,1)$$
+
+However, the major problem is: we do **NOT** know the true $\sigma$! The best we can use is **Std. Error** (used by `lm`) or the bootstrap estimates. There is a cost to it by using imprecise $\hat \sigma$. Now it follows a t-distribution instead of normal distribution:
+
+$$\hat t = \frac{\hat \beta - \hat \mu}{\hat \sigma} \sim t(d.o.f.)$$
+
+Also, based on LLN, the larger the sample is, the closer $\hat \sigma$ is to true $\sigma$! So the sample size matters! This is why we have **degrees of freedom** for t-distribution ($n-k-1$ for linear regression where $k$ is the number of parameters.)! As you would imagine, the higher d.o.f. is, the closer t-distribution is to normal distribution!
+
+
+---
+# Bootstrap the t-statistics
+
+Now, let's plot the distribution of t-statistics and overlay with a t-distribution with $d.o.f. = n-1$.
+
+```{r, cache=T, echo=FALSE}
+# Create a data frame for plotting
+t_boot = data.frame(t_mpg = boot_t)
+
+# Create a density curve for t distribution
+xs2 = seq(min(boot_t) - mean(boot_t),max(boot_t)-mean(boot_t),length.out = 100)
+ys2 = dt(xs2, df = (nrow(x) - ncol(x) - 1))
+den_data2 = data.table(x=xs2 + mean(boot_t),y=ys2)
+ys3 = dnorm(xs2)
+den_data3 = data.table(x=xs2 + mean(boot_t),y=ys3)
+
+den_cols        = wesanderson::wes_palette("Darjeeling1",5)[c(2,3,4)]
+names(den_cols) = paste(c("Empirical","Theoretical", "Normal"),"Density")
+
+ggplot(t_boot, aes(x = t_mpg)) +
+  geom_histogram(aes(y = after_stat(!!str2lang("density")),fill="Histogram"),
+                 color="black",bins=20) +
+  geom_density(aes(color="Empirical Density"),size=0.8)+
+  geom_line(aes(x = x, y = y,color = "Theoretical Density"),size=0.8,data=den_data2) + 
+  geom_line(aes(x = x, y = y,color = "Normal Density"),size=0.8,data=den_data3) + 
+  scale_color_manual(name="Densities",values=den_cols) +
+  scale_fill_manual(name="",values=c("Histogram"=alpha("darkgray",0.5))) +
+  labs(title=paste0("Bootstrap for t-statistics: dof = ", nrow(x) - ncol(x) - 1))+
+  xlab("t-statistics")+
+  theme_minimal()+theme(legend.position = "top",
+                        plot.title = element_text(hjust=0.5))
+```
+
+They are pretty close together!
+
+---
+# Inference - Pr(>|t|) and Signif. codes
+
+**Pr(>|t|)** is the p-value. It as a specific meaning based on t-test of $\beta = 0$. Suppose $p-value = 0.002$:
+
+If the null hypothesis is true (i.e. the true $\beta = 0$), we have $0.2\%$ probability to draw our sample in hand or something more extreme.
+
+So a **low p-value** or a **high t-statistics** means that we are pretty unlikely to draw our sample in hand if the $\beta = 0$. This gives reasonable conclusion that maybe $\beta \neq 0$ (we can never be $100\%$ sure though).
+
+--
+
+For hypothesis testing, we set a confidence level, denoted as $\alpha$, usually at $1\%$, $5\%$, or $10\%$. If $p-value < \alpha$, we state that "there is statistically significant evidence at the $\alpha$ level that $\beta$ is not 0."
+
+--
+
+The **Signif. codes** are:
+- $***$ for significant at $0.1\%$ level
+- $**$ for significant at $1\%$ level
+- $*$ for significant at $5\%$ level
+- $.$ for significant at $10\%$ level
+
+---
+# Bootstrap and p-value
+
+We can get similar results if we use the bootstrap results. Since we have a two-sided test, the p-value is twice the chance $t >= 0$ 
+
+```{r, cache=T, echo=FALSE, dev='svg'}
+# Convert to data frame for ggplot
+df = data.frame(t_stat = boot_t)
+
+ggplot(df, aes(x = t_stat)) +
+  geom_density(fill = "lightgray", alpha = 0.5) +
+  # Shade area for t >= 0
+  stat_density(
+    geom = "area",
+    fun = "density",
+    fill = "steelblue",
+    alpha = 0.5,
+    xlim = c(0, max(boot_t))
+  ) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Two-sided Bootstrap Test",
+    subtitle = paste0("Shaded area: ", round(mean(boot_t>=0), 3), " for one tail"),
+    x = "Bootstrap t-statistic",
+    y = "Density"
+  ) +
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
+
+# Use mean of a logical to get the probability of true
+# Also multiply by two due to two-sided test
+paste0("The two-sided p-value for beta = 0 from bootstrap is ", round(2*mean(boot_t>=0),2), ".")
+
+# Compare to the p-value for mpg
+paste0("The two-sided p-value for beta = 0 from lm is ", round(summary(ols_model)$coefficients["mpg", "Pr(>|t|)"], 2), ".")
+```
+
+Again, they are pretty close! The large p-value suggests that we do not have enough evidence to say "mpg" is associated with "hp".
+
+
+---
+# Overall - F-statistics and p-value
+
+**F-statistics** is a joint hypothesis test. The null hypothesis is that all $\beta$'s are 0.
+
+We won't go over the math, but p-value has similar meaning for all tests. Here, we have "p-value: 2.647e-09". This is below 0.01, which means "there is statistically significant evidence at the $1\%$ level that $\beta$ are not all 0."
+
+
+---
+# Overall - R-squared
+
+Remember that we have a loss function MSE:
+
+$$MSE = \frac{1}{N} \sum_{i}^N e_i^2$$
+
+where $e$ is the residual (unexplained part) of the model.
+
+Can we compare model goodness of fit across different data?
+
+--
+
+No. Suppose we have return at decimal level vs. returns at percentage level, we will have MSE to be 100x difference! The two models are essentially the same though! How do we deal with that?
+
+--
+
+Remember the standardizing idea, we can standardize the errors by divided by variance of $y$:
+
+$$\frac{MSE}{Var(y)} = \frac{\sum_{i}^N e_i^2}{\sum_{i}^N (y-\bar y)^2}$$
+
+---
+# Overall - R-squared
+
+These are the bad part that the model cannot explain, let's put in a more positive tone by creating the $R^2$. **Multiple R-squared** has the formula:
+
+$$R^2 = 1 - \frac{MSE}{Var(y)} = 1 - \frac{\sum_{i}^N e_i^2}{\sum_{i}^N (y-\bar y)^2}$$
+
+$R^2$ is a **goodness of fit** measure. For example, $R^2 = 10\%$ means that variation of our model prediction can explain $10\%$ actual variations in $y$. However, in `lm`, it is an **in-sample** measure!
+
+--
+
+If you are increasing the number of explanatory variables, the **in-sample R-squared** will always increase, so someone take this into consideration and created the **Adjusted R-squared**:
+
+$$R^2_{adj} = 1 - \frac{n-1}{n-k-1} \frac{\sum_{i}^N e_i^2}{\sum_{i}^N (y-\bar y)^2}$$
+
+This is a very heuristic adjustment though. Nonetheless, this is a first attempt to make the model work better out-of-sample. In the later session, we will see how to test and compare models **out-of-sample**.
+
+
+---
+class: inverse, center, middle
+name: tt
+
+# Training/Testing: LM
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# Prediction Out-of-Sample (OOS)
+
+Out-of-Sample (OOS) Performance:
+
+- OOS is mostly about **prediction**, but also matters for **inference**: we want $\beta_{\text{test}} \approx \beta_{\text{train}}$.
+- We can compare models in-sample with $R^2$ or $R^2_{\text{adj}}$, but it is better compare models OOS.
+- Adding more variables increase in-sample $R^2$, but may overfit -> poor OOS performance.
+
+--
+
+Overfitting analogy:
+
+- Student memorizes practice exam (good in-sample) -> fails when questions change (bad OOS).
+
+--
+
+How to prevent/check:
+
+1. Split data: Training / Testing (cross-section) or rolling/expanding windows (time-series)
+2. Fit model on training data
+3. Evaluate on testing data
+
+
+---
+# Illustration with OLS: Data Splitting
+
+Let's use `mtcars` again and try to predict/explain "ht". It seems that p-value for "drat" is really large. It might not be a "useful" variable (in terms of regression). Let's use the idea of training and testing to check this formally:
+
+- Model 1 uses "mpg", "wt", "drat", "qsec"
+- Model 2 uses "mpg", "wt", "qsec"
+
+We can split data in different proportions. Here, we will use one common split: 70/30 training/testing.
+
+```{r, cache=T}
+# Split data randomly
+set.seed(2025) # do not forget to set seed as randomness is introduced!
+# Note that we do not want replacement here. The entire testing data should not be seen when training
+Ind_train = sample(x = 1:nrow(mtcars),
+                   size = as.integer(nrow(mtcars)*0.7))
+# Extract the training and testing data
+Training_cars = mtcars[Ind_train,]
+Testing_cars = mtcars[-Ind_train,]
+
+# Model Fitting
+Model1 = lm(Training_cars$hp ~ ., Training_cars[,c("mpg", "wt", "drat", "qsec")])
+Model2 = lm(Training_cars$hp ~ ., Training_cars[,c("mpg", "wt", "qsec")])
+```
+
+---
+# Illustration with OLS: OOS Testing
+
+There are various metrics to assess the model performance, such as **MSE**, $R^2$, but also **MAE** (mean absolute error, $\frac{1}{N} \sum_{i=1}^N |e_i|$) and **RMSE** (Root MSE, $\sqrt{MSE}$). Let's use **RMSE** here:
+
+```{r, cache=T, echo=FALSE}
+# Use predict to get prediction from the fitted model but with testing data
+Predict1 = predict(Model1, newdata = Testing_cars[, c("mpg", "wt", "drat", "qsec")])
+Predict2 = predict(Model2, newdata = Testing_cars[, c("mpg", "wt", "qsec")])
+
+# Actual hp values in the test set
+Actual_hp = Testing_cars$hp
+                                             
+# RMSE function
+rmse = function(actual, predicted) {
+  return(sqrt(mean((actual - predicted)^2)))
+}
+  
+# Compute RMSE
+RMSE1 = rmse(Actual_hp, Predict1)
+RMSE2 = rmse(Actual_hp, Predict2)
+
+# Print result
+paste0("IS R^2 for Model 1 is ", round(summary(Model1)$r.squared, 3), "; Adjusted R^2 is ", round(summary(Model1)$adj.r.squared, 3))
+paste0("IS R^2 for Model 2 is ", round(summary(Model2)$r.squared, 3), "; Adjusted R^2 is ", round(summary(Model2)$adj.r.squared, 3))
+
+paste0("OOS RMSE for Model 1 is ", round(RMSE1,2))
+paste0("OOS RMSE for Model 2 is ", round(RMSE2,2))
+```
+In sample, $R^2$ suggest we should adopt Model 1 but $R^2_{adj}$ suggest we should adopt Model 2.
+
+However, based on **OOS RMSE**, Model 2 yields a much better prediction than Model 1. Not include "drat" is better (in prediction sense). The **OOS** result should be trusted here!
+
+---
+# Illustration with OLS: OOS Error Plots
+
+Now, let's plot predicting errors.
+
+```{r, cache=T, echo=FALSE}
+# Residuals for both models
+Error1 = Actual_hp - Predict1
+Error2 = Actual_hp - Predict2
+
+# Build combined data frame
+Error_df = data.frame(
+  Predicted = c(Predict1, Predict2),
+  Error = c(Error1, Error2),
+  Model = rep(c("Model 1", "Model 2"),
+              times = c(length(Predict1), length(Predict2)))
+)
+
+# Plot
+ggplot(Error_df, aes(x = Predicted, y = Error, color = Model)) +
+  geom_point(alpha = 0.7) +
+  geom_hline(yintercept = 0) +
+  theme_minimal() +
+  labs(
+    title = "OOS Prediction Errors Plots for Model 1 and Model 2",
+    x = "Predicted hp",
+    y = "Errors"
+  ) +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+
+Simply comparing the numbers is just a heuristic, though many people stop at this step.
+
+---
+# OOS Performance Tests
+
+The gold standard for predictive accuracy comparisons is **Diebold-Mariano test** (This test can also be applied to testing data in time-series splits.). You will find that this test is also developed based on the idea of CLT.
+
+Each random draw of sample -> per unit OOS loss function value for Model 1, $L1_i$
+
+Each random draw of sample -> per unit OOS loss function value for Model 2, $L2_i$
+
+This is perfectly: both $L1_i$ and $L2_i$ are random variables!
+
+Ideally, if we see for every $i$, $L1_i >= L2_i$, we can be certain that Model 1 is better than Model 2 (in terms of prediction)!
+
+However, what if we see some mixed result?
+
+
+---
+# OOS Performance Tests
+
+We can define the difference $d_i = L1_i - L2_i$. $d_i <= 0$ is equivalent to $L1_i <= L2_i$. Note that since our goal is to establish $L1_i > L2_i$ (Model 2 is better), we need to put it in the alternative hypothesis. Our null hypothesis is $d_i <= 0$.
+
+By CLT again, $d_i$ follows a **normal** distribution. However, since we need to standardize with estimated variance, we need t-test (again):
+
+```{r, cache=T}
+# loss differences
+d_i = (Error1)^2 - (Error2)^2
+
+# t-test on loss differences
+t.test(d_i, alternative = c("greater"))
+```
+
+---
+class: inverse, center, middle
+name: tvt
+
+# Training/Validation/Testing: Ridge
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+---
+# Validation for Hyperparameters
+
+Comparing the numbers alone is just a heuristic, yet many stop here.
+
+--
+
+Now, let's look at another unsolved mystery. Many machine learning methods come with hyperparameters (for instance, the $\lambda$ in Ridge). How do we pick them?
+
+--
+
+In principle, we’d like the $\lambda$ that gives the best OOS performance.
+
+So can we simply split the data into training/testing, try a menu of $\lambda$’s, fit Ridge on the training set for each one, choose the $\lambda$ with the lowest test MSE, and celebrate?
+
+--
+
+**No**. That would be like peeking at the answer key while practicing.
+
+The test set must remain untouched until the very end.
+
+So what’s the right workflow?
+
+---
+# Validation for Hyperparameters
+
+We split the training data once more into **training** and **validation** sets.
+
+The validation set becomes a kind of rehearsal stage, a “pseudo-OOS” arena where we compare hyperparameters using fresh data that is still not the test set.
+
+- Training is learning the material.
+- Validation is trying mock exams to tune your strategy.
+- Testing is the real final: one shot, no do-overs.
+
+
+This process is known as "tuning", "fine tuning" or "validating".
+
+---
+# Cross Validation (Cross-sectional)
+
+For cross-sectional data, instead of split training data into **training** and **validation** sets once, we can do it multiple times and find the best hyperparameter on average!
+
+```{r, cache=T, echo=FALSE}
+## ---------------- LOOCV ---------------- ##
+N = 12
+
+loocv_dt = rbindlist(
+  lapply(1:N, \(i) data.table(
+    Fold = i,
+    Obs = 1:N,
+    Set = ifelse(1:N == i, "Validation", "Training")
+  ))
+)
+
+p_loocv = ggplot(loocv_dt, aes(x = Obs, y = Fold, fill = Set)) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("Training" = "grey80", "Validation" = "skyblue")) +
+  scale_x_continuous(breaks = 1:12) +
+  scale_y_reverse(breaks = 1:12) +
+  labs(title = "LOOCV",
+       x = "Observation", y = "Fold") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5))
+
+
+## ---------------- K-fold CV ---------------- ##
+N = 20
+K = 5
+fold_id = rep(1:K, length.out = N)
+
+kfold_dt = rbindlist(
+  lapply(1:K, \(k) data.table(
+    Fold = k,
+    Obs = 1:N,
+    Set = ifelse(fold_id == k, "Validation", "Training")
+  ))
+)
+
+p_kfold = ggplot(kfold_dt, aes(x = Obs, y = Fold, fill = Set)) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("Training" = "grey80", "Validation" = "skyblue")) +
+  scale_x_continuous(breaks = 1:20) +
+  scale_y_reverse(breaks = 1:5) +
+  labs(title = "5-Fold CV",
+       x = "Observation", y = "Fold") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5))
+
+
+## ---------------- Combine ---------------- ##
+p_loocv | p_kfold
+```
+
+
+---
+# Cross Validation (Time-series)
+
+One often needs to be careful when there is a time-dimension involved. The validation set must appear after the training data and test set needs to be even later!
+
+```{r, cache=T, echo=FALSE}
+## ---------------- rolling window ---------------- ##
+N = 20
+K = 10
+
+rolling_dt = rbindlist(
+  lapply(1:K, \(k) data.table(
+    Test = k,
+    Obs = 1:N,
+    Set = ifelse((1:20) == k+10, "Testing",
+                 ifelse(((1:20) < k+10) & ((1:20) >= k+8), "Validation",
+                        ifelse(((1:20) < k+8) & ((1:20) >= k), "Training", "None")))
+  ))
+)
+
+p_rolling = ggplot(rolling_dt, aes(x = Obs, y = Test, fill = Set)) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("Training" = "brown", "Validation" = "lightgreen", "Testing" = "skyblue", "None" = "grey80")) +
+  scale_x_continuous(breaks = 1:20) +
+  scale_y_reverse(breaks = 1:10) +
+  labs(title = "Rolling-Window CV",
+       x = "Observation", y = "Window") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5))
+
+
+## ---------------- expanding window ---------------- ##
+expanding_dt = rbindlist(
+  lapply(1:K, \(k) data.table(
+    Test = k,
+    Obs = 1:N,
+    Set = ifelse((1:20) == k+10, "Testing",
+                 ifelse(((1:20) < k+10) & ((1:20) >= k+8), "Validation",
+                        ifelse(((1:20) < k+8), "Training", "None")))
+  ))
+)
+
+p_expanding = ggplot(expanding_dt, aes(x = Obs, y = Test, fill = Set)) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("Training" = "brown", "Validation" = "lightgreen", "Testing" = "skyblue", "None" = "grey80")) +
+  scale_x_continuous(breaks = 1:20) +
+  scale_y_reverse(breaks = 1:10) +
+  labs(title = "Expanding-Window CV",
+       x = "Observation", y = "Window") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5))
+
+
+## ---------------- Combine ---------------- ##
+p_rolling | p_expanding
+```
+
+
+---
+# for loop
+
+Again, we can use a grid search method with for loop to find the best $\lambda$!
+
+```{r, cache=T, echo=FALSE}
+# -------------------------
+# Prepare data
+# -------------------------
+y = Training_cars$hp
+x = data.matrix(Training_cars[, c("mpg", "wt", "drat", "qsec")])
+
+# -------------------------
+# Define lambda grid
+# -------------------------
+lambda_grid = 10^seq(-3, 3, length.out = 50)  # 0.001 to 1000
+K = 10  # number of folds
+set.seed(2025)
+
+# -------------------------
+# Create fold indices
+# -------------------------
+n = nrow(x)
+folds = sample(rep(1:K, length.out = n))
+
+# -------------------------
+# Initialize storage for CV errors
+# -------------------------
+cv_errors = matrix(0, nrow = length(lambda_grid), ncol = K)
+
+# -------------------------
+# K-fold CV loop
+# -------------------------
+for(k in 1:K){
+  test_idx  = which(folds == k)
+  train_idx = setdiff(1:n, test_idx)
+  
+  x_train = x[train_idx, ]
+  y_train = y[train_idx]
+  x_test  = x[test_idx, ]
+  y_test  = y[test_idx]
+  
+  for(i in seq_along(lambda_grid)){
+    lambda = lambda_grid[i]
+    model = glmnet(x_train, y_train, alpha = 0, lambda = lambda, standardize = TRUE)
+    
+    # Predict on the test fold
+    y_pred = predict(model, newx = x_test)
+    
+    # Mean squared error
+    cv_errors[i, k] = mean((y_test - y_pred)^2)
+  }
+}
+
+# -------------------------
+# Average CV error for each lambda
+# -------------------------
+mean_cv_error = rowMeans(cv_errors)
+best_lambda = lambda_grid[which.min(mean_cv_error)]
+paste0("Best Lambda from 10-fold CV: ", round(best_lambda, 2))
+
+# -------------------------
+# Plot CV curve
+# -------------------------
+# Example data
+data.table(
+  log_lambda = log(lambda_grid),
+  mean_cv_error = mean_cv_error
+) |>
+  ggplot(aes(x = log_lambda, y = mean_cv_error)) +
+  geom_point(size = 2) +
+  geom_line() +
+  geom_vline(xintercept = log(best_lambda), color = "red", linetype = "dashed") +
+  xlab("log(lambda)") +
+  ylab("Mean CV Error") +
+  ggtitle("10-Fold CV for Ridge") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+---
+# `glmnet` Package
+
+For functions in `glmnet` package, such as Ridge, LASSO, logistic Regression, etc. There are built-in CV's. Let's use Ridge as an example. Note that we have 10-fold CV as default. One can set `nfolds = nrow(x)` to archive LLOCV.
+
+```{r, cache=T, echo=FALSE}
+# Load package
+library(glmnet)
+
+# Response variable
+y = Training_cars$hp
+
+# Predictor matrix (exclude response)
+x = data.matrix(Training_cars[, c("mpg", "wt", "drat", "qsec")])
+
+# set seed before cv
+set.seed(2025)
+# Fit Ridge regression (alpha = 0)
+# Cross-validation to choose optimal lambda
+cv_ridge = cv.glmnet(x, y, alpha = 0, type.measure = "mse")
+plot(cv_ridge)               # CV curve
+best_lambda = cv_ridge$lambda.min
+paste0("Best Lambda from 10-fold CV: ", round(best_lambda, 2))
+
+# Refit with optimal lambda
+ridge_best = glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(ridge_best)
+```
+
+
+---
+# `caret` Package
+
+The most general *R* package for cross-validation would be `caret` package. You can fix many models with this package (You can run `names(caret::getModelInfo())` to get a list of possible models). Let's look at Ridge as an example again:
+
+```{r, cache=T, echo=FALSE}
+# Packages
+library(caret)
+library(glmnet)
+
+# Response and predictors
+y = Training_cars$hp
+x = Training_cars[, c("mpg", "wt", "drat", "qsec")]
+
+# set seed before cv
+set.seed(2025)
+
+# Define training control (e.g., 10-fold CV)
+train_control = trainControl(method = "cv", number = 10)
+
+# Train Ridge regression with caret
+ridge_caret = train(
+  x = x,
+  y = y,
+  method = "glmnet",
+  metric = "RMSE",
+  trControl = train_control,
+  tuneGrid = expand.grid(alpha = 0,   # alpha=0 for ridge
+                         lambda = seq(0, 20, length = 50))  # candidate lambdas
+)
+
+# View results
+plot(ridge_caret)
+paste0("The best tuning result is: ", round(ridge_caret$bestTune["lambda"], 2))
+
+# Coefficients for best lambda
+coef(ridge_caret$finalModel, s = ridge_caret$bestTune$lambda)
+
+```
+
+
+
+---
+class: inverse, center, middle
+name: biasvar
+
+# Bias Variance Trade-off
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+---
+# Occam's Razor/Law of Parsimony
+
+"Entities must not be multiplied beyond necessity." - Wikipedia
+
+Classic wisdom: **simpler models are better.**
+
+Bias-Variance Trade-off:
+
+As model complexity increases, OOS performance: first improves -> then worsens
+
+Forms a **U-shaped curve** for OOS RMSE.
+
+**Rule of thumb**: Keep the model as simple as possible (“KISS”: Keep It Simple, Stupid).
+
+---
+# Classical View
+
+```{r, cache=T, echo=FALSE}
+# --- Classic Bias-Variance Tradeoff ---
+# --- Parameters ---
+x = c(0.5, seq(1, 200, length.out = 500))  # model complexity
+interp_point = 25                 # interpolation point
+
+# Bias^2
+bias2 = ifelse(x <= interp_point, 1 / x, 0)
+
+# Variance
+variance = ifelse(x <= interp_point, 
+                   100 / (x - interp_point + 1)^2,                  # increase until interpolation
+                   100 / (x - interp_point + 1)^2 + ((x - interp_point + 1)/600))            # 1/(x^2) decay after interpolation
+
+# RMSE
+rmse = sqrt(bias2 + variance)
+
+# Combine into data.table
+dt = data.table(Complexity = x,
+                 Bias2 = bias2,
+                 Variance = variance,
+                 RMSE = rmse)
+
+# Plot
+ggplot(dt, aes(x = Complexity)) +
+  geom_line(aes(y = Bias2, color = "Bias^2"), size = 1.2) +
+  geom_line(aes(y = Variance, color = "Variance"), size = 1.2) +
+  geom_line(aes(y = RMSE, color = "RMSE"), size = 1.5) +
+  geom_vline(xintercept = interp_point, linetype = "dotted", color = "black", size = 1) +
+  annotate("text", x = interp_point, y = max(rmse), label = "Interpolation Point", angle = 90, vjust = -0.5) +
+  scale_color_manual("", values = c("Bias^2" = "blue", "Variance" = "green", "RMSE" = "red")) +
+  ylab("Error") + xlab("Model Complexity") +
+  coord_cartesian(xlim = c(0, interp_point-1), ylim = c(0, 5)) +
+  ggtitle("Classic Bias-Variance Tradeoff") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5))
+```
+
+
+---
+# Modern Perspective: Double Descent
+
+- Deep learning & LLMs challenge the simplicity rule.
+
+- Complexity is **not necessarily bad.**
+
+- If model complexity exceeds the interpolation point (parameters > observations):
+
+  - OOS performance can improve **again**, forming a **double descent** curve.
+
+- Modern compute power allows fitting **hypercomplex models** (e.g., deep neural networks) efficiently with strong predictive performance.
+
+---
+# Double Descent
+
+```{r, cache=T, echo=FALSE}
+# Use the same data, but look beyond interpolation point
+# Plot
+ggplot(dt, aes(x = Complexity)) +
+  geom_line(aes(y = Bias2, color = "Bias^2"), size = 1.2) +
+  geom_line(aes(y = Variance, color = "Variance"), size = 1.2) +
+  geom_line(aes(y = RMSE, color = "RMSE"), size = 1.5) +
+  geom_vline(xintercept = interp_point, linetype = "dotted", color = "black", size = 1) +
+  annotate("text", x = interp_point, y = max(rmse), label = "Interpolation Point", angle = 90, vjust = -0.5) +
+  scale_color_manual("", values = c("Bias^2" = "blue", "Variance" = "green", "RMSE" = "red")) +
+  ylab("Error") + xlab("Model Complexity") +
+  coord_cartesian(ylim = c(0, 5)) +
+  ggtitle("Double Descent") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(hjust = 0.5))
+```
+
+
+---
+
+class: inverse, center, middle
+
+# Next lecture(s): Complex Models: Trees and Neural Networks
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+#pagedown::chrome_print(input = infile, timeout = 10000)
+```
+

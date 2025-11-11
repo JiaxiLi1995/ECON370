@@ -1,7 +1,7 @@
 ################################################################################
 ### set up
 # necessary packages
-# install.packges(c("L1pack", "gapminder", "glmnet", "tidyverse", "ggrepel"))
+# install.packages(c("L1pack", "gapminder", "glmnet", "tidyverse", "ggrepel"))
 library(tidyverse)
 library(ggrepel)  # for non-overlapping labels
 set.seed(123)
