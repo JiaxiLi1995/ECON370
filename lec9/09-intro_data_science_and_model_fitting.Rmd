@@ -734,12 +734,14 @@ mtcars2$car = rownames(mtcars)
 ggplot(mtcars2, aes(x = mpg, y = hp, color = cluster)) +
   geom_point(size = 4) +
   geom_text_repel(aes(label = car), size = 3) +
-  labs(title = paste("k-means clustering of mtcars (k =", k, ")"),
+  labs(title = paste0("k-means clustering of mtcars (k = ", k, ")"),
        x = "Miles per Gallon (mpg)", 
        y = "Horsepower (hp)",
        color = "Cluster") +
   theme_minimal() +
-  scale_color_brewer(palette = "Set1")
+  scale_color_brewer(palette = "Set1") +
+  theme(plot.title = element_text(hjust = 0.5))
+
 ```
 
 
