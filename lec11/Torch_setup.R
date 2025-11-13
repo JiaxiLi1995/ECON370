@@ -55,10 +55,24 @@ options(torch.threshold_call_gc = 4000)
 
 
 ################################################################################
-# Check whether GPU setup is successful
-# Check for GPU availability
+# Check whether GPU setup is successful: Note: Mac and Windows are slightly different
+# Check for GPU availability for Windows
 if (cuda_is_available()) {
   cat("GPU works.\n")
 } else {
   cat("GPU does not work.\n")
 }
+
+# Create a torch tensor (number) for Windows
+torch_tensor(1, device = "cuda")
+
+
+# Check for GPU availability for Mac
+if (backends_mps_is_available()) {
+  cat("GPU works.\n")
+} else {
+  cat("GPU does not work.\n")
+}
+
+# Create a torch tensor (number) for Mac
+torch_tensor(1, device = "mps")
