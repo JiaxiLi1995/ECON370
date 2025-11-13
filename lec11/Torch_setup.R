@@ -3,7 +3,7 @@
 # Here is a link for the setup: https://torch.mlverse.org/docs/articles/installation
 
 
-# There are two options for Windows User (Mac users can skip to the next session):
+# There are two options for Windows User (Mac users can skip to the next section):
 # Easier way is to download a prebuilt CUDA12.8:
 options(timeout = 600) # increasing timeout is recommended since we will be downloading a 2GB file.
 # For Windows and Linux: "cpu", "cu128" are the only currently supported
