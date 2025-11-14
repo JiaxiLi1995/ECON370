@@ -923,10 +923,43 @@ Again, we can use a grid search method with for loop to find the best `\(\lambda
 
 For functions in `glmnet` package, such as Ridge, LASSO, logistic Regression, etc. There are built-in CV's. Let's use Ridge as an example. Note that we have 10-fold CV as default. One can set `nfolds = nrow(x)` to archive LLOCV.
 
-&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
 
 ```
 ## [1] "Best Lambda from 10-fold CV: 18"
+```
+
+&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+# `caret` Package
+
+The most general *R* package for cross-validation would be `caret` package. You can fix many models with this package (You can run `names(caret::getModelInfo())` to get a list of possible models). Let's look at Ridge as an example again:
+
+
+```
+## [1] "The best tuning result is: 20"
+```
+
+&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Refit the model with `\(\lambda_{best}\)`
+
+Once you identify the best hyperparameters, you must refit the model on the combined training + validation data to re-estimate the parameters.
+
+For example, suppose one of the tuning methods gave you the optimal value `\(\lambda = 20\)`, stored as best_lambda:
+
+
+``` r
+# x and y for the whole training + validation set
+y = Training_cars$hp
+x = data.matrix(Training_cars[, c("mpg", "wt", "drat", "qsec")])
+
+# Refit with optimal lambda
+ridge_best = glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(ridge_best)
 ```
 
 ```
@@ -941,26 +974,20 @@ For functions in `glmnet` package, such as Ridge, LASSO, logistic Regression, et
 
 
 ---
-# `caret` Package
+# Time-Series CV
 
-The most general *R* package for cross-validation would be `caret` package. You can fix many models with this package (You can run `names(caret::getModelInfo())` to get a list of possible models). Let's look at Ridge as an example again:
+I would suggest to use for loop for CV in time-series modeling. Let's take our code from final presentation, but do a Ridge instead of OLS. The entire workflow is provided in Template file. As reminder, for our final project, this form of expanding window is **required**:
 
-&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
 
-```
-## [1] "The best tuning result is: 20"
-```
+**Expanding window**: Have a 12-year window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:
 
-```
-## 5 x 1 sparse Matrix of class "dgCMatrix"
-##                   s=20
-## (Intercept) 473.760347
-## mpg          -3.774464
-## wt           15.252281
-## drat        -11.451408
-## qsec        -14.677160
-```
+- 1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
 
+- 1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model ...
+
+- 1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
+
+You can show the evaluation performance as a plot over time, or simply average the evaluation metric, or use Diebold-Mariano (DM) test.
 
 
 ---
@@ -990,7 +1017,7 @@ Forms a **U-shaped curve** for OOS RMSE.
 ---
 # Classical View
 
-&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -1009,7 +1036,7 @@ Forms a **U-shaped curve** for OOS RMSE.
 ---
 # Double Descent
 
-&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="10-model_tuning_and_testing_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---

@@ -385,7 +385,7 @@ if (window.hljs) {
 <li>You can show the evaluation performance as a plot over time, or simply average the evaluation metric.</li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
-<li>Expanding window: Have a 12-year rolling-window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:</li>
+<li>Expanding window: Have a 12-year window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:</li>
 </ol>
 <ul>
 <li>1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model</li>
@@ -418,9 +418,9 @@ library(tidyquant)
 library(dplyr)
 library(tidyr)
 library(lubridate)
-library(ggplot2)
-
-# Get S&amp;P500 daily data
+library(ggplot2)</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.5.2</code></pre>
+<pre class="r"><code># Get S&amp;P500 daily data
 SP500_simple_returns = tq_get(&quot;^GSPC&quot;,
                                from = &quot;1984-01-01&quot;,
                                to   = &quot;2024-12-31&quot;,

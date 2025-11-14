@@ -1433,13 +1433,10 @@ set.seed(2025)
 # Fit Ridge regression (alpha = 0)
 # Cross-validation to choose optimal lambda
 cv_ridge = cv.glmnet(x, y, alpha = 0, type.measure = "mse")
-plot(cv_ridge)               # CV curve
 best_lambda = cv_ridge$lambda.min
 paste0("Best Lambda from 10-fold CV: ", round(best_lambda, 2))
 
-# Refit with optimal lambda
-ridge_best = glmnet(x, y, alpha = 0, lambda = best_lambda)
-coef(ridge_best)
+plot(cv_ridge)               # CV curve
 ```
 
 
@@ -1475,14 +1472,44 @@ ridge_caret = train(
 )
 
 # View results
-plot(ridge_caret)
 paste0("The best tuning result is: ", round(ridge_caret$bestTune["lambda"], 2))
-
-# Coefficients for best lambda
-coef(ridge_caret$finalModel, s = ridge_caret$bestTune$lambda)
-
+plot(ridge_caret)
 ```
 
+
+---
+# Refit the model with $\lambda_{best}$
+
+Once you identify the best hyperparameters, you must refit the model on the combined training + validation data to re-estimate the parameters.
+
+For example, suppose one of the tuning methods gave you the optimal value $\lambda = 20$, stored as best_lambda:
+
+```{r}
+# x and y for the whole training + validation set
+y = Training_cars$hp
+x = data.matrix(Training_cars[, c("mpg", "wt", "drat", "qsec")])
+
+# Refit with optimal lambda
+ridge_best = glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(ridge_best)
+```
+
+
+---
+# Time-Series CV
+
+I would suggest to use for loop for CV in time-series modeling. Let's take our code from final presentation, but do a Ridge instead of OLS. The entire workflow is provided in Template file. As reminder, for our final project, this form of expanding window is **required**:
+
+
+**Expanding window**: Have a 12-year window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:
+
+- 1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
+
+- 1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model ...
+
+- 1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
+
+You can show the evaluation performance as a plot over time, or simply average the evaluation metric, or use Diebold-Mariano (DM) test.
 
 
 ---
