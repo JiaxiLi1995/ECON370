@@ -592,3 +592,141 @@ paste0("The best tuning result is: ", round(ridge_caret$bestTune["lambda"], 2))
 
 # Coefficients for best lambda
 coef(ridge_caret$finalModel, s = ridge_caret$bestTune$lambda)
+
+
+
+## Refit the model with best lambda
+# x and y for the whole training + validation set
+y = Training_cars$hp
+x = data.matrix(Training_cars[, c("mpg", "wt", "drat", "qsec")])
+
+# Refit with optimal lambda
+ridge_best = glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(ridge_best)
+
+# Coefficients for best lambda from caret
+coef(ridge_caret$finalModel, s = ridge_caret$bestTune$lambda)
+
+
+
+## Time-series CV
+# Let's use the code from econ370_final_project.Rmd to extract return data. Use Ridge regression for current return and 1-lag return as X's and future return as Y.# Data for prices, I would like to extract slightly before 1985
+library(tidyquant)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+
+# Get S&P500 daily data
+SP500_simple_returns = tq_get("^GSPC",
+                              from = "1984-01-01",
+                              to   = "2024-12-31",
+                              get  = "stock.prices") |>
+  tq_transmute(
+    select     = adjusted,       # adjusted price for accuracy
+    mutate_fun = periodReturn,   # calculate period returns
+    period     = "monthly",      # monthly returns
+    type       = "arithmetic",   # simple return (percentage change)
+    col_rename = "monthly_return"
+  ) |>
+  mutate(monthly_return = monthly_return*100) # Convert to percentage
+
+# Creating predicting_date and predicting_return using lead
+Total_data = SP500_simple_returns |>
+  mutate(lag_return = lag(monthly_return),
+         predicting_date = lead(date),
+         predicting_return = lead(monthly_return))
+
+# Subset predicting date from 1985-01-01 to 2024-12-01
+# MAKE SURE IT IS predicting_date!
+Total_data = Total_data |>
+  filter(predicting_date >= "1985-01-01",
+         predicting_date <= "2024-12-01")
+
+# see the first and last 3 observations
+head(Total_data, n = 3)
+tail(Total_data, n = 3)
+
+# Check if there is any NA in the data
+anyNA(Total_data)
+# Do not simply drop NA!
+
+
+# Define lambda grid
+# You should customize the grid to have the best lambda inside the range!
+lambda_grid = 10^seq(-3, 20, length.out = 50)  # 0.001 to 10^20
+
+# Initialize storage for CV errors
+cv_errors = rep(0, length(lambda_grid))
+
+
+# Preallocate the OOS fitted data from 2009 to 2024
+OOS_result = Total_data |>
+  filter(predicting_date >= "2009-01-01") |>
+  # Only keep the predicting_date, predicting_return, and create fitted_return
+  select(predicting_date, predicting_return) |>
+  rename(actual_return= predicting_return) |>
+  mutate(fitted_return = NA)
+
+
+# Use a for loop to estimate each model and glmnet for Ridge regression
+# Start from the end year 2009 to 2024 which are the end of training periods
+# Note, i here is the testing data year
+for (i in 2009:2024) {
+  # Extract the Training data
+  Training_data = Total_data |>
+    # before i-8 year (i = 2009, training is before and not include 2001)
+    filter(year(predicting_date) < (i-8)) |>
+    # Only keep the predictors and the predicting_return
+    select(c(predicting_return, monthly_return, lag_return))
+  
+  # Extract the validation data
+  Validation_data = Total_data |>
+    # between i-8 and i (not include i but include i-8)
+    filter(year(predicting_date) >= (i-8),
+           year(predicting_date) < i) |>
+    # Only keep the predictors and the predicting_return
+    select(c(predicting_return, monthly_return, lag_return))
+  
+  # New data to predict
+  Testing_data = Total_data |>
+    # at i
+    filter(year(predicting_date) == i) |>
+    # Only keep the predictors
+    select(monthly_return, lag_return)
+  
+  # Note that we need to extract data as matrix for glmnet fitting
+  x_train = data.matrix(Training_data[, c("monthly_return", "lag_return")])
+  y_train = Training_data$predicting_return
+  x_val  = data.matrix(Validation_data[, c("monthly_return", "lag_return")])
+  y_val  = Validation_data$predicting_return
+  x_test = data.matrix(Testing_data[, c("monthly_return", "lag_return")])
+  
+  # Use the for loop to find the best lambda
+  for(j in seq_along(lambda_grid)){
+    model = glmnet(x_train, y_train, alpha = 0, lambda = lambda_grid[j])
+    
+    # Predict on the validation fold
+    y_pred = predict(model, newx = x_val)
+    
+    # Mean squared error
+    cv_errors[j] = mean((y_val - y_pred)^2)
+  }
+  
+  # Find the best lambda
+  best_lambda = lambda_grid[which.min(cv_errors)]
+  
+  # Refit the model with best_lambda
+  model = glmnet(x_train, y_train, alpha = 0, lambda = best_lambda)
+  
+  # Make predictions and save to year i using logical indexing
+  # Use predict to estimate the fitted data based on model and test data
+  Testing_result[year(Testing_result$predicting_date) == i, "fitted_return"] = predict(model, newx = x_test)
+}
+
+# Plot the result
+ggplot(Testing_result) +
+  geom_point(aes(predicting_date, fitted_return, color = "Fitted")) +
+  geom_point(aes(predicting_date, actual_return, color = "Actual")) +
+  labs(y = "Return",
+       x = "date")
