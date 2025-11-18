@@ -1,0 +1,978 @@
+---
+title: "Data Science for Economists"
+# subtitle: "<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>"
+subtitle: "Lecture 11: Complex Models-Trees and Neural Nets"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts] 
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+name: toc
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#4B9CD3",
+  header_font_google = google_font("Fira Sans","600"),
+  text_font_google   = google_font("Fira Sans", "300", "300i"),
+  base_font_size = "20px",
+  text_font_size = "0.9rem",
+  code_inline_font_size = "0.9em",
+  code_font_size = "0.7rem",
+  header_h1_font_size = "2.0rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.25rem",
+  code_font_google   = google_font("Fira Code"),
+  inverse_link_color = "#13294B",
+  link_color = "#4B9CD3"
+)
+data(mtcars)
+
+library(knitr)
+opts_chunk$set(
+  fig.align="center", 
+  fig.height=4, #fig.width=6, 
+  # out.width="748px", #out.length="520.75px",
+  dpi=300, #fig.path='Figs/',
+  cache=F, warning=F, message=F#, echo=F
+  )
+library(fontawesome)
+library(tidyverse)
+library(data.table)
+
+options(torch.threshold_call_gc = 4000) # garbage collector for torch
+library(torch)        # Core PyTorch in R
+library(luz)          # High-level interface for torch
+library(torchvision)  # Useful for datasets and transformations
+library(torchdatasets) 
+
+# install.packages("ISLR2")
+library(ISLR2) # wage data
+
+set.seed(2025)
+```
+
+# Table of contents
+
+1. [Introduction](#intro)
+
+2. [Trees](#trees)
+
+3. [Bagging, Boosting and Random Forest](#moretrees)
+
+4. [Basic Neural Networks with Torch](#nntorch)
+
+---
+class: inverse, center, middle
+name: intro
+
+# Introduction
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# Motivation
+
+In Lectures 9 and 10, we worked with simpler models—mostly those with linear structure.
+
+Today, we move beyond linearity and explore two more flexible models:
+
+**Decision Trees** and **Neural Networks**.
+
+</br>
+
+The focus of this lecture is about the **structure of the models** and some related/improved modeling techniques.
+
+Once you understand the model, we still do:
+- the 3 steps in model fitting
+- cross-validation for hyperparameter selection
+- testing set for model evaluation
+
+
+</br>
+
+Note: Many materials in this lecture are drawn from Sections 8 and 10 of [Statistical Learning with R](https://www.youtube.com/playlist?list=PLoROMvodv4rOzrYsAxzQyHb8n_RWNuS1e).
+
+---
+# Motivation
+
+These represent **two fundamentally different ways** of letting a machine learn.
+
+A helpful analogy comes from how we understand human cognition in psychology:
+
+- **Trees - “Stereotype” Learning (Macro Approach)**
+  - The model groups observations into broad categories based on their features.
+  - Each group is then assigned a simple prediction rule—or even just a constant.
+  - (This is intuitive to human understanding. So the interpretation of Trees are clear.)
+
+- **Neural Networks - “Brain-like” Learning (Micro Approach)**
+  - The model learns by passing information through layers of interconnected “neurons.”
+  - Each neuron processes small pieces of information, and together they produce the final prediction.
+  - (Just like how the brain aggregates tiny signals into one decision! e.g. Guess how much this pen is?)
+
+
+---
+class: inverse, center, middle
+name: trees
+
+# Trees
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+
+---
+# Why Called Tree?
+
+```{r echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="45%"}
+library(rpart)
+library(rpart.plot)
+library(knitr)
+
+# --- Top: Real Tree ---
+include_graphics("pics/Atree.jpg")
+
+# --- Bottom: Decision Tree ---
+rpart.plot(
+  rpart(Species ~ Petal.Length + Petal.Width, data = iris, method = "class"),
+  type = 2, extra = 101, fallen.leaves = TRUE,
+  main = "A Simple Decision Tree"
+)
+```
+
+
+---
+# Example: Salary vs. Age
+
+Let's demonstrate with the `Wage` dataset.
+
+```{r, cache=TRUE, echo=FALSE}
+# Plot the wage against age
+ggplot(Wage, aes(age, wage)) +
+    geom_point(alpha = 0.3) +
+    geom_smooth(color = "blue", se = FALSE, linewidth = 1.2) +
+    labs(
+        title = "Age–Salary Life Cycle",
+        x = "Age",
+        y = "Annual Wage (thousands of dollars)"
+    ) +
+    theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+---
+# Quadratic?
+
+We can fit a quadratic curve, but it does not seem entirely right.
+
+```{r, cache=TRUE, echo=FALSE}
+# Add quadratic curve
+ggplot(Wage, aes(age, wage)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(color = "blue", se = FALSE, linewidth = 1.2) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "red", se = FALSE, linewidth = 1.2) +
+  labs(
+      title = "Age–Salary Life Cycle",
+      x = "Age",
+      y = "Annual wage (thousands of dollars)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+
+---
+# Piece-wise Linear Approach
+
+Instead of fitting a single quadratic curve, it may be more natural to think of a **career in three stages**:
+
+1. **Early Career (Learning & Skill Accumulation)**
+  Wages rise as age and experience increase.
+
+2. **Mid-Career (Established)**
+  Wages plateau as growth stabilizes.
+
+3. **Retirement**
+  Wages decline or level off at retirement income.
+
+One way to visualize this is to **split the graph into three regions** and fit a **separate line for each stage**.
+
+--
+
+</br>
+
+</br>
+
+**Question**: How should we determine the **breakpoints** between these stages with data?
+
+
+---
+# Grow a Tree
+
+When you plant a real tree, it grows gradually toward the sunlight.
+
+Our decision tree grows in a similar step-by-step fashion:
+- Find the **first split** that gives the largest reduction in the loss function.
+- Then, within each resulting region, find the **next best** split.
+- Continue splitting **sequentially**, each time choosing the split that reduces the loss the most.
+
+Over time, this produces a full, reasonably large tree.
+
+--
+
+The core idea of tree-based methods is to **group similar observations together**.
+
+Each split tries to create regions where observations look as similar as possible (same outcome value, or following the same small model).
+
+By the time we reach the leaves, each group is internally homogeneous.
+
+---
+# Regression Tree
+
+We can directly "grow" a regression tree: One value for each leaf.
+
+```{r, cache=TRUE, fig.width=10, fig.height=6, echo=FALSE, out.width="80%"}
+# rpart for tree
+# cp is the hyperparameter here!
+rpart.plot(
+  rpart(wage ~ age, data = Wage, method = "anova",
+              control = rpart.control(cp = 0.001)),
+  type = 2, extra = 101, fallen.leaves = TRUE,
+  main = "Regression Tree: wage vs. age"
+)
+```
+
+---
+# Regression Tree with Linear Leaf
+
+However, each segment shows a clear trend -> fit a linear model in each leaf!
+
+This produces a much simpler tree with fewer leaves.
+
+```{r, cache=TRUE, fig.width=10, fig.height=6, echo=FALSE, out.width="80%"}
+# Here, since there seems to be a trend, we will use partykit package
+library(partykit)
+
+## a simple basic fitting function (of type 1) for a ols regression
+OLS <- function(y, x, start = NULL, weights = NULL, offset = NULL, ...) {
+  lm(y ~ 0 + x, start = start, ...)
+}
+
+
+# mob control about minsplit, this can be seen as a hyperparameter
+# More to check ?mob_control
+ctrl <- mob_control(
+  minsplit = 50
+)
+
+
+# Fit linear model in each node: wage ~ age (intercept + slope) in leaves
+mob_fit <- mob(
+  wage ~ age | age,         # formula: response ~ predictors | partitioning variables
+  data = Wage,
+  fit = OLS,               # linear model in each node
+  control = ctrl
+)
+
+
+# Plot tree
+plot(mob_fit, main = "Regression Tree with Linear Models in Leaves")
+```
+
+
+Does the result align with our intuition?
+
+
+---
+# A Big Tree?
+
+The default tree is relatively small and fit our intuition. Alternatively, we can grow a very large tree:
+
+```{r, cache=TRUE, fig.width=10, fig.height=6, echo=FALSE, out.width="80%"}
+# mob control using SSR as objective
+ctrl2 <- mob_control(
+  minsplit = 50,
+  alpha = 1       # set alpha high to ignore parameter instability test (tree will grow very large)
+)
+
+
+# Fit linear model in each node: wage ~ age (intercept + slope) in leaves
+mob_fit2 <- mob(
+  wage ~ age | age,         # formula: response ~ predictors | partitioning variables
+  data = Wage,
+  fit = OLS,               # linear model in each node
+  control = ctrl2
+)
+
+
+# Plot tree
+plot(mob_fit2, main = "Large Regression Tree with Linear Models in Leaves")
+```
+
+
+---
+# Pruning: Big vs. Small
+
+Usually, we want the tree to stay **relatively small**-this makes it easier to interpret and helps avoid **overfitting**.
+
+Suppose we grow a regression tree by minimizing the **sum of squared residuals (SSR)**, and let $|T|$ denote the number of terminal nodes (leaves). Our goal is to achieve a low SSR **while keeping the tree as simple as possible**.
+
+How do we balance fit vs. complexity?
+
+--
+
+This is a classical problem of **bias-variance trade-off**: Small trees are biased, but with less variance!
+
+--
+
+Suppose we are growing a tree to minimize Sum Squared Residual (SSR) and $|T|$ is the number of terminal nodes (leaves). We are trying to minimize SSR will having as little leaves/splits as possible. How should we do that?
+
+---
+# Pruning
+
+It works like LASSO!
+
+We solve:
+
+$$\min \sum_i (y_i - \hat y_i) + \alpha |T|$$
+
+The penalty term $\alpha |T|$ discourages excessive splitting.
+- A large $\alpha$ -> simpler tree (fewer leaves).
+- A small $\alpha$ -> more complex tree.
+
+
+---
+# Pruning
+
+Tuning parameters that control tree complexity:
+
+- "cp" in `rpart`
+- "alpha" in `partykit`
+
+These are the most important hyperparameters for controlling tree size.
+
+Internally, both packages also include additional stopping rules (pre-pruning) to prevent the tree from “growing into madness.” See `?mob_control` for details.
+
+--
+
+Another strategy is to first grow a large tree, then prune unnecessary branches afterward (Post-pruning).
+
+--
+
+In practice, one often uses **cross-validation** or a **validation set** to select the optimal tree size or tuning parameter. For `partykit`, manual implementation with for loop is needed. However, this is internal in `rpart`.
+
+
+---
+# Cross-valiation with Trees
+
+Here is the result of `rpart` cp value information. `xerror` is the cross-validation error:
+
+```{r, cache=TRUE, fig.width=10, fig.height=6, echo=FALSE, out.width="80%"}
+# Fit a tree (For demonstration, you can change cp to 0.0001)
+fit1_RegTree <- rpart(wage ~ age, data = Wage, method = "anova",
+                      control = rpart.control(cp = 0.001))
+printcp(fit1_RegTree)      # prints CV table
+
+# You then can use the following code to extract the best model
+opt_index <- which.min(fit1_RegTree$cptable[,"xerror"])
+best_cp <- fit1_RegTree$cptable[opt_index, "CP"]
+paste0("The best value for cp is: ", best_cp)
+
+# # Find the pruned tree
+# fit1_pruned <- prune(fit1_RegTree, cp = best_cp)
+# rpart.plot(fit1_pruned)
+```
+
+
+---
+# Tree with more Variables
+
+We can add more variables to the tree. Suppose now, we are using all variables to predict wage in the `rpart` regression tree. It is harder to interpret, so we have this **variable importance plot**:
+
+```{r, cache=TRUE, echo=FALSE, dev='svg'}
+# Fit an rpart tree
+rpart_tree <- rpart(wage ~ .-logwage, data = Wage, method = "anova",
+                    control = rpart.control(cp = 0.001))
+
+# # plot the tree
+# rpart.plot(
+#   rpart_tree,
+#   type = 2, fallen.leaves = TRUE,
+#   main = "Regression Tree: wage vs. age"
+# )
+
+# # Plot the variable importance plot
+# vip <- rpart_tree$variable.importance
+# barplot(vip, las = 2, main = "Variable Importance")
+
+# Plot the variable importance plot with ggplot
+vip <- enframe(rpart_tree$variable.importance, 
+               name = "variable", value = "importance")
+
+ggplot(vip, aes(x = reorder(variable, importance), y = importance)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Variable Importance (rpart tree)",
+       x = "", y = "Importance") +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+
+---
+# Test a model
+
+```{r, cache=TRUE, echo=FALSE}
+# Create the training data for Wage
+set.seed(2025)
+Train_ind <- sample(1:nrow(Wage), floor(0.7*nrow(Wage)))
+Wage_train <- Wage[Train_ind, ]
+Wage_test <- Wage[-Train_ind, ]
+```
+
+```{r, cache=TRUE}
+# Fit a tree from training data (For demonstration, you can change cp to 0.0001)
+fit2_RegTree <- rpart(wage ~ .-logwage, data = Wage_train, method = "anova",
+                      control = rpart.control(cp = 0.001))
+# printcp(fit2_RegTree)      # prints CV table
+
+# You then can use the following code to extract the best model (via 10-fold CV)
+opt_index <- which.min(fit2_RegTree$cptable[,"xerror"])
+best_cp <- fit2_RegTree$cptable[opt_index, "CP"]
+# paste0("The best value for cp is: ", round(best_cp,5))
+
+# Refit the model
+rpart_tree2 <- rpart(wage ~ .-logwage, data = Wage_train, method = "anova",
+                     control = rpart.control(cp = best_cp))
+# rpart_tree2
+
+# predict with test data
+pred <- predict(rpart_tree2, newdata = Wage_test)
+
+# estimate the OOS MSE
+oos_mse <- mean((Wage_test$wage - pred)^2)
+paste0("The OOS MSE is: ", round(oos_mse,2))
+```
+
+
+---
+class: inverse, center, middle
+name: moretrees
+
+# Bagging, Boosting and Random Forest
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# Bagging: An Ensemble Learning Idea
+
+Bagging (Bootstrap Aggregating) uses the power of **many models combined together**.
+
+--
+
+We repeatedly draw **bootstrap samples** from the training data (sampling *with replacement*), and fit a separate **large** tree to each sample.
+
+This is not for computing standard errors — it is used purely for **improving prediction**.
+
+The final prediction is simply the average of all trees:
+
+$$\hat f_{bag}(x) = \frac{1}{B} \sum_{b = 1}^B \hat f_b(x)$$
+
+--
+
+By averaging many noisy trees (from CLT):
+- **Variance decreases** (major benefit)
+- **Bias increases slightly** (usually small)
+- **Overall prediction accuracy improves** (at the cost of interpretability)
+
+--
+
+**Ensemble** is a powerful idea that extends far beyond trees! It can usually drastically improve the prediction performance.
+
+---
+# Random Forest
+
+Random Forest builds on the idea of bagging and it is a nice improvement of Bagging: in each bootstrap, it randomly select $m$ predictors. for tree fitting, given total $p$ predictors. (Usually $m = \sqrt{p}$. $m = p$ would be back to bagging!)
+
+
+With this random selection, the trees from each bootstrap are less correlated so variance can decrease further!
+
+The idea is that each variable has equal chance to be on each tree. A valid predictor will have a higher chance to be in the model splits! By aggregating, hopefully, the invalid predictors get averaged out.
+
+---
+# `ranger`
+
+We use a modern package of Random Forest, `ranger`. There are two places to `set.seed`!
+
+For Random Forest or Bagging, we usually have the K-fold CV for free. This is called the **Out-of-Bag error (OOB)**.
+
+```{r, echo=FALSE, dev='svg'}
+library(ranger)
+
+set.seed(123)
+# use ranger to fit RF model
+rf_model <- ranger(
+  formula = wage ~ . - logwage,
+  data = Wage_train,
+  num.trees = 500,
+  mtry = 5, # number of variables tried on each tree
+  importance = "impurity",
+  seed = 123   # ensures reproducibility
+)
+
+# OOB MSE for regression
+paste0("OOB prediction error MSE: ", rf_model$prediction.error)
+
+# Extract variable importance
+vip <- data.frame(
+  Variable = names(rf_model$variable.importance),
+  Importance = rf_model$variable.importance
+)
+
+# Plot
+ggplot(vip, aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Variable Importance (Random Forest)", x = "", y = "Importance") +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+---
+# CV with `caret`
+
+We can use `caret` in Lecture 10 to perform k-fold CV for Random Forest. "mtry" is the main hyperparameter here:
+
+```{r, cache=TRUE, echo=FALSE}
+library(caret)
+set.seed(123)
+
+# Define train control with 5-fold CV
+train_ctrl <- trainControl(method = "cv", number = 5)
+
+# Train random forest using ranger via caret
+rf_cv <- train(
+  wage ~ . - logwage,
+  data = Wage_train,
+  method = "ranger",
+  trControl = train_ctrl,
+  tuneLength = 3
+)
+
+rf_cv
+```
+
+---
+# Boosting
+
+
+Boosting is also using bootstrap. But unlike averaging a bunch of **large** trees like Bagging or Random Forest, boosting sequentially grows the later tree based on the previous tree:
+1. Starting from a empty/null model $\hat f(x) = 0$ and residuals $e_i = y_i$ for all $i$ in the training set
+2. For $b = 1,2,\dots,B$, repeat:
+  - Fit a **small** tree $\hat f^b$ with $d$ splits ($d+1$ leaves) to the training data $(X, e)$. (Using $X$ to fit the residuals.)
+  - Update $\hat f$ by adding in a shrunken version of the new tree:
+  $$\hat f(x) \leftarrow \hat f(x) + \eta \hat f^b(x).$$
+  - Update the residuals,
+  $$e_i \leftarrow e_i - \eta \hat f^b(x_i).$$
+3. Output the boosted model,
+$$\hat f(x) = \eta \sum_{b=1}^B \hat f^b(x).$$
+
+---
+# Hyperparameter
+
+$B$, $d$ and $\eta$ are the hyperparameters:
+- Usually, $\eta = 0.01$ or $0.001$
+- Often, $d = 1$ works well
+- Use CV to select $B$.
+
+$\eta$ is making machine forget part of what it has learned. By slow learning, the performance gets better!
+
+---
+# `xgboost`
+
+We use a modern package of boosting, `xgboost`. There are two places to `set.seed`!
+
+```{r, cache=TRUE}
+library(xgboost)
+
+# Set the model
+X <- model.matrix(~ . - wage - logwage - 1, data = Wage_train)   # converts all factors/characters to dummies
+y <- Wage_train$wage
+
+# First seed
+set.seed(123)
+xgb_model <- xgboost(
+  data = X,
+  label = y,
+  objective = "reg:squarederror",
+  nrounds = 200,
+  eta = 0.01,
+  max_depth = 4,
+  subsample = 0.8,
+  colsample_bytree = 0.8,
+  verbose = 0,   # silence the fitting message
+  seed = 123     # main seed
+)
+```
+
+
+---
+# Variable Importance
+
+```{r, cache=TRUE, echo=FALSE}
+# Get importance
+vi_xgb <- xgb.importance(model = xgb_model)  # Returns a data.frame
+
+# # Quick plot using xgboost built-in function
+# xgb.plot.importance(vi_xgb, top_n = 10, rel_to_first = TRUE)
+
+# Or use ggplot
+ggplot(vi_xgb, aes(x = reorder(Feature, Gain), y = Gain)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Variable Importance (XGBoost)", x = "", y = "Importance") +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+
+---
+# CV + Early Stopping for Boosting
+
+**Early stopping** prevents wasting iterations on trees that don’t improve performance.
+
+For example, if `early_stopping_rounds = 50`, the training stops if the out-of-sample error does not improve for 50 consecutive rounds.
+
+```{r, cache=TRUE}
+set.seed(123)
+# 5-fold CV for boosting
+cv_res <- xgb.cv(
+  data = X,
+  label = y,
+  nrounds = 2000,
+  eta = 0.01,
+  nfold = 5,
+  objective = "reg:squarederror",
+  early_stopping_rounds = 50,
+  verbose = 0
+)
+# Find the best number of iterations
+cv_res$evaluation_log[cv_res$best_iteration,]
+```
+
+---
+# Model Evaluations
+
+```{r, cache=TRUE, echo=FALSE}
+paste0("The mse of the pruned tree is: ", round(oos_mse,2))
+
+# We can directly fit new data to rf
+rf_pred <- predict(rf_cv, newdata = Wage_test)
+paste0("The mse of the Random Forest model is: ", round(mean((Wage_test$wage - as.numeric(rf_pred))^2), 2))
+
+# We have to refit the boosted tree though
+set.seed(123)
+xgb_model <- xgboost(
+  data = X,
+  label = y,
+  objective = "reg:squarederror",
+  nrounds = cv_res$best_iteration,
+  eta = 0.01,
+  verbose = 0,   # silence the fitting message
+  seed = 123     # main seed
+)
+
+# fit new data to xgb_model
+boost_pred <- predict(xgb_model, newdata = model.matrix(~ . - wage - logwage - 1, data = Wage_test))
+paste0("The mse of the Boosting model is: ", round(mean((Wage_test$wage - as.numeric(boost_pred))^2), 2))
+```
+
+These results are not universal. Different methods suit different data.  
+
+---
+class: inverse, center, middle
+name: nntorch
+
+# Basic Neural Networks with Torch
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+---
+# Why called Neural Networks?
+
+![Neural Network Mimic](https://clevertap.com/wp-content/uploads/2019/04/Neural_Network_Brain_Mimic.jpeg)
+
+Here are youtube videos about: [Neurons in brain](https://www.youtube.com/watch?v=6qS83wD29PY) and [How neurons make connections](https://www.youtube.com/shorts/Rvmvt7gscIM).
+
+Image from [this](https://clevertap.com/blog/neural-networks/) blog about neural networks.
+
+---
+# Single Layer Nerual Network
+
+The neural networks usually is described using network diagram:
+
+```{r echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, fig.show="hold", out.width="45%"}
+include_graphics("pics/NN_diagram.png")
+```
+
+$$A_k = g(\sum_{j=1}^P w^0_{jk} X_j + b^0_k)$$
+
+$$f(X) = \sum_{j=1}^P w^1_{k} A_k + b^1$$
+
+---
+# Activation Function
+
+The function $g$ is called **activation function**. Some popular activation functions are:
+
+- Sigmoid function
+- ReLu (Rectified Linear Unit) function
+- GELU function
+
+```{r, cache=TRUE, echo=FALSE, dev='svg'}
+# Define activation functions
+sigmoid <- function(x) 1 / (1 + exp(-x))
+relu    <- function(x) ifelse(x > 0, x, 0)
+gelu    <- function(x) 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
+
+# Create data frame
+x <- seq(-4, 4, length.out = 400)
+
+df <- data.frame(
+  x = rep(x, 3),
+  value = c(sigmoid(x), relu(x), gelu(x)),
+  Func = factor(rep(c("Sigmoid", "ReLU", "GELU"), each = length(x)))
+)
+
+# Plot
+ggplot(df, aes(x, value, color = Func)) +
+  geom_line(linewidth = 1.2) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Activation Functions: Sigmoid, ReLU, GELU",
+    x = "x",
+    y = "f(x)",
+    color = "Function"
+  ) +
+  theme(plot.title = element_text(hjust=0.5))
+```
+
+We will use *ReLu* in our examples.
+
+---
+# Fitting a Neural Network
+
+- Goal remains:
+$$\min \sum_{i=1}^N (y_i - f(x_i))^2.$$
+
+- Trained with **Stochastic Gradient Descent (SGD)**
+
+  - Uses minibatches (random subsets)
+  - Moves "downhill" using derivatives
+  - **Backpropagation = Chain Rule** for efficient gradient computation
+
+- **Key hyperparameters**: learning rate, number of epochs
+
+- **Regularization**:
+
+  - Ridge, LASSO
+  - Early stopping, dropout (randomly omitting variables like RF), data augmentation (move X slightly around)
+
+- **Stochastic nature**: updates parameters using minibatches -> adds randomness and speeds computation
+
+---
+# Wage NN
+
+Let's fit a one-layer Neural Network for `Wage`:
+
+```{r, cache=TRUE, echo=FALSE}
+options(torch.threshold_call_gc = 4000) # garbage collector for torch
+library(torch)        # Core PyTorch in R
+library(luz)          # High-level interface for torch
+library(torchvision)  # Useful for datasets and transformations
+library(torchdatasets) 
+
+# Set random seed for reproducibility
+torch_manual_seed(13)
+
+# Define single-hidden-layer NN module
+modnn <- nn_module(
+  initialize = function(input_size) {
+    # Hidden layer with 64 neurons
+    self$hidden <- nn_linear(input_size, 64)
+    
+    # Activation function
+    self$activation <- nn_relu()
+    
+    # Dropout for regularization (40% dropout)
+    self$dropout <- nn_dropout(0.4)
+    
+    # Output layer (regression output)
+    self$output <- nn_linear(64, 1)
+  },
+  forward = function(x) {
+    x |>
+      self$hidden() |>      # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$output()          # Final output
+  }
+)
+
+
+# Set the training data
+x <- model.matrix(~ . - wage - logwage - 1, data = Wage_train)   # converts all factors/characters to dummies
+y <- Wage_train$wage
+x_test <- model.matrix(~ . - wage - logwage - 1, data = Wage_test)   # converts all factors/characters to dummies
+y_test <- Wage_test$wage
+
+# find the scale for x numerical variables
+x_mean <- colMeans(x[,1:2])
+x_sd <- apply(x[,1:2], 2, sd)
+
+# Scale x and x_test
+x[,1:2] <- sweep(sweep(x[,1:2], 2, x_mean, "-"), 2, x_sd, "/")
+x_test[,1:2] <- sweep(sweep(x_test[,1:2], 2, x_mean, "-"), 2, x_sd, "/")
+
+# Find val_id for validation set
+val_id <- sample(1:nrow(x), floor(nrow(x)*2/7))
+
+
+
+# Set up model with luz
+modnn <- modnn |>
+  setup(
+    loss = nn_mse_loss(),       # Regression MSE loss
+    optimizer = optim_adam,
+    metrics = list(luz_metric_mae())
+  ) |>
+  set_hparams(input_size = ncol(x)) # Specify input size
+
+
+# Fit the model
+fitted <- modnn |>
+  fit(
+    data = list(x, matrix(y, ncol = 1)), # training
+    valid_data = list(x[val_id,], matrix(y[val_id], ncol = 1)), # validation
+    epochs = 80,
+    # call back for early stopping
+    callbacks = list(
+      luz_callback_early_stopping(
+        monitor = "valid_loss",
+        patience = 15
+      )
+    )
+  )
+
+# Show the model structure
+fitted$model
+```
+
+The number of parameters are huge even for one layer!
+
+Modern LLMs all employ Deep Neural Networks, so you can imagine how many parameters there are and how costly the training are. E.g. GPT-5 (high) is estimated to have 635B parameters.
+
+---
+# Result
+
+```{r, echo=FALSE}
+# Set random seed for reproducibility
+torch_manual_seed(13)
+
+# Define single-hidden-layer NN module
+modnn <- nn_module(
+  initialize = function(input_size) {
+    # Hidden layer with 64 neurons
+    self$hidden <- nn_linear(input_size, 64)
+    
+    # Activation function
+    self$activation <- nn_relu()
+    
+    # Dropout for regularization (40% dropout)
+    self$dropout <- nn_dropout(0.4)
+    
+    # Output layer (regression output)
+    self$output <- nn_linear(64, 1)
+  },
+  forward = function(x) {
+    x |>
+      self$hidden() |>      # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$output()          # Final output
+  }
+)
+
+
+# Set the training data
+x <- model.matrix(~ . - wage - logwage - 1, data = Wage_train)   # converts all factors/characters to dummies
+y <- Wage_train$wage
+x_test <- model.matrix(~ . - wage - logwage - 1, data = Wage_test)   # converts all factors/characters to dummies
+y_test <- Wage_test$wage
+
+# find the scale for x numerical variables
+x_mean <- colMeans(x[,1:2])
+x_sd <- apply(x[,1:2], 2, sd)
+
+# Scale x and x_test
+x[,1:2] <- sweep(sweep(x[,1:2], 2, x_mean, "-"), 2, x_sd, "/")
+x_test[,1:2] <- sweep(sweep(x_test[,1:2], 2, x_mean, "-"), 2, x_sd, "/")
+
+# Find val_id for validation set
+val_id <- sample(1:nrow(x), floor(nrow(x)*2/7))
+
+
+# Set up model with luz
+modnn <- modnn |>
+  setup(
+    loss = nn_mse_loss(),       # Regression MSE loss
+    optimizer = optim_adam,
+    metrics = list(luz_metric_mae())
+  ) |>
+  set_hparams(input_size = ncol(x)) # Specify input size
+
+
+# Fit the model
+fitted <- modnn |>
+  fit(
+    data = list(x, matrix(y, ncol = 1)), # training
+    valid_data = list(x[val_id,], matrix(y[val_id], ncol = 1)), # validation
+    epochs = 80,
+    # call back for early stopping
+    callbacks = list(
+      luz_callback_early_stopping(
+        monitor = "valid_loss",
+        patience = 15
+      )
+    )
+  )
+
+# Plot training metrics
+plot(fitted)
+```
+
+---
+# OOS Performance
+
+```{r}
+# Find the predicted with fitted model
+pred_test <- predict(fitted, x_test) |>
+  as.numeric()
+
+# find the mse of neural networks
+paste0("The mse of the Neural Networks model is: ", round(mean((y_test - as.numeric(pred_test))^2), 2))
+```
+
+---
+
+class: inverse, center, middle
+
+# Next lecture(s): Torch Applications and GenAI
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
+
+```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
+infile = list.files(pattern = '.html')
+#pagedown::chrome_print(input = infile, timeout = 10000)
+```
+

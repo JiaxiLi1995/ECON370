@@ -47,6 +47,7 @@ library(tidyverse)
 library(data.table)
 library(patchwork)
 library(latex2exp)
+library(glmnet)
 set.seed(2025)
 ```
 
@@ -1618,7 +1619,7 @@ ggplot(dt, aes(x = Complexity)) +
 
 class: inverse, center, middle
 
-# Next lecture(s): Complex Models: Trees and Neural Networks
+# Next lecture(s): Complex Models-Trees and Neural Nets
 
 <html><div style='float:left'></div><hr color='#EB811B' size=1px width=796px></html>
 
