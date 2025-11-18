@@ -963,6 +963,15 @@ pred_test <- predict(fitted, x_test) |>
 paste0("The mse of the Neural Networks model is: ", round(mean((y_test - as.numeric(pred_test))^2), 2))
 ```
 
+</br>
+
+Here are some more NN resources with `torch`:
+
+- [Here](https://www.youtube.com/watch?v=FQ9R30XUHcU) is the announcement of `torch` in R.
+- [`torch` package information](https://torch.mlverse.org/docs/)
+- [Deep Learning and Scientific Computing with R torch](https://skeydan.github.io/Deep-Learning-and-Scientific-Computing-with-R-torch/)
+- [Large Language Model tools for R](https://luisdva.github.io/llmsr-book/)
+
 ---
 
 class: inverse, center, middle
