@@ -257,7 +257,7 @@ Write your own movie review here and check whether the model think it is a good 
 
 ```{r}
 # Example review
-review <- "The company earnings report was surprisingly positive and strong."
+review <- "This movie is too interesting to keep me awake. What a waste of money!"
 
 # Keep only letters and spaces, convert to lowercase
 clean_review <- gsub("[^a-zA-Z ]", "", review)
@@ -270,7 +270,7 @@ tokens <- strsplit(tolower(clean_review), "\\s+")[[1]]
 # 1 = <PAD>, 2 = <START>, 3 = <UNK>
 indices <- sapply(tokens, function(w) {
   if (w %in% names(word_index)) {
-    word_index[[w]]
+    which(names(word_index) == w)
   } else {
     3   # unknown token
   }
@@ -278,13 +278,22 @@ indices <- sapply(tokens, function(w) {
 
 
 # 3. One-hot encode
-x_new_1h <- one_hot(list(indices), dimension = max_features + 3)
+one_hot_review <- sparseMatrix(
+  i = rep(1, length(indices)),
+  j = as.integer(indices),
+  dims = c(1, max_features + 3) # same as training dim
+)
 
-# 4. Predict
-pred <- predict(fitted_model, x_new_1h, type = "response")
+# Convert to torch tensor
+x_review <- torch_tensor(as.matrix(one_hot_review), dtype = torch_float())
 
-# Assign class
-pred_class <- ifelse(prob > 0.5, 1, 0)
+# 4. Predict with logit and NN
+pred_logit <- predict(fitlm_best, one_hot_review, type = "response")
+pred_NN <- predict(fitted_OOS, x_review) |>
+  torch_sigmoid() |>
+  as_array()
 
-cat("Predicted class:", pred_class, "Probability of positive:", prob, "\n")
+
+cat("Predicted class for Logit:", pred_logit > 0.5, "Probability of positive:", pred_logit, "\n")
+cat("Predicted class for NN:", pred_NN > 0.5, "Probability of positive:", pred_NN, "\n")
 ```

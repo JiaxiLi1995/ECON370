@@ -154,6 +154,18 @@ plot(fitted)
 #### Evaluate
 
 ```{r}
+# Predict classes and compute accuracy
+pred_NN <- fitted |>
+  predict(test_ds) |>
+  torch_argmax(dim = 2) |> 
+  as_array()
+
+# Check accuracy with Confusion Matrix, make the threshold to be 0.5
+prop.table(table(Predicted = pred_NN,
+                 Actual = test_ds$targets))
+```
+
+```{r}
 # Accuracy helper function
 accuracy <- function(pred, truth) {
   mean(pred == truth)
@@ -162,12 +174,8 @@ accuracy <- function(pred, truth) {
 # True labels from the test set
 truth <- sapply(seq_along(test_ds), function(x) test_ds[x][[2]])
 
-# Predict classes and compute accuracy
-fitted |>
-  predict(test_ds) |>
-  torch_argmax(dim = 2) |> 
-  as_array() |> 
-  accuracy(truth)
+# Use the function for accuracy
+accuracy(pred_NN, truth)
 ```
 
 ## 0 Layer Model: Logistic
@@ -214,12 +222,20 @@ fit_modellr <- modellr |>
 
 ```{r}
 # Evaluate accuracy on test data
-fit_modellr |>
+pred_lr <- fit_modellr |>
   predict(test_ds) |>
   torch_argmax(dim = 2) |> 
-  as_array() |> 
-  accuracy(truth)
+  as_array()
 
-# Or use the built-in evaluate() function
+# Check accuracy with Confusion Matrix, make the threshold to be 0.5
+prop.table(table(Predicted = pred_lr,
+                 Actual = test_ds$targets))
+```
+
+```{r}
+# Estimate accuracy
+accuracy(pred_lr, truth)
+
+# Or use the built-in evaluate() function for accuracy
 evaluate(fit_modellr, test_ds)
 ```
