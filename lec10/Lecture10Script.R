@@ -5,6 +5,7 @@
 library(tidyverse)
 library(data.table)
 library(latex2exp)
+library(glmnet)
 set.seed(2025)
 
 ################################################################################
@@ -718,7 +719,7 @@ for (i in 2009:2024) {
   
   # Refit the model with best_lambda
   # For the total Train + Validation set!
-  model = glmnet(rbind(x_train, x_val), rbind(y_train, y_val), alpha = 0, lambda = best_lambda)
+  model = glmnet(rbind(x_train, x_val), c(y_train, y_val), alpha = 0, lambda = best_lambda)
   
   # Make predictions and save to year i using logical indexing
   # Use predict to estimate the fitted data based on model and test data
