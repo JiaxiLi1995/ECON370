@@ -338,7 +338,7 @@ boost_pred <- predict(xgb_model, newdata = model.matrix(~ . - wage - logwage - 1
 paste0("The mse of the Boosting model is: ", round(mean((Wage_test$wage - as.numeric(boost_pred))^2), 2))
 ```
 
-## Basic Neural Networks with `torch` 
+## Basic Neural Networks with `torch`
 
 #### Packages
 
@@ -420,7 +420,7 @@ modnn <- modnn |>
 # Fit the model
 fitted <- modnn |>
   fit(
-    data = list(x, matrix(y, ncol = 1)), # training
+    data = list(x[-val_id,], matrix(y[-val_id], ncol = 1)), # training
     valid_data = list(x[val_id,], matrix(y[val_id], ncol = 1)), # validation
     epochs = 80,
     # call back for early stopping

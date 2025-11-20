@@ -935,7 +935,7 @@ modnn <- modnn |>
 # Fit the model
 fitted <- modnn |>
   fit(
-    data = list(x, matrix(y, ncol = 1)), # training
+    data = list(x[-val_id,], matrix(y[-val_id], ncol = 1)), # training
     valid_data = list(x[val_id,], matrix(y[val_id], ncol = 1)), # validation
     epochs = 80,
     # call back for early stopping

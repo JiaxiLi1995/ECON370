@@ -1,0 +1,712 @@
+---
+title: "ECON 370: Assignment 5"
+author: "Jiaxi Li"
+date: "Due: Before class on December 2nd, 2025"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes:
+  - \usepackage{geometry}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{caption}
+  - \usepackage{multirow}
+  - \usepackage{array}
+  - \usepackage[affil-it]{authblk}
+  - \usepackage{lscape}
+  - \usepackage[bottom]{footmisc}
+  - \usepackage{amssymb}
+  - \usepackage{amsmath}
+  - \geometry{top=1in, bottom=1in}
+  - \setlength{\parindent}{0pt}
+  - \setlength{\parskip}{12pt}
+---
+
+```{r setup, include=FALSE}
+# Note, this is global setting for all code chunks
+knitr::opts_chunk$set(eval = FALSE, include = FALSE)
+```
+
+Names of all group members:
+
+# Directions
+
+## LLMs and AI tools may be used for this assignment, but only with careful verification of their output.
+
+Use the Rmd template and write code to answer the following questions. In order to ensure smooth grading, I will ask you to write both your code and explanation (as comment) in code chunk. Please write your code and answer in the corresponding place.
+
+In this homework, we will utilize simulation and test statistics to answer some theoretical questions and basic complex models.
+
+Each question is worth three points. For each section, a "question" corresponds to a number.
+
+Please **comment** your code clearly. 0.5 point per question will be deducted if there is a significantly lack of commenting. Also, the easier your code is to read, the more likely I will be able to figure out what you're doing.
+
+For any process requires randomness, you need to **set seed to 2025**. For for loops, you need to **preallocate** the result. Failing to do so will result in 0.5 point per question deduction.
+
+Remember to ***run Section O*** before you proceed. After finishing all code, make sure to **restart** R session and **clear** everything from your workspace. **Rerun** everything to ensure there is no dependency issue in your code.
+
+For ***Section III***, I will let you modify some parts of the code labeled as **?**. The major goal is for you to compare the results.
+
+You may work in groups of three to four people for this homework. Please submit one script per group and clearly indicate who was in your group for the assignment.
+
+------------------------------------------------------------------------
+
+# O. Data
+
+***This is the code to extract data online and load necessary packages. Do not modify. Run this section before you proceed.***
+
+Similar to HW4, we are also creating some new data based on this formula:
+
+$$
+Y = 0.5 X_1 + 1 X_2 + 1.5 X_3 + 2 X_4 + e
+$$
+
+We would also have $X_1$ to be positively correlated to $X_2, X_5$ and negatively correlated to $X_3$. $X_1$ is not correlated with $X_4$ at all. There are 476 variables have no contribution to $Y$. We are also creating an $Y_2$ to be created by adding random coefficients for all the 480 $X$ variables, saved as "**X_alt**". The actual coefficients are saved as "**b_actual**".
+
+```{r}
+# Data Loading in Section, do not modify
+library(tidyverse) # ggplot2 is already in tidyverse
+library(glmnet) # for many other regressions such as: Ridge, LASSO, logistic, etc.
+library(ranger) # for Random Forest
+library(xgboost) # for Boosting
+library(caret) # for CV
+
+options(torch.threshold_call_gc = 4000) # garbage collector for torch
+library(torch)        # Core PyTorch in R
+library(luz)          # High-level interface for torch
+library(torchvision)  # Useful for datasets and transformations
+
+# Simulate data based on the model
+set.seed(2025)
+# Set observation size
+Nobs = 1000
+Noise = 3*rnorm(Nobs)
+X = matrix(rnorm(5*Nobs), ncol = 5)
+# Make X_2,X_5 to be positively correlated to X_1
+X[,2] = 0.6*X[,1] + sqrt(1 - 0.6^2) * X[,2]
+X[,5] = 0.6*X[,1] + sqrt(1 - 0.6^2) * X[,5]
+# Make X_3 to be negative correlated to X_1
+X[,3] = -0.6*X[,1] + sqrt(1 - 0.6^2) * X[,3]
+# Create the Y variable
+Y = 0.5*X[,1] + 1*X[,2] + 1.5*X[,3] + 2*X[,4] + Noise
+
+# Create alternative variables who are just random noise
+X_alt = cbind(X, matrix(rnorm(475*Nobs), ncol = 475))
+
+# Add names to X
+colnames(X) = paste0("X", 1:5)
+# Add names to X_alt
+colnames(X_alt) = paste0("X", 1:480)
+
+# Create b_actual
+b_actual = sort(rnorm(480))*0.05
+
+# Create Y_2 based on all 1080 variables
+Y_2 = rowSums(sweep(X_alt, 2, b_actual, "*")) + Noise
+
+# Remove the random noise
+rm(Noise)
+
+# id for testing
+testing_id <- sample(1:nrow(X_alt), floor(nrow(X_alt)*0.3))
+X_alt_train <- X_alt[-testing_id,]
+X_alt_test <- X_alt[testing_id,]
+Y_train <- Y[-testing_id]
+Y_test <- Y[testing_id]
+Y_2_train <- Y_2[-testing_id]
+Y_2_test <- Y_2[testing_id]
+```
+
+------------------------------------------------------------------------
+
+# I. P-Hacking for Sparse Data
+
+We learned about p-value in *lecture 10* which can determine variable statistical significance.
+
+To find significant results, some researchers selectively report results, run many different tests, or stopping data collection once a desired result is found. This is called **p-hacking** or **data dredging**. Let's check if p-hacking is a good idea with simulations.
+
+1.  We have created 480 variables in "X_alt", how many are truly related to $Y$? Given that p-value is the probability that an **irrelevant** variable can be found more extreme than the given variable, with $\alpha = 0.05$, what is the chance that an **irrelevant** variable gets falsely concluded as statistically significant? Given that there are for $Y$, how many **irrelevant** variables would you expect to see have a low p-value?
+
+```{r}
+# Answer:
+# # of variables truly relate to Y: 
+# chance that an irrelevant variable gets falsely concluded as statistically significant: 
+# how many irrelevant variables would you expect to see have a low p-value: 
+```
+
+2.  Now, let's use **for loop** to run **regressions**, **one variable at a time without intercept**, and save the p-values in "**Result**". Check the proportion and number of **irrelevant** variables with p\<0.05. Is the proportion similar to your guess in 1?
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+```{r}
+# Answer:
+# whether proportion is similar to your guess in 1: 
+```
+
+3.  If I am a researcher, who searched online and randomly (without reasoning) a list of 280 variables. I run a regression for each variable to find the useful ones. I am really "conservative" in the sense that I use $\alpha = 0.01$ and concludes that there are about **8** useful variables for $Y$ prediction. Am I a good researcher?
+
+```{r}
+# Answer: 
+```
+
+4.  Let's use the idea of **training and testing** data to split the sample (I have already split them for you). Regress Y against **each 476 irrelevant variables** in the training data "X_alt_train" and "Y_train". Find the variables significant (p \< 0.05) and run those variables again in the testing data "X_alt_test" and "Y_test". How many variables are still significant? Does OOS test help to flag false signals? Does OOS test eliminate "luck" (in the sense a lucky irrelevant variable is concluded as significant)?
+
+Hint: Your should skip the first 4 relevant variables when calculating the total number and proportion of significant but irrelevant variables.
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+```{r}
+# Answer:
+# Does OOS test help to flag false signals? 
+# Does OOS test eliminate "luck"? 
+```
+
+5.  We have seen the p-value conclusion is problematic, let's examine OOS predictability. Take **only** the **statistically significant** variables ($p<0.05$) from your training set, run a multiple regression in-sample (using **training set** and all "significant" variables together in **one** regression without intercept, call this "Model2"), and then use this regression to fit the test set with "**predict**" function and calculate the OOS $R^2$. Try the same for just the first 4 relevant variables (call this "Model1") and calculate the OOS $R^2$ again. How good are the predictions if you include irrelevant but significant variables?
+
+Hint: For `lm` model and associated predict, you need to input a data.frame (or tibble or data.table).
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+6.  Let's try to use all variables in regression now and examine OOS performance. TRun a multiple regression in-sample (using **training set** and all variables together in **one** regression without intercept, call this "**Model3**"), and then use this regression to fit the test set with "**predict**" function and calculate the OOS $R^2$. How good are the predictions if you just use everything without careful reasoning?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+7.  Let's try the LASSO (**Model5**) and Ridge (**Model4**) with cross validation. Since this is a cross-sectional data, you can just use "**cv.glmnet**" to find the best model. (You can check lec 10 template code, remember to set seed to 2025.) Estimate the OOS $R^2$ for both models. Which method does better?
+
+Hint: To fit new data with `cv.glmnet`, you should use `predict(model, newx = new_data, s = "lambda.min")`. Note for `glmnet`, you should use matrix.
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+8.  Why do you think the Ridge and LASSO have such performance for $Y$? (Hint: related to HW4 idea.)
+
+```{r}
+# Answer: 
+```
+
+------------------------------------------------------------------------
+
+# II. P-Hacking for Dense Data
+
+Now, let's repeat the exact exercise for Dense Data. Many hint can be found in the previous section.
+
+1.  We have created 480 variables in "X_alt", how many are truly related to **Y_2**?
+
+```{r}
+# Answer:
+# # of variables truly relate to Y_2: 
+```
+
+2.  Now, let's use **for loop** to run **regressions**, **one variable at a time without intercept**, and save the p-values in "**Result_alt**". Check the proportion and number of **significant** variables with p\<0.05. Why do you think there are so few significant variables?
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+```{r}
+# Answer: 
+```
+
+3.  If I am a researcher, who searched online and randomly (without reasoning) a list of 480 variables. I run a regression for each variable to find the useful ones. I am really "conservative" in the sense that I use $\alpha = 0.01$ and concludes that there are about **12** useful variables for Y_2 prediction. Am I a good researcher?
+
+```{r}
+# Answer: 
+```
+
+4.  Let's use the idea of **training and testing** data to split the sample (I have already split them for you). Regress Y_2 against **all 480 variables** in the training data "X_alt_train" and "Y_2_train". Find the variables significant (p \< 0.05) and run those variables again in the testing data "X_alt_test" and "Y_2_test". How many variables are still significant? Does OOS test confirm their relevance? Why?
+
+```{r}
+# Code Below, remember commenting
+
+```
+
+```{r}
+# Answer: 
+```
+
+5.  Let's try to use all variables in regression now and examine OOS performance. Run a multiple regression in-sample (using **training set** and all variables together in **one** regression without intercept, call this "**Model6**"), and then use this regression to fit the test set with "**predict**" function and calculate the OOS $R^2$. How good are the predictions if you just use everything here? Guess why?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+6.  Let's try the LASSO (**Model7**) and Ridge (**Model8**) again with cross validation ("**cv.glmnet**", remember to set seed to 2025). Estimate the OOS $R^2$ for both models. Which method does better?
+
+```{r}
+# Code Below, remember commenting
+
+
+# Answer: 
+```
+
+7.  Why do you think the Ridge and LASSO have such performance for Y_2?
+
+```{r}
+# Answer: 
+```
+
+------------------------------------------------------------------------
+
+# III. Regression Trees and Neural Networks
+
+In this section, we will try to modify **lecture 11 template code** in class for the tree models. I will provide you with analysis code about neural networks and I want you to make sense of the code and the result.
+
+Warning: CV is much easier for cross-sectional data here. You probably need to use loop when you work with time-series.
+
+1.  Let's just use all variables in X_alt to predict **Y**. Let's use `ranger` with `caret` for Random Forest + 5-fold cross validation for Y_train. Name this model "**Model9**". Fit the X_alt_test to Model9, calculate and report the OOS $R^2$. How well is the Random Forest Performance?
+
+Note: CV takes a long time.
+
+```{r}
+# Modify Code Below, replace the ? with your code
+# Make data a data.frame
+train_df <- data.frame(Y = Y_train, X_alt_train)
+
+set.seed(2025)
+# Define train control with 5-fold CV
+train_ctrl <- trainControl(method = "?", number = 5)
+
+# Train random forest using ranger via caret
+Model9 <- train(
+  ?,
+  data = train_df,
+  method = "ranger",
+  trControl = train_ctrl,
+  tuneLength = 3 # for better results, this should be 10
+)
+
+# We can directly fit new data to rf
+Fitted9 <- ?(Model9, newdata = X_alt_test)
+
+# Estimate the OOS R^2
+R_sq_OOS9 = ?
+
+paste0("The out-of-sample R^2 for Random Forest with Y is: ", round(R_sq_OOS9, 4))
+```
+
+```{r}
+# Answer: 
+```
+
+2.  Repeat with Boosting with `xgboost` to fit **Y**, use the `xgb.cv` function for cross validation with early stopping and refit the model. Please use the exact code but change to different data. Fit the X_alt_test to **Model10**, calculate and report the OOS $R^2$. How well is the Boosting Performance?
+
+Hint: You need to use matrix here for `xgb.cv`. Set seed twice as 2025 for CV and refitting.
+
+Note: CV takes a long time.
+
+```{r}
+# Modify Code Below, replace the ? with your code
+set.seed(2025)
+# 5-fold CV for boosting
+cv_res10 <- ?(
+  data = X_alt_train,
+  label = Y_train,
+  nrounds = 2000,
+  eta = 0.01,
+  nfold = 5,
+  objective = "reg:squarederror",
+  early_stopping_rounds = 50,
+  verbose = 0
+)
+
+# We have to refit the boosted tree though
+set.seed(2025)
+Model10 <- ?(
+  data = X_alt_train,
+  label = Y_train,
+  objective = "reg:squarederror",
+  nrounds = cv_res10$best_iteration,
+  eta = 0.01,
+  verbose = 0   # silence the fitting message
+)
+
+# fit new data to xgb_model
+Fitted10 <- ?(Model10, newdata = X_alt_test)
+
+# Estimate the OOS R^2
+R_sq_OOS10 = ?
+
+paste0("The out-of-sample R^2 for Boosting with Y is: ", round(R_sq_OOS10, 4))
+```
+
+```{r}
+# Answer: 
+```
+
+3.  Here is the provided Neural Networks model for **Y**. How many layers do we have? How many parameters in total do we have? How does the model work based on OOS $R^2$?
+
+```{r}
+# Just run the code below
+# Set random seed for reproducibility
+torch_manual_seed(2025)
+
+# Define single-hidden-layer NN module
+modnn <- nn_module(
+  initialize = function(input_size) {
+    # 1st Hidden layer with 128 neurons
+    self$hidden1 <- nn_linear(input_size, 128)
+    
+    # 2nd Hidden layer with 64 neurons
+    self$hidden2 <- nn_linear(128, 64)
+    
+    # 3rd Hidden layer with 32 neurons
+    self$hidden3 <- nn_linear(64, 32)
+    
+    # 4th Hidden layer with 16 neurons
+    self$hidden4 <- nn_linear(32, 16)
+    
+    # Activation function
+    self$activation <- nn_relu()
+    
+    # Dropout for regularization (40% dropout)
+    self$dropout <- nn_dropout(0.4)
+    
+    # Output layer (regression output)
+    self$output <- nn_linear(16, 1)
+  },
+  forward = function(x) {
+    x |>
+      self$hidden1() |>     # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$hidden2() |>     # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$hidden3() |>     # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$hidden4() |>     # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$output()         # Final output
+  }
+)
+
+# Skip the scaling since our data is already standard normal. It is better to scale for real data.
+
+set.seed(2025)
+# Find val_id for validation set
+val_id <- sample(1:nrow(X_alt_train), floor(nrow(X_alt_train)*2/7))
+
+# Set up model with luz
+modnn <- modnn |>
+  setup(
+    loss = nn_mse_loss(),       # Regression MSE loss
+    optimizer = optim_adam,
+    metrics = list(luz_metric_mae())
+  ) |>
+  set_hparams(
+    input_size = ncol(X_alt_train)   # Specify input size
+  )
+
+# Fit the model
+fitted <- modnn |>
+  fit(
+    data = list(X_alt_train[-val_id,], matrix(Y_train[-val_id], ncol = 1)), # training
+    valid_data = list(X_alt_train[val_id,], matrix(Y_train[val_id], ncol = 1)), # validation
+    epochs = 80,
+    # call back for early stopping
+    callbacks = list(
+      luz_callback_early_stopping(
+        monitor = "valid_loss",
+        patience = 15
+      )
+    )
+  )
+```
+
+```{r}
+# Show the model structure
+fitted$model
+```
+
+```{r}
+# Plot training metrics
+plot(fitted)
+```
+
+```{r}
+# Find the predicted with fitted model
+Fitted11 <- predict(fitted, X_alt_test) |>
+  as.numeric()
+
+# Estimate the OOS R^2
+R_sq_OOS11 = 1 - var(Fitted11 - Y_test)/var(Y_test)
+
+paste0("The out-of-sample R^2 for Nerual Networks with Y is: ", round(R_sq_OOS11, 4))
+```
+
+```{r}
+# Answer:
+# # of layers: 
+# # of parameters in total: 
+# OOS R^2: 
+```
+
+4.  Let's just use all variables in X_alt to predict **Y_2**. Let's use `ranger` with `caret` for Random Forest + 5-fold cross validation for Y_2_train. Name this model "**Model12**". Fit the X_alt_test to Model11, calculate and report the OOS $R^2$. How well is the Random Forest Performance for Y_2?
+
+Note: CV takes a long time.
+
+```{r}
+# Modify Code Below, replace the ? with your code
+# Make data a data.frame
+train_df2 <- data.frame(Y = Y_2_train, X_alt_train)
+
+set.seed(2025)
+# Define train control with 5-fold CV
+train_ctrl <- trainControl(method = "?", number = 5)
+
+# Train random forest using ranger via caret
+Model12 <- train(
+  ?,
+  data = train_df2,
+  method = "ranger",
+  trControl = train_ctrl,
+  tuneLength = 3 # for better results, this should be 10
+)
+
+# We can directly fit new data to rf
+Fitted12 <- ?(Model12, newdata = X_alt_test)
+
+# Estimate the OOS R^2
+R_sq_OOS12 = ?
+
+paste0("The out-of-sample R^2 for Random Forest with Y_2 is: ", round(R_sq_OOS12, 4))
+```
+
+```{r}
+# Answer: ?
+```
+
+5.  Repeat with Boosting with `xgboost` to fit **Y_2**, use the `xgb.cv` function for cross validation with early stopping and refit the model. Please use the exact code but change to different data. Fit the X_alt_test to **Model13**, calculate and report the OOS $R^2$. How well is the Boosting Performance?
+
+Hint: You need to use matrix here for `xgb.cv`. Set seed twice as 2025 for CV and refitting.
+
+```{r}
+# Modify Code Below, replace the ? with your code
+set.seed(2025)
+# 5-fold CV for boosting
+cv_res13 <- ?(
+  data = X_alt_train,
+  label = Y_2_train,
+  nrounds = 2000,
+  eta = 0.01,
+  nfold = 5,
+  objective = "reg:squarederror",
+  early_stopping_rounds = 50,
+  verbose = 0
+)
+
+# We have to refit the boosted tree though
+set.seed(2025)
+Model13 <- ?(
+  data = X_alt_train,
+  label = Y_2_train,
+  objective = "reg:squarederror",
+  nrounds = cv_res13$best_iteration,
+  eta = 0.01,
+  verbose = 0   # silence the fitting message
+)
+
+# fit new data to xgb_model
+Fitted13 <- ?(Model13, newdata = X_alt_test)
+
+# Estimate the OOS R^2
+R_sq_OOS13 = ?
+
+paste0("The out-of-sample R^2 for Boosting with Y_2 is: ", round(R_sq_OOS13, 4))
+```
+
+```{r}
+# Answer: 
+```
+
+6.  Here is the provided Neural Networks model for **Y_2**. How many layers do we have? How many parameters in total do we have? How does the model work based on OOS $R^2$?
+
+General idea for dense data with small coefficient would be to fit a neural networks model with one layer and small number of neurons (shallow & small). Twisting an Neural Networks Model to fit data is almost an art.
+
+```{r}
+# Just run the code below
+# Set random seed for reproducibility
+torch_manual_seed(2025)
+
+# Define single-hidden-layer NN module
+modnn <- nn_module(
+  initialize = function(input_size) {
+    # 1st Hidden layer with 16 neurons
+    self$hidden1 <- nn_linear(input_size, 16)
+    
+    # Activation function
+    self$activation <- nn_relu()
+    
+    # Dropout for regularization (40% dropout)
+    self$dropout <- nn_dropout(0.4)
+    
+    # Output layer (regression output)
+    self$output <- nn_linear(16, 1)
+    
+    # ---- CUSTOM SMALL INITIALIZATION ----
+    nn_init_normal_(self$hidden1$weight, mean = 0, std = 0.005)
+    nn_init_constant_(self$hidden1$bias, 0)
+
+    nn_init_normal_(self$output$weight, mean = 0, std = 0.005)
+    nn_init_constant_(self$output$bias, 0)
+  },
+  forward = function(x) {
+    x |>
+      self$hidden1() |>     # Linear transformation
+      self$activation() |>  # Apply ReLU
+      self$dropout() |>     # Apply dropout
+      self$output()         # Final output
+  }
+)
+
+# Skip the scaling since our data is already standard normal. It is better to scale for real data.
+
+set.seed(2025)
+# Find val_id for validation set
+val_id <- sample(1:nrow(X_alt_train), floor(nrow(X_alt_train)*2/7))
+
+# Set up model with luz
+modnn <- modnn |>
+  setup(
+    loss = nn_mse_loss(),       # Regression MSE loss
+    optimizer = optim_adam,
+    metrics = list(luz_metric_mae())
+  ) |>
+  set_hparams(
+    input_size = ncol(X_alt_train)   # Specify input size
+  ) |>
+  set_opt_hparams(
+    lr = 1e-4
+  )
+
+# Fit the model
+fitted <- modnn |>
+  fit(
+    data = list(X_alt_train[-val_id,], matrix(Y_2_train[-val_id], ncol = 1)), # training
+    valid_data = list(X_alt_train[val_id,], matrix(Y_2_train[val_id], ncol = 1)), # validation
+    epochs = 400,
+    # call back for early stopping
+    callbacks = list(
+      luz_callback_early_stopping(
+        monitor = "valid_loss",
+        patience = 15
+      )
+    )
+  )
+```
+
+```{r}
+# Show the model structure
+fitted$model
+```
+
+```{r}
+# Plot training metrics
+plot(fitted)
+```
+
+```{r}
+# Find the predicted with fitted model
+Fitted14 <- predict(fitted, X_alt_test) |>
+  as.numeric()
+
+# Estimate the OOS R^2
+R_sq_OOS14 = 1 - var(Fitted14 - Y_2_test)/var(Y_2_test)
+
+paste0("The out-of-sample R^2 for Nerual Networks with Y_2 is: ", round(R_sq_OOS14, 6))
+```
+
+```{r}
+# Answer:
+# # of layers: ?
+# # of parameters in total: ?
+# OOS R^2: ?
+```
+
+7.  Run the following code. I am calling it "repeated" here but that is not the official word for the idea. What single word on Lecture 11 would describe what I am doing here? How does the performance change?
+
+```{r}
+# Just run the code below
+# repeated fit the NN Model
+n_repeated <- 5
+repeated_models <- vector("list", n_repeated)
+
+for (i in 1:n_repeated) {
+  cat("Training model", i, "\n")
+  torch_manual_seed(123 + i)   # different seeds for diversity
+  
+  set.seed(2025 + i)
+  # Find val_id for validation set
+  val_id <- sample(1:nrow(X_alt_train), floor(nrow(X_alt_train)*2/7))
+
+
+  # Fit the model
+  repeated_models[[i]] <- modnn |>
+  fit(
+    data = list(X_alt_train[-val_id,], matrix(Y_2_train[-val_id], ncol = 1)), # training
+    valid_data = list(X_alt_train[val_id,], matrix(Y_2_train[val_id], ncol = 1)), # validation
+    epochs = 400,
+    # call back for early stopping
+    callbacks = list(
+      luz_callback_early_stopping(
+        monitor = "valid_loss",
+        patience = 15
+      )
+    )
+  )
+
+}
+
+# Make predictions for each repeated model
+preds_list <- lapply(repeated_models, function(model) {
+  as.numeric(predict(model, X_alt_test))
+})
+
+# Average predictions
+preds_repeated <- Reduce(`+`, preds_list) / n_repeated
+
+# Estimate the OOS R^2
+R_sq_OOS_repeated = 1 - var(preds_repeated - Y_2_test)/var(Y_2_test)
+```
+
+```{r}
+paste0("The out-of-sample R^2 for repeated Nerual Networks with Y_2 is: ", round(R_sq_OOS_repeated, 6))
+```
+
+```{r}
+# Answer:
+# One word: 
+# Performance: 
+```
+
+8.  What is your conclusion about overall OOS results for Y and Y_2? Does complicated model always work better than simple models? Why? (Hint: What is the DGP for Y and Y_2?)
+
+```{r}
+# Answer: 
+```
