@@ -1,0 +1,88 @@
+---
+title: "Image Recognition"
+author: "Jiaxi Li"
+date: "2025-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Image Recognition function
+
+The following code is made with help of ChatGPT and manual correction. The input can be any online image url.
+
+```{r}
+# Install/load required packages
+if (!require(torchvision, quietly = TRUE)) install.packages("torchvision", repos = "https://cloud.r-project.org")
+if (!require(jpeg, quietly = TRUE)) install.packages("jpeg", repos = "https://cloud.r-project.org")
+
+# Set a garbage collector
+options(torch.threshold_call_gc = 4000)
+library(torch)
+library(torchvision)
+library(jpeg)
+```
+
+```{r}
+image_classify_resnet18 <- function(img_url) {
+  # Load Pretrained ResNet18 Model
+  model <- model_resnet18(pretrained = TRUE)
+  model$eval()
+  
+  # Download & Preprocess Image
+  img_path <- tempfile(fileext = ".jpg")
+  download.file(img_url, destfile = img_path, mode = "wb")
+  
+  img <- readJPEG(img_path)
+  img <- torch_tensor(img)$permute(c(3, 1, 2))  # (H,W,C) → (C,H,W)
+  
+  # Apply preprocessing (resize, crop, normalize)
+  img <- transform_resize(img, 256)
+  img <- transform_center_crop(img, 224)
+  img <- transform_normalize(
+    img,
+    mean = c(0.485, 0.456, 0.406),
+    std = c(0.229, 0.224, 0.225)
+  )
+  img <- img$unsqueeze(1) # Add batch dimension
+  
+  # Run Inference
+  with_no_grad({
+    output <- model(img)
+  })
+  
+  probabilities <- nnf_softmax(output, dim = 2)
+  top5 <- probabilities$topk(5)
+  
+  # Load ImageNet Labels & Print Top-5 Predictions
+  labels_url <- "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
+  labels <- readLines(labels_url, warn = FALSE)
+  
+  cat("\nTop-5 Predictions:\n")
+  for (i in 1:5) {
+    idx <- as.integer(top5[[2]][1, i])
+    score <- as.numeric(top5[[1]][1, i]) * 100
+    cat(sprintf("%d. %s: %.2f%%\n", i, labels[idx], score))
+  }
+}
+```
+
+Try golden retriever:
+
+```{r}
+image_classify_resnet18("https://upload.wikimedia.org/wikipedia/commons/3/31/Golden-retriever-dog-1362597631o6g.jpg")
+```
+
+Try Abyssinian cat:
+
+```{r}
+image_classify_resnet18("https://cdn.wamiz.fr/cdn-cgi/image/format=auto,quality=80,width=532,height=532,fit=cover/animal/breed/cat/adult/6735e079d0977523978416.jpg")
+```
+
+Try zebra:
+
+```{r}
+image_classify_resnet18("https://www.sciencing.com/sciencing/characteristics-zebra-8001369/153717005.jpg")
+```

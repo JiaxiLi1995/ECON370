@@ -1,0 +1,290 @@
+---
+Ttitle: "Torch Sentiment"
+author: "Jiaxi Li"
+date: "2025-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a example sentiment analysis with IMDB Movie Review data. You can check other types of data (like mltrev23 / Financial Sentiment Analysis) to analyze other types of sentiment.
+
+Example and code are from: <https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch10-deeplearning-lab-torch.R>
+
+There are adjustments and comments by ChatGPT and me.
+
+## Setup
+
+#### Packages
+
+```{r}
+# Set a garbage collector
+options(torch.threshold_call_gc = 4000)
+library(torch)
+library(luz)
+library(torchdatasets) # for datasets we are going to use
+library(Matrix)
+library(glmnet)
+library(purrr)
+```
+
+#### Download data and check
+
+```{r}
+# Load the IMDb dataset (max_features = 10000)
+max_features <- 10000
+imdb_train <- imdb_dataset(root = ".", download = TRUE, num_words = max_features)
+imdb_test <- imdb_dataset(root = ".", download = TRUE, num_words = max_features)
+
+# Inspect the first few tokens of a training sample
+imdb_train[1]$x[1:12]
+```
+
+#### Decoder to words
+
+```{r}
+# Decode review into words
+word_index <- imdb_train$vocabulary
+decode_review <- function(text, word_index) {
+  word <- names(word_index)
+  idx <- unlist(word_index, use.names = FALSE)
+  word <- c("<PAD>", "<START>", "<UNK>", word)
+  words <- word[text]
+  paste(words, collapse = " ")
+}
+decode_review(imdb_train[1]$x[1:12], word_index)
+```
+
+#### Encoding Function
+
+```{r}
+# One-hot (categorical variable) encoding function
+one_hot <- function(sequences, dimension) {
+  seqlen <- sapply(sequences, length)
+  n <- length(seqlen)
+  rowind <- rep(1:n, seqlen)
+  colind <- unlist(sequences)
+  sparseMatrix(i = rowind, j = colind, dims = c(n, dimension))
+}
+```
+
+#### Data Splitting
+
+```{r}
+# Collect all training and test data into lists
+train <- seq_along(imdb_train) |>
+  lapply(function(i) imdb_train[i]) |>
+  purrr::transpose()
+test <- seq_along(imdb_test) |>
+  lapply(function(i) imdb_test[i]) |>
+  purrr::transpose()
+```
+
+```{r}
+# One-hot encode sequences
+x_train_1h <- one_hot(train$x, max_features + 3)  # add 3 for padding/start/oov
+x_test_1h <- one_hot(test$x, max_features + 3)
+
+# Check sparsity
+dim(x_train_1h)
+nnzero(x_train_1h) / (length(train$y) * (max_features + 3))
+```
+
+```{r}
+# Split validation set
+set.seed(2025)
+ival <- sample(seq(along = train$y), 2000)
+itrain <- seq_along(train$y)[-ival]
+```
+
+## Logistic Regression
+
+#### CV
+
+```{r}
+# Fit logistic regression on one-hot training data
+y_train <- unlist(train$y)
+fitlm <- glmnet(x_train_1h[itrain, ], y_train[itrain],
+                family = "binomial", standardize = FALSE)
+
+# Predict on validation set and compute accuracy
+classlmv <- predict(fitlm, x_train_1h[ival, ]) > 0
+acclmv <- apply(classlmv, 2, function(pred) mean(pred == (y_train[ival] > 0)))
+
+# Plot validation accuracy across lambdas
+par(mar = c(4, 4, 4, 4), mfrow = c(1, 1))
+plot(-log(fitlm$lambda), acclmv)
+```
+
+#### Fit and Test
+
+```{r}
+# Refit the model with train + validation
+# Best lambda
+lambda_best <- fitlm$lambda[which.max(acclmv)]
+fitlm_best <- glmnet(x_train_1h,
+                     y_train,
+                     family = "binomial",
+                     standardize = FALSE,
+                     lambda = lambda_best)
+
+# Test with test set
+Test_fit <- predict(fitlm_best, x_test_1h, type = "response")
+
+# Check accuracy with Confusion Matrix, make the threshold to be 0.5
+prop.table(table(Predicted = ifelse(Test_fit>0.5, "Positive", "Negative"),
+                 Actual = ifelse(as.numeric(test$y), "Positive", "Negative")))
+```
+
+```{r}
+# Check total accuracy
+mean((Test_fit>0.5) == as.numeric(test$y))
+```
+
+## Neural Nets
+
+#### Model Setup
+
+```{r}
+# Define a small neural network for classification
+model <- nn_module(
+  initialize = function(input_size = max_features + 3) {
+    self$dense1 <- nn_linear(input_size, 16)
+    self$relu <- nn_relu()
+    self$dense2 <- nn_linear(16, 16)
+    self$output <- nn_linear(16, 1)
+  },
+  forward = function(x) {
+    x |>
+      self$dense1() |>
+      self$relu() |>
+      self$dense2() |>
+      self$relu() |>
+      self$output() |>
+      torch_flatten(start_dim = 1)
+  }
+)
+```
+
+#### Loss Function and Optimizer
+
+```{r}
+# Set up model with loss, optimizer, and metrics
+model <- model |>
+  setup(
+    loss = nn_bce_with_logits_loss(),
+    optimizer = optim_rmsprop,
+    metrics = list(luz_metric_binary_accuracy_with_logits())
+  ) |>
+  set_opt_hparams(lr = 0.001)
+```
+
+#### Fit Model as CV
+
+```{r}
+# Fit the model on training and check validation set
+fitted <- model |>
+  fit(
+    list(
+      torch_tensor(as.matrix(x_train_1h[itrain,]), dtype = torch_float()),
+      torch_tensor(y_train[itrain])
+    ),
+    valid_data = list(
+      torch_tensor(as.matrix(x_train_1h[ival, ]), dtype = torch_float()),
+      torch_tensor(y_train[ival])
+    ),
+    dataloader_options = list(batch_size = 512),
+    epochs = 10
+  )
+
+# Plot training/validation metrics
+plot(fitted)
+```
+
+#### Fit Model
+
+```{r}
+# Check the stopping time
+valid_metrics <- do.call(rbind, lapply(fitted$records$metrics$valid, as.data.frame))
+
+# Find the row with best accuracy
+Best_epoch <- which.max(valid_metrics$acc)
+
+# Fit the model with Train+Validation and evaluate on test set
+fitted_OOS <- model |>
+  fit(
+    list(
+      torch_tensor(as.matrix(x_train_1h), dtype = torch_float()),
+      torch_tensor(y_train)
+    ),
+    valid_data = list(
+      torch_tensor(as.matrix(x_test_1h), dtype = torch_float()),
+      torch_tensor(unlist(test$y))
+    ),
+    dataloader_options = list(batch_size = 512),
+    epochs = Best_epoch
+  )
+```
+
+#### Evaluate
+
+```{r}
+# Extract the fitted value
+# Convert test data to torch tensor
+x_test_tensor <- torch_tensor(as.matrix(x_test_1h), dtype = torch_float())
+
+# Get predicted logits (before sigmoid)
+pred_logits <- predict(fitted_OOS, x_test_tensor)
+
+# Convert to probabilities (sigmoid)
+pred_probs <- torch_sigmoid(pred_logits) |> as_array()
+
+# Check accuracy with Confusion Matrix, make the threshold to be 0.5
+prop.table(table(Predicted = ifelse(pred_probs>0.5, "Positive", "Negative"),
+                 Actual = ifelse(as.numeric(test$y), "Positive", "Negative")))
+```
+
+```{r}
+# Check total accuracy
+mean((pred_probs>0.5) == as.numeric(test$y))
+```
+
+## Test Your Review
+
+Write your own movie review here and check whether the model think it is a good or bad review:
+
+```{r}
+# Example review
+review <- "The company earnings report was surprisingly positive and strong."
+
+# Keep only letters and spaces, convert to lowercase
+clean_review <- gsub("[^a-zA-Z ]", "", review)
+clean_review <- tolower(clean_review)
+
+# Tokenize text: split by space
+tokens <- strsplit(tolower(clean_review), "\\s+")[[1]]
+
+# Map to indices safely
+# 1 = <PAD>, 2 = <START>, 3 = <UNK>
+indices <- sapply(tokens, function(w) {
+  if (w %in% names(word_index)) {
+    word_index[[w]]
+  } else {
+    3   # unknown token
+  }
+})
+
+
+# 3. One-hot encode
+x_new_1h <- one_hot(list(indices), dimension = max_features + 3)
+
+# 4. Predict
+pred <- predict(fitted_model, x_new_1h, type = "response")
+
+# Assign class
+pred_class <- ifelse(prob > 0.5, 1, 0)
+
+cat("Predicted class:", pred_class, "Probability of positive:", prob, "\n")
+```

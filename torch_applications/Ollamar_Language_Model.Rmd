@@ -1,0 +1,94 @@
+---
+title: "Sentiment Analysis with Ollamar"
+author: "Jiaxi Li"
+date: "2025-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The following code is from: <https://mlverse.github.io/mall/>.
+
+```{r}
+# install.packages("ollamar")
+library(ollamar)
+
+test_connection()  # test connection to Ollama server
+# if you see "Ollama local server not running or wrong server," Ollama app/server isn't running
+
+# # download a model
+# # This code only needs to run once and we can delete unuseful model using delete function
+# pull("llama3.2")  # download a model (equivalent bash code: ollama run llama3.2)
+
+# generate a response/text based on a prompt; returns an httr2 response by default
+resp <- generate("llama3.2", "tell me a 5-word story")
+resp
+
+#' interpret httr2 response object
+#' <httr2_response>
+#' POST http://127.0.0.1:11434/api/generate  # endpoint
+#' Status: 200 OK  # if successful, status code should be 200 OK
+#' Content-Type: application/json
+#' Body: In memory (414 bytes)
+
+# get just the text from the response object
+resp_process(resp, "text")
+# get the text as a tibble dataframe
+resp_process(resp, "df")
+
+# alternatively, specify the output type when calling the function initially
+txt <- generate("llama3.2", "tell me a 5-word story", output = "text")
+
+# list available models (models you've pulled/downloaded)
+list_models()
+```
+
+## Sentiment Analysis
+
+Now, apply the sentiment analysis. `mall` package contains reviews from
+
+```{r}
+library(mall)
+
+data("reviews")
+
+reviews <- reviews |>
+  rbind("I have no idea about it.")
+```
+
+```{r}
+reviews |>
+  llm_sentiment(review)
+```
+
+We can also assign values to each sentiment category.
+
+```{r}
+reviews |>
+  llm_sentiment(review, c("positive" ~ 1, "neutral" ~ 0.5, "negative" ~ 0))
+```
+
+Something is off here between the number and category though. You can decide which to use, but the developer result for the third statement is neutral.
+
+We can further ask about a sentiment score.
+
+```{r}
+reviews |>
+  llm_sentiment(review, c("positive" ~ 1, "neutral" ~ 0.5, "negative" ~ 0), additional_prompt = "")
+```
+
+You can evaluate a vector instead of dataframe.
+
+```{r}
+llm_vec_sentiment(c("I am happy", "I am sad"), c("positive" ~ 1, "neutral" ~ 0.5, "negative" ~ 0))
+```
+
+You can look into the prompt that is given to Ollama.
+
+```{r}
+llm_vec_sentiment(c("I am happy", "I am sad"), c("positive" ~ 1, "neutral" ~ 0.5, "negative" ~ 0), preview = TRUE)
+```
+
+It can be used for other purposes as well! Check out the <https://mlverse.github.io/mall/>.

@@ -1,0 +1,225 @@
+---
+title: "Torch with MINST Digits"
+author: "Jiaxi Li"
+date: "2025-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hand-written digits recognition is a classical example of Neural Networks applications.
+
+This example and code are from: <https://hastie.su.domains/ISLR2/Labs/R_Labs/Ch10-deeplearning-lab-torch.R>
+
+There are adjustments and comments by ChatGPT and me.
+
+## Setup
+
+#### Packages
+
+```{r}
+# Set a garbage collector
+options(torch.threshold_call_gc = 4000)
+library(torch)
+library(luz) # high-level interface for torch
+library(torchvision) # for datasets and image transformation
+library(torchdatasets) # for datasets we are going to use
+torch_manual_seed(13)
+```
+
+#### Download data and check dimensions
+
+```{r}
+# Load MNIST dataset (train and test)
+train_ds <- mnist_dataset(root = ".", train = TRUE, download = TRUE)
+test_ds  <- mnist_dataset(root = ".", train = FALSE, download = TRUE)
+
+# Inspect the structure of a single observation
+str(train_ds[1])
+str(test_ds[2])
+
+# Check dataset sizes
+length(train_ds)
+length(test_ds)
+```
+
+#### Reshape Data
+
+```{r}
+# Define a transform function: convert to tensor, flatten, scale 0–1
+transform <- function(x) {
+  x |>
+    torch_tensor(dtype = torch_float()) |>
+    torch_flatten() |>
+    torch_div(255)
+}
+
+# Reload datasets using the transform
+train_ds <- mnist_dataset(
+  root = ".",
+  train = TRUE,
+  download = TRUE,
+  transform = transform
+)
+test_ds <- mnist_dataset(
+  root = ".",
+  train = FALSE,
+  download = TRUE,
+  transform = transform
+)
+
+# Inspect the structure of a single observation
+str(train_ds[1])
+str(test_ds[2])
+```
+
+## 2 Layer Model
+
+#### Model Setup
+
+```{r}
+# Define a neural network with 2 hidden layers + dropout
+modelnn <- nn_module(
+  initialize = function() {
+
+    # Fully connected layers
+    self$linear1 <- nn_linear(in_features = 28*28, out_features = 256)
+    self$linear2 <- nn_linear(in_features = 256, out_features = 128)
+    self$output <- nn_linear(in_features = 128, out_features = 10)
+
+    # Dropout layers
+    self$drop1 <- nn_dropout(p = 0.4)
+    self$drop2 <- nn_dropout(p = 0.3)
+
+    # Activation
+    self$activation <- nn_relu()
+  },
+
+  forward = function(x) {
+    # Reshape to ... x 784
+    x <- x$view(c(784, -1))$t()  # -1 automatically infers the correct number of columns and then transpose
+    
+    x |>
+      self$linear1() |>
+      self$activation() |>
+      self$drop1() |>
+      self$linear2() |>
+      self$activation() |>
+      self$drop2() |>
+      self$output()
+  }
+)
+```
+
+#### Architechture
+
+```{r}
+# Print model architecture
+print(modelnn())
+```
+
+#### Loss Function and Optimizer
+
+```{r}
+# Attach loss, optimizer, and metric
+modelnn <- modelnn |>
+  setup(
+    loss = nn_cross_entropy_loss(),
+    optimizer = optim_rmsprop,
+    metrics = list(luz_metric_accuracy())
+  )
+```
+
+#### Fit Model
+
+```{r}
+# Train model for 5 epochs, 20% validation split
+system.time(
+  fitted <- modelnn |>
+    fit(
+      data = train_ds,
+      epochs = 5,
+      valid_data = 0.2,
+      dataloader_options = list(batch_size = 256),
+      verbose = FALSE
+    )
+)
+
+# Plot training/validation performance
+plot(fitted)
+```
+
+#### Evaluate
+
+```{r}
+# Accuracy helper function
+accuracy <- function(pred, truth) {
+  mean(pred == truth)
+}
+
+# True labels from the test set
+truth <- sapply(seq_along(test_ds), function(x) test_ds[x][[2]])
+
+# Predict classes and compute accuracy
+fitted |>
+  predict(test_ds) |>
+  torch_argmax(dim = 2) |> 
+  as_array() |> 
+  accuracy(truth)
+```
+
+## 0 Layer Model: Logistic
+
+#### Model Setup
+
+```{r}
+# A simple logistic regression model (output layer only)
+modellr <- nn_module(
+  initialize = function() {
+    self$output <- nn_linear(784, 10)
+  },
+  forward = function(x) {
+    # Reshape to ... x 784
+    x <- x$view(c(784, -1))$t()  # -1 automatically infers the correct number of columns and then transpose
+    
+    x |>
+      self$output()
+  }
+)
+
+print(modellr())
+```
+
+#### Fit Model
+
+```{r}
+# Train logistic regression model
+fit_modellr <- modellr |>
+  setup(
+    loss = nn_cross_entropy_loss(),
+    optimizer = optim_rmsprop,
+    metrics = list(luz_metric_accuracy())
+  ) |>
+  fit(
+    data = train_ds,
+    epochs = 5,
+    valid_data = 0.2,
+    dataloader_options = list(batch_size = 128)
+  )
+```
+
+#### Evaluate
+
+```{r}
+# Evaluate accuracy on test data
+fit_modellr |>
+  predict(test_ds) |>
+  torch_argmax(dim = 2) |> 
+  as_array() |> 
+  accuracy(truth)
+
+# Or use the built-in evaluate() function
+evaluate(fit_modellr, test_ds)
+```
