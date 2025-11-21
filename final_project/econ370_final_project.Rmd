@@ -594,7 +594,7 @@ I'm going to be fairly prescriptive about what's in the in-class presentation. I
 - an introduction slide, which briefly talks about the type of predictors (such as 3 finance predictors, 2 macro predictors, etc.), what complex model you are using, and do you have an improvement relative to the base model;
 - a data slide, contains your predictors why we should believe they have predicting power;
 - a model slide, explaining what model you have been using and why do you think this model can predict better;
-- one slides about the out of sample $R^2$ and the actual vs. fitted returns plot (also comparing with the base model)
+- one slides about the out of sample $R^2$ and the actual vs. fitted returns or residual plot (one plot containing both base model and your model).
 - 3 slides for other findings - your discretion as to what's included here, but this would be a nice place to show a graph and/or a result table discussing how the model and data of your choice predict better; and one slide to wrap up. Think about this as being similar to a presentation you'd give in a workplace. Remember not to use too many words on your slides!
 
 The Rmd file, your final work product, needs to be more involved. In it, I'd like you to be more explicit about your project: show us what the data looks like (summary statistics etc.), what kind of cleaning you did, what is the model you use and the result, and so on. 
