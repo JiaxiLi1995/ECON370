@@ -711,7 +711,11 @@ anyNA(Total_data)
 Expanding window: Have a 12-year window and 1 additional year for testing at a time, then expand training window by 1 year and everything else forward by 1 year:
 
 -   1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
--   1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model ...
+
+-   1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model
+
+    ...
+
 -   1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
 
 ```{r}
