@@ -1,0 +1,621 @@
+---
+title: "Final_Project_template"
+author: "Jiaxi Li"
+date: "University of North Carolina | [ECON 370](https://github.com/JiaxiLi1995/ECON370)" #"`r format(Sys.time(), '%d %B %Y')`"
+output: #html_document
+#  tufte::tufte_handout: default
+  tufte::tufte_html: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = F)
+library(tufte)
+```
+
+## Instruction
+
+This file is an example final project file which you can directly use with some moderate modification. Please remove the instruction section in your submission.
+
+This is a **template file** where I provide the code to:
+
+-   Use 2 variables: GDP and current return to predict future return.
+
+-   Run a LASSO regression vs. linear regression
+
+-   Compare the OOS results
+
+-   Provide a plot for residual vs. actual return as a model performance assessment
+
+-   A simple trading rule and the result
+
+To utilize this file for your final project, you should:
+
+-   Change the data section to your data extraction and cleaing procedure.
+
+-   Change the variable reasoning
+
+-   Keep the structure of cross-validation, model OOS assessment.
+
+-   (Optional) Change the data exploratory method
+
+-   (Optional) can change LASSO to some other methods.
+
+-   Run the entire code to produce the result of your data and model.
+
+-   After finishing all code, make sure to **restart** R session and **clear** everything from your workspace. **Rerun** everything to ensure there is no dependency issue in your code.
+
+If anyone used a model more complicated than Ridge and LASSO, there will be **10 points bonus** for the final project. If you need any assistance, please let me know and we can schedule a zoom meeting.
+
+------------------------------------------------------------------------
+
+### Packages
+
+```{r}
+library(tidyquant)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(glmnet)
+library(ggplot2)
+```
+
+------------------------------------------------------------------------
+
+## Variable Reasoning
+
+If the economy is in good shape, it would provide more business opportunities. People would be willing to invest in stocks and the stock price would be higher, achieving higher returns. Therefore, *GDP growth rate* might be a useful predictor for stock returns.
+
+There are some momentum reasoning for using past return to predict future return. If the stock market is performing well, more people would buy it and price is pushed higher, achieving higher returns.Therefore, *lagged and current monthly SP500 return* might be a useful predictor for *next month stock SP500 return*.
+
+Note that returns is a rate, we need to use rate to predict it. Instead of GDP level, I would use *GDP growth rate* here. ***It is generally a bad idea to use level to predict rate!***
+
+------------------------------------------------------------------------
+
+## Data Extraction, Cleaning and Combining
+
+### The SP500 Data for Prediction (Do not modify)
+
+```{r}
+# Data for prices, I would like to extract slightly before 1985
+# Get S&P500 daily data
+SP500_simple_returns = tq_get("^GSPC",
+                               from = "1984-01-01",
+                               to   = "2024-12-31",
+                               get  = "stock.prices") |>
+  tq_transmute(
+    select     = adjusted,       # adjusted price for accuracy
+    mutate_fun = periodReturn,   # calculate period returns
+    period     = "monthly",      # monthly returns
+    type       = "arithmetic",   # simple return (percentage change)
+    col_rename = "monthly_return"
+  ) |>
+  mutate(monthly_return = monthly_return*100) # Convert to percentage
+
+head(SP500_simple_returns)
+```
+
+### The GDP Data (Change to your own)
+
+First, we need to work with data cleaning. We need to fill in in-between-quarter months values and we need to deal with look-ahead of bias for GDP growth rate. For simplicity, so we will fill in the previously observed value for in-between-quarter months and lag observations by 4 months for prediction.
+
+The model would not start on January 1985. But to predict the return on January 1985, we will need the GDP growth rate from 1984. This means that you need to extract prediction variables starting probably 1984, or even earlier!
+
+```{r}
+# We can use tq_get to get FRED data as well!
+# Download real GDP data from FRED
+# You can go to FRED to find what the symbol is for GDP growth rate
+gdp_data = tq_get("A191RL1Q225SBEA",
+                   get  = "economic.data",
+                   from = "1984-01-01") # start date
+
+head(gdp_data)
+```
+
+### Mixed Frequency Date Modification
+
+**Be careful** about the GDP growth rate! The variable name is `price` somehow, so we need to correct it. It is labeled 1984-01-01 for Q1 of 1984. However, we should put it at the quarter end, which should be labeled at the end of March! We need to move the dates 2 month forward.
+
+```{r}
+# Correct GDP growth rate name and date to quarter end
+gdp_data = gdp_data |>
+  rename(GDP_g = price) |>
+  mutate(date = date %m+% months(2))
+
+head(gdp_data)
+```
+
+### Date Alignment for Different Data and Joining
+
+**MAKE sure all dates are at month end or month begin before joining!**
+
+You can see that SP500_simple_returns has the date to be month end, but gdp_data has the date to be month begin. There are several ways to deal with this. One way is to use `floor_date(d, unit = "month")` from `lubridate` to make the date to be month begin.
+
+```{r}
+# Use left join to join gdp data to SP500 returns
+Total_data = SP500_simple_returns |>
+  mutate(date = floor_date(date, unit = "month")) |>
+  left_join(gdp_data)
+  
+head(Total_data)
+```
+
+### Create a Lagged Return in addition to Current Return
+
+**"monthly_return"** is the current return. I also want a lagged return to predict future return. I will use the lag function to create "**lag_return**" variable.
+
+```{r}
+# Create the lagged return
+Total_data = Total_data |>
+  mutate(lag_return = lag(monthly_return))
+  
+head(Total_data)
+```
+
+### Keep only the useful variables
+
+Remove anything that is not used for your prediction. Here, symbol is something not useful.
+
+```{r}
+Total_data = Total_data |>
+  # We do not need the symbol
+  select(-symbol)
+
+head(Total_data)
+```
+
+### Fill Missingness AFTER Joining
+
+I will use a simple approach to make the quarterly data monthly, that is use the early values fill the in-between months. We can achieve this by using `fill` from `tidyr`.
+
+```{r}
+# Fill the GDP_g downward
+Total_data = Total_data |>
+  tidyr::fill(GDP_g, .direction = "down")
+
+head(Total_data)
+```
+
+Now, we have all the dates lined up and took care of the look-ahead bias! Since GDP growth rate is quarterly government data, there is a lag for availability. We will further lag the `GDP_g` by 4 additional months. (This is why we need to extract earlier data.)
+
+### Publication Lag
+
+```{r}
+# Lag GDP_g further by 4 months
+Total_data = Total_data |>
+  mutate(GDP_g = lag(GDP_g, 4))
+
+head(Total_data)
+```
+
+Now, it is time to establish the variable to predict and corresponding predicting months. At 1984-01-01, we would try to predict returns on 1984-02-01, which means we need to create a column of predicting values using `lead`.
+
+### Create the Predictive Date and Return
+
+```{r}
+# Creating predicting_date and predicting_return using lead
+Total_data = Total_data |>
+  mutate(predicting_date = lead(date),
+         predicting_return = lead(monthly_return)) |>
+  # no need to keep date, put predicting_date and predicting_return to front
+  select(predicting_date, predicting_return, everything(), -date)
+
+head(Total_data)
+```
+
+The data now should be **"predicting_date"**, **"predicting_return"**, and then all your variables (I have 3 variables here).
+
+### Filter Out the Desired Date Range and Check the begin and end (Should be exactly "1985-01-01" and "2024-12-01")
+
+Now, you can see everything is lined up! We are using information available on 1984-01-01 (which is actually the end of January 1984) to predict return on 1984-02-01 (which is the February 1984 monthly returns). We will establish predictive model from 1985 to 2024, so we will only need the data with "**predicting_date"** from 1985-01-01 to 2024-12-01. Let's subset that:
+
+```{r}
+# Subset predicting date from 1985-01-01 to 2024-12-01
+# MAKE SURE IT IS predicting_date!
+Total_data = Total_data |>
+  filter(predicting_date >= "1985-01-01",
+         predicting_date <= "2024-12-01")
+
+# see the first and last 3 observations
+head(Total_data, n = 3)
+tail(Total_data, n = 3)
+```
+
+Based on the first and last three observations, we can confirm that we are predicting returns from 1985-01-01 to 2024-12-01.
+
+### Check whether any NA is left
+
+Now, it is a good time to check whether we have any missing data by `is.na`:
+
+```{r}
+# Check if there is any NA in the data
+anyNA(Total_data)
+```
+
+Great! No missingness! If there is, you can use `tidyr::fill` again to fill it up.
+
+**The result should be False. If you find NA's, you can replace_na to 0. DO NOT USE filter(!is.na()) or drop_na()!**
+
+### Check the number of rows = 480
+
+There are 40 years in total so 480 observations in total. Check whether that is true. If false, please check your data cleaning procedure!
+
+```{r}
+# Check if there are 480 observations
+nrow(Total_data) == 480
+```
+
+If TRUE, proceed. If false, check back data extraction and cleaning.
+
+Select only useful variables
+
+------------------------------------------------------------------------
+
+## Exploration of raw data
+
+Here are just some exploration about the relationship each of our predictors and the predicting_return. I will demonstrate two things:
+
+1.  Does the variable I choose have a relationship with the predicting_return?
+
+2.  Is this relationship changing over time?
+
+For both, I will use `cor` to calculate the pairwise correlation between variables. To examing whether the relationship is changing, I will use a rolling correlation and plot how the relationship evolute overtime.
+
+### Correlation
+
+**You do not need to change the code here, you need to do interpretation for each variable.**
+
+```{r}
+# Correlation works between vectors. We can do vectorization with matrix here.
+cor(Total_data$predicting_return, (Total_data |> select(-c(predicting_date, predicting_return))))
+```
+
+Both previous month return and GDP growth rate are all positively correlated with return. The correlation is low, but don't worry too much as long as it is not too close to 0. Stock returns usually has a low correlation with other variables.
+
+### Rolling Correlation
+
+I will conduct 5-year rolling window correlations between predicting_return and other variables. I will use the predicting_date of the end of 5-year window as the date for correlation. We can use `for` loop to do the calculation.
+
+```{r}
+# Preallocate the result, same shape as Total_data, no predicting_return and no date
+Rolling_corr = Total_data |>
+  select(-predicting_return)
+
+# Variable_names (all names except "predicting_date", use logical indexing)
+Variable_names = names(Rolling_corr)[names(Rolling_corr) != "predicting_date"]
+
+# Make all the variables to NA as part of preallocate
+Rolling_corr[,Variable_names] = NA
+
+# A for loop to calculate the rolling correlations, vectorize inside loop
+# 5-year correlation or 60 months
+# The first window would be 1st to 60th (1+59) row, and last would be (nrow(Rolling_corr)-59)-th to nrow(Rolling_corr)-th row
+for (i in 1:(nrow(Rolling_corr)-59)) {
+  Rolling_corr[i+59, Variable_names] = cor(Total_data[i:(i+59), "predicting_return"], Total_data[i:(i+59), Variable_names])
+}
+
+# Note there are 59 rows of NA's due to the rolling window
+
+# We need to make the table to a long table and then use ggplot to plot the rolling correlation
+Rolling_corr |>
+  # Remove the missing rows
+  na.omit() |>
+  # Except predicting_date, make this a long table, 
+  pivot_longer(-predicting_date,
+               names_to = "Variable",
+               values_to = "rolling_corr") |>
+  ggplot(aes(x = predicting_date, y = rolling_corr, color = Variable)) +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  labs(
+    title = "Rolling Correlation with predicting return (5-year Window)",
+    x = "Date",
+    y = "Rolling Correlation",
+    color = "Variable"
+  ) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(hjust = 0.5)  # <-- Center the title
+  )
+
+```
+
+It seems that the relationship is changing over time. It is better to have a rolling window/expanding window to do the prediction. I will choose an expanding window and require you to use an expanding window. This is just make it easier to compare everyone's result.
+
+I just did correlation, you can explore more aspects if you would like.
+
+------------------------------------------------------------------------
+
+## LASSO Regression vs. Linear Regression
+
+This section, we will finally estimate the linear model. Remember that we should have an expanding window, split the dataset into training, validation and testing. However, since linear model does not have tuning parameters, we would just put the validation set into training set:
+
+-   1985-2008 as training, and 2009 to evaluate the model
+
+-   1985-2009 as training, and 2010 to evaluate the model
+
+    ...
+
+-   1985-2023 as training, and 2024 to evaluate the model
+
+For LASSO (or other method requires cross-validation), we have the division as:
+
+-   1985-2000 as training, 2001-2008 as validation, and 2009 to evaluate the model
+
+-   1985-2001 as training, 2002-2009 as validation, and 2010 to evaluate the model
+
+    ...
+
+-   1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
+
+### Create possible tuning parameters
+
+```{r}
+# Define lambda grid
+# You should customize the grid to have the best lambda inside the range!
+lambda_grid = 10^seq(-3, 20, length.out = 50)  # 0.001 to 10^20
+
+# Initialize storage for CV errors
+cv_errors = rep(0, length(lambda_grid))
+```
+
+### Preallocate Fitted Results
+
+```{r}
+# Preallocate the fitted data from 2009 to 2024
+# Calling OLS OOS fit: fitted_return_OLS
+# Calling LASSO (or your model) OOS fit: fitted_return_Complex
+Testing_result = Total_data |>
+  filter(predicting_date >= "2009-01-01") |>
+  # Only keep the predicting_date, predicting_return, and create fitted_return
+  select(predicting_date, predicting_return) |>
+  rename(actual_return= predicting_return) |>
+  mutate(fitted_return_OLS = NA,
+         fitted_return_Complex = NA)
+```
+
+### Use a for loop to perform Fitting, CV and Testing
+
+```{r}
+# Use a for loop to estimate each model and glmnet for Ridge regression
+# Start from the end year 2009 to 2024 which are the testing periods
+# Note, i here is the testing data year
+for (i in 2009:2024) {
+  # Extract the Training data
+  Training_data = Total_data |>
+    # before i-8 year (i = 2009, training is before and not include 2001)
+    filter(year(predicting_date) < (i-8)) |>
+    # Only keep the predictors and the predicting_return
+    select(c(predicting_return, monthly_return, lag_return))
+
+  # Extract the validation data
+  Validation_data = Total_data |>
+    # between i-8 and i (not include i but include i-8)
+    filter(year(predicting_date) >= (i-8),
+           year(predicting_date) < i) |>
+    # Only keep the predictors and the predicting_return
+    select(c(predicting_return, monthly_return, lag_return))
+
+  # New data to predict
+  Testing_data = Total_data |>
+    # at i
+    filter(year(predicting_date) == i) |>
+    # Only keep the predictors
+    select(monthly_return, lag_return)
+  
+  # Note that we need to extract data as matrix for glmnet fitting
+  x_train = data.matrix(Training_data[, c("monthly_return", "lag_return")])
+  y_train = Training_data$predicting_return
+  x_val  = data.matrix(Validation_data[, c("monthly_return", "lag_return")])
+  y_val  = Validation_data$predicting_return
+  x_test = data.matrix(Testing_data[, c("monthly_return", "lag_return")])
+  
+  # Use the for loop to find the best lambda
+  for(j in seq_along(lambda_grid)){
+    # Here is the part for complex model, Please change it if desired
+    model = glmnet(x_train, y_train, alpha = 0, lambda = lambda_grid[j])
+    
+    # Predict on the validation fold
+    y_pred = predict(model, newx = x_val)
+    
+    # Mean squared error
+    cv_errors[j] = mean((y_val - y_pred)^2)
+  }
+  
+  # Find the best lambda
+  best_lambda = lambda_grid[which.min(cv_errors)]
+  
+  # Refit the model with best_lambda
+  # For the total Train + Validation set!
+  model = glmnet(rbind(x_train, x_val), c(y_train, y_val), alpha = 0, lambda = best_lambda)
+
+  # Make predictions and save to year i using logical indexing
+  # Use predict to estimate the fitted data based on model and test data
+  Testing_result[year(Testing_result$predicting_date) == i, "fitted_return_Complex"] = predict(model, newx = x_test)
+  
+  # Run OLS Regression as benchmark
+  OLS = lm(predicting_return ~ .-predicting_date,
+           data = (Total_data |>
+                     # before ith year
+                     filter(year(predicting_date) < i)))
+  
+  # Make predictions and save to year i using logical indexing
+  # Use predict to estimate the fitted data based on model and test data
+  Testing_result[year(Testing_result$predicting_date) == i, "fitted_return_OLS"] = predict(
+    OLS,
+    newdata = (Total_data |>
+                 # at ith year
+                 filter(year(predicting_date) == i))
+  )
+}
+
+# Message me if it is finished
+print("Done!")
+```
+
+### Save the Testing_result
+
+```{r}
+# # Save the result
+# saveRDS(Testing_result, "Testing_result.rds")
+```
+
+Save this data as rds, upload to GitHub, and access the result in your final presentation.
+
+## Analyze the Result
+
+### Plot the Residual vs. Actual Return (Required on slide)
+
+```{r}
+# Plot the result
+ggplot(Testing_result) +
+  geom_point(aes(actual_return, actual_return - fitted_return_OLS, color = "OLS")) +
+  # Change your method name here
+  geom_point(aes(actual_return, actual_return - fitted_return_Complex, color = "LASSO")) +
+  # Fitted regression line 
+  geom_smooth(aes(actual_return, actual_return - fitted_return_OLS, color = "OLS"),
+              method = "lm", se = TRUE) +
+  geom_smooth(aes(actual_return, actual_return - fitted_return_Complex, color = "LASSO"),
+              method = "lm", se = TRUE) +
+  labs(y = "Residual",
+      x = "Actual Return")
+```
+
+Both are terrible. The residual vs. actual should be around 0 if the model is great. Here, we do not see that. LASSO residual does not seem better than OLS residual.
+
+### OOS $R^2$ (Required on slide)
+
+```{r}
+# calculate OOS r squared
+# Create a function to estimate R_Sq_oos
+R_Sq_oos_func = function(actual_return, fitted_return) {
+  return(1 - sum((actual_return - fitted_return)^2)/sum((actual_return)^2))
+}
+
+# Print the OOS R^2 result
+print(
+  paste(
+    "The OOS R^2 for the OLS is: ",
+    R_Sq_oos_func(Testing_result$actual_return, Testing_result$fitted_return_OLS)
+  )
+)
+
+print(
+  paste(
+    "The OOS R^2 for the LASSO is: ",
+    R_Sq_oos_func(Testing_result$actual_return, Testing_result$fitted_return_Complex)
+  )
+)
+```
+
+We can see that since LASSO gives a positive OOS $R^2$ whereas OLS gives a negative OOS $R^2$.
+
+### Further Exploration (Optional)
+
+We can further explore which years are doing the worst and which years the model is fine. Let's calculate the $R^2_{OOS}$ based on every 4 years. (Use 4 years is to have sufficient amount of data to estimate the $R^2_{OOS}$, while having several periods for comparison.)
+
+```{r}
+# Estimate every 4-year R_sq_oos
+R_sq_oos_table = Testing_result |>
+  # first break the dates into 4 year periods
+  mutate(
+    year = year(predicting_date),
+    period_4yr = cut(year, breaks = seq(min(year), max(year) + 3, by = 4), right = FALSE)
+  ) |>
+  group_by(period_4yr) |>
+  summarise(R_Sq_oos_OLS = R_Sq_oos_func(actual_return, fitted_return_OLS),
+            R_Sq_oos_LASSO = R_Sq_oos_func(actual_return, fitted_return_Complex))
+
+R_sq_oos_table
+```
+
+The goodness of fit is good during 2013-2016. It is not good right after crashes (2008 and 2020). Period 2017-2020 contains crash during Covid (year 2020) and that might be the cause of low predictability.
+
+To verify that, let's calculate $R^2_{OOS}$ for 2017-2019, before the covid crash:
+
+```{r}
+# Apply R_Sq_oos_func function for 2017 to 2019
+Testing_result |>
+  filter(year(predicting_date) >= 2017,
+         year(predicting_date) <= 2019) |>
+  summarise(R_Sq_oos_OLS = R_Sq_oos_func(actual_return, fitted_return_OLS),
+            R_Sq_oos_LASSO = R_Sq_oos_func(actual_return, fitted_return_Complex))
+```
+
+Here, we verified our conjecture that the each model is actually doing better during normal times. This number is close to the 2013-2016 period.
+
+### A Simple Trading Strategy Based on the Simple Model (Optional)
+
+The actual meaning of such predictive model is that we can implement trade on it! (You can think of this as a way to evaluate the predictive model. The more money we can make, the better the model is.)
+
+For example, let's have a strategy that: - We buy/hold the SP500 index if we predict positive returns next month. - We sell/not buy the SP500 index if we predict negative/zero returns next month.
+
+In reality, you can choose a more complicated threshold for buying/selling. Or even allow short selling. For demonstration purpose, we will stick to the simplest one.
+
+To see whether our combination of predictive model and trading strategy is effective, we will compare:
+
+-   linear model + simple strategy's cumulative return (buyLMpositive)
+
+-   LASSO + simple strategy's cumulative return (buyLASSOpositive)
+
+-   buy and hold cumulative return (buyANDhold)
+
+Actually, you can check that since LASSO gives a constant positive number, buyLASSOpositive would be exactly the same as buyANDhold.
+
+```{r}
+# Create a dataset for trading strategy comparison: buyLMpositive, buyLASSOpositive vs. buyANDhold
+Trading_Strategy = Testing_result |>
+  # Create a logical index of whether we realize the monthly return based on our trading strategy
+  mutate(Trade_OLS = (fitted_return_OLS > 0),
+         Trade_Complex = (fitted_return_Complex > 0)) |>
+  # Create a buyLMpositive strategy 
+  mutate(buyLMpositive_ret = Trade_OLS*actual_return,
+         buyLASSOpositive_ret = Trade_Complex*actual_return)
+
+
+# Now, use for loop to calculate the cumulative gross returns
+# Preset the two strategy
+Trading_Strategy$buyLMpositive = NA
+Trading_Strategy$buyLMpositive[1] = 1
+Trading_Strategy$buyLASSOpositive = NA
+Trading_Strategy$buyLASSOpositive[1] = 1
+Trading_Strategy$buyANDhold = Trading_Strategy$buyLMpositive
+
+# Loop
+for(i in 2:nrow(Trading_Strategy)) {
+  Trading_Strategy$buyLMpositive[i] = Trading_Strategy$buyLMpositive[i-1] * (1+Trading_Strategy$buyLMpositive_ret[i]/100)
+  Trading_Strategy$buyLASSOpositive[i] = Trading_Strategy$buyLASSOpositive[i-1] * (1+Trading_Strategy$buyLASSOpositive_ret[i]/100)
+  Trading_Strategy$buyANDhold[i] = Trading_Strategy$buyANDhold[i-1] * (1+Trading_Strategy$actual_return[i]/100)
+}
+
+# Plot the cumulative returns
+# Only select buyLMpositive, buyLASSOpositive and buyANDhold; and make the data longer
+Trading_Strategy |>
+  pivot_longer(c(buyLMpositive, buyLASSOpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
+  ggplot(aes(predicting_date, CR, color = Strategy)) +
+  geom_line(linewidth = 1) +
+  theme_minimal() +
+  labs(
+    title = "Cumulative Returns with Different Trading Strategies",
+    x = "Date",
+    y = "Cumulative Returns",
+    color = "Trading Stategy"
+  ) +
+  theme(
+    legend.position = "top",
+    plot.title = element_text(hjust = 0.5)  # <-- Center the title
+  )
+```
+
+We can see that the simple trading strategy + the LM predictive model is performing much worse than simply buy and hold the SP500 index! LASSO is actually the same line as buyANDhold and blocking the whole red curve!
+
+Based on the simple trading strategy, LASSO does not yield better results than Buy and Hold.
+
+### Save the Trading_Strategy (Optional)
+
+```{r}
+# # Save the result
+# saveRDS(Trading_Strategy, "Trading_Strategy.rds")
+```
+
+Save this data as rds, upload to GitHub, and access the result in your final presentation.
