@@ -85,35 +85,62 @@ There are some considerations of the XX model and it uses XX as tuning parameter
 ---
 # Main Result
 
-With an expanding window from XX to XX date, and XX model, here is the out of sample $R^2$ and the actual vs. fitted returns plot:
-
-(Here, you can save the plot from your main script, upload it onto GitHub, and then load the data here. I will demonstrate using this method.)
+(Here, you can save the result from your main script, upload it onto GitHub, and then load the data here.)
 
 ```{r, message = F}
 library(ggplot2)
 # Put your mouse on "Raw" and right click, then "copy link address"
-Testing_result <- readRDS(url("https://github.com/JiaxiLi1995/Final_proj_data/raw/refs/heads/main/Testing_result.rds"))
+Testing_result <- readRDS(url("https://github.com/JiaxiLi1995/ECON370/raw/refs/heads/main/final_project/Testing_result.rds"))
 
-Testing_result |>
-  ggplot(aes(actual_return, fitted_return)) +
-  geom_point() + 
-  geom_smooth(method = "lm", se = TRUE, color = "red")  # Fitted regression line
+# calculate OOS r squared
+# Create a function to estimate R_Sq_oos
+R_Sq_oos_func = function(actual_return, fitted_return) {
+  return(1 - sum((actual_return - fitted_return)^2)/sum((actual_return)^2))
+}
+
+# Print the OOS R^2 result
+print(
+  paste(
+    "The OOS R^2 for the OLS is: ",
+    R_Sq_oos_func(Testing_result$actual_return, Testing_result$fitted_return_OLS)
+  )
+)
+
+print(
+  paste(
+    "The OOS R^2 for the LASSO is: ",
+    R_Sq_oos_func(Testing_result$actual_return, Testing_result$fitted_return_Complex)
+  )
+)
+
+# Plot the result
+ggplot(Testing_result) +
+  geom_point(aes(actual_return, actual_return - fitted_return_OLS, color = "OLS")) +
+  # Change your method name here
+  geom_point(aes(actual_return, actual_return - fitted_return_Complex, color = "LASSO")) +
+  # Fitted regression line 
+  geom_smooth(aes(actual_return, actual_return - fitted_return_OLS, color = "OLS"),
+              method = "lm", se = TRUE) +
+  geom_smooth(aes(actual_return, actual_return - fitted_return_Complex, color = "LASSO"),
+              method = "lm", se = TRUE) +
+  labs(y = "Residual",
+      x = "Actual Return")
 ```
 
 
 
 ---
-# Other Results (name your own title)
+# Other Results (Choose Your Own)
 
 Here, you can compare different trading strategies, explore the strong point and weak point of your model etc... I will show the result of trading strategies here:
 
 With the buy/hold when there is positive predicted return and sell/stay out otherwise, the performance of the XX model is better than the linear model:
 
 ```{r}
-Trading_Strategy <- readRDS(url("https://github.com/JiaxiLi1995/Final_proj_data/raw/refs/heads/main/Trading_Strategy.rds"))
+Trading_Strategy <- readRDS(url("https://github.com/JiaxiLi1995/ECON370/raw/refs/heads/main/final_project/Trading_Strategy.rds"))
 
 Trading_Strategy |>
-  pivot_longer(c(buyLMpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
+  pivot_longer(c(buyLMpositive, buyLASSOpositive, buyANDhold), names_to = "Strategy", values_to = "CR") |>
   ggplot(aes(predicting_date, CR, color = Strategy)) +
   geom_line(linewidth = 1) +
   theme_minimal() +
@@ -127,8 +154,6 @@ Trading_Strategy |>
     legend.position = "top",
     plot.title = element_text(hjust = 0.5)  # <-- Center the title
   )
-
-
 ```
 
 ---
@@ -143,7 +168,8 @@ class: inverse, center, middle
 
 
 ```{r gen_pdf, include = FALSE, cache = FALSE, eval = TRUE}
-# Here should be the correct html file name
-infile = "Example_presentation.html"
-#pagedown::chrome_print(input = infile, timeout = 1000)
+# After getting the html, run the code below
+# # Here should be the correct html file name
+# infile = "Example_presentation.html"
+# pagedown::chrome_print(input = infile, timeout = 1000)
 ```

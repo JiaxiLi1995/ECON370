@@ -737,7 +737,7 @@ OOS_result = Total_data |>
 
 
 # Use a for loop to estimate each model and glmnet for Ridge regression
-# Start from the end year 2009 to 2024 which are the end of training periods
+# Start from the end year 2009 to 2024 which are testing periods
 # Note, i here is the testing data year
 for (i in 2009:2024) {
   # Extract the Training data
