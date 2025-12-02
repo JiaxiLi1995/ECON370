@@ -469,7 +469,7 @@ tmpfile <- tempfile(fileext = ".pt")
 
 # Download as binary
 download.file(
-  "https://github.com/JiaxiLi1995/ECON370/raw/refs/heads/main/torch_application/SimpleLLM.pt",
+  "https://github.com/JiaxiLi1995/ECON370/raw/refs/heads/main/torch_applications/SimpleLLM.pt",
   destfile = tmpfile,
   mode = "wb"
 )
