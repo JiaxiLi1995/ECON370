@@ -77,10 +77,10 @@ Your final project will be graded out of **200 points**, broken down into **five
 | **Subtotal** |  | **60** |
 | **Coding** | Code achieves project objectives correctly | 15 |
 | | Code runs without errors | 15 |
-| | Good programming practices (modular, efficient, reproducible) | 10 |
-| | Clear and appropriate comments | 5 |
+| | Good programming practices (modular, efficient, reproducible) | 15 |
+| | Clear and appropriate comments | 10 |
 | | Code is logically organized and easy to follow | 5 |
-| **Subtotal** |  | **50** |
+| **Subtotal** |  | **60** |
 | **Presentation (in-class)** | Clear, confident delivery and ability to answer questions | 5 |
 | | Introduction and motivation for the project | 5 |
 | | Clear and informative data slide | 5 |
