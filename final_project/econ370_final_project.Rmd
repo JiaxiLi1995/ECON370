@@ -164,13 +164,13 @@ In general, if you are uncertain about the announcement lag (if there is any), y
 
 Note that there are real-time information which do not require lag, such as prices (asset prices or portfolio prices). Therefore, if you are trying to use March return to predict April return, you do not need to lag it!
 
-**training, validation and test**: For machine learning model estimations in general, we need to divide data into training, validation and test sets. There is no definite rule for the size ratio of the three sets, but For this project, you need to have: 40% training, 20% validation, 40% testing.
+**training, validation and test**: For machine learning model estimations in general, we need to divide data into training, validation and test sets:
 
 - Training set: We use this set to estimate the model parameters.
 - Validation set: We use this set to select the tuning parameters for machine learning models.
 - Testing set: We use this set to evaluate the model.
 
-For cross-sectional data (no time), we can just randomly split the data into three sets by drawing their index. For time-series, there are a few different approaches. With the example of year 1985 to 2024, I will introduce three approaches here:
+In general, there is no definite rule for the size ratio of the three sets. For cross-sectional data (no time), we can just randomly split the data into three sets by drawing their index. For time-series, there are a few different approaches. With the example of year 1985 to 2024, I will introduce three approaches here:
 
 1. Fixed window: 1985-2000 as training, 2001-2008 as validation, and 2009-2024 as testing. This is not recommended if you know the model parameters are changing.
 
@@ -188,7 +188,7 @@ For cross-sectional data (no time), we can just randomly split the data into thr
   - 1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model
   - You can show the evaluation performance as a plot over time, or simply average the evaluation metric.
 
-For this project, I will require the use of **expanding window**.
+For this project, I will require the use of the **expanding window** with the specific windows above (you need to have the testing period 2009-2024).
 
 
 **Missing data**: There are different ways to address missing data. You can use historical mean, the previously observed value, or some other advanced techniques to do it. You can use previously observed value for simplicity.

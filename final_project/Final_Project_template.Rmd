@@ -247,8 +247,6 @@ nrow(Total_data) == 480
 
 If TRUE, proceed. If false, check back data extraction and cleaning.
 
-Select only useful variables
-
 ------------------------------------------------------------------------
 
 ## Exploration of raw data

@@ -366,13 +366,13 @@ if (window.hljs) {
 <p><strong>look-ahead bias</strong>: Since this is a prediction task, be mindful that you can only use data available to the date for prediction. For example, the Q1 US GDP growth rate is labeled to be at the end of march, but it is not announced until Thursday, September 25, 2025! If you are predicting April returns, you cannot use this number.</p>
 <p>In general, if you are uncertain about the announcement lag (if there is any), you can use this rule for finance/econ data: 1 month lag for monthly data, 4 month lag for quarterly data and 6 month lag for annual data. Therefore,to predict returns at month <span class="math inline">\(t+1\)</span>, you can use most recent monthly data at the end of month <span class="math inline">\(t-1\)</span>, most recent quarterly data by end <span class="math inline">\(t-4\)</span>, and most recent annual data by end <span class="math inline">\(t-6\)</span>.</p>
 <p>Note that there are real-time information which do not require lag, such as prices (asset prices or portfolio prices). Therefore, if you are trying to use March return to predict April return, you do not need to lag it!</p>
-<p><strong>training, validation and test</strong>: For machine learning model estimations in general, we need to divide data into training, validation and test sets. There is no definite rule for the size ratio of the three sets, but For this project, you need to have: 40% training, 20% validation, 40% testing.</p>
+<p><strong>training, validation and test</strong>: For machine learning model estimations in general, we need to divide data into training, validation and test sets:</p>
 <ul>
 <li>Training set: We use this set to estimate the model parameters.</li>
 <li>Validation set: We use this set to select the tuning parameters for machine learning models.</li>
 <li>Testing set: We use this set to evaluate the model.</li>
 </ul>
-<p>For cross-sectional data (no time), we can just randomly split the data into three sets by drawing their index. For time-series, there are a few different approaches. With the example of year 1985 to 2024, I will introduce three approaches here:</p>
+<p>In general, there is no definite rule for the size ratio of the three sets. For cross-sectional data (no time), we can just randomly split the data into three sets by drawing their index. For time-series, there are a few different approaches. With the example of year 1985 to 2024, I will introduce three approaches here:</p>
 <ol style="list-style-type: decimal">
 <li><p>Fixed window: 1985-2000 as training, 2001-2008 as validation, and 2009-2024 as testing. This is not recommended if you know the model parameters are changing.</p></li>
 <li><p>Rolling window: Have a 12-year rolling-window and 1 additional year for testing at a time, then move everything forward by 1 year:</p></li>
@@ -394,7 +394,7 @@ if (window.hljs) {
 <li>1985-2015 as training, 2016-2023 as validation, and 2024 to evaluate the model</li>
 <li>You can show the evaluation performance as a plot over time, or simply average the evaluation metric.</li>
 </ul>
-<p>For this project, I will require the use of <strong>expanding window</strong>.</p>
+<p>For this project, I will require the use of the <strong>expanding window</strong> with the specific windows above (you need to have the testing period 2009-2024).</p>
 <p><strong>Missing data</strong>: There are different ways to address missing data. You can use historical mean, the previously observed value, or some other advanced techniques to do it. You can use previously observed value for simplicity.</p>
 <p><strong>Mixed frequency</strong>: We are trying to predict monthly returns, but variables like GDP growth rate is a quarterly data. There are different ways to deal with mixed frequency too. You can use previously observed value for simplicity.</p>
 <p>That means, if we see 1.2% GDP growth rate for March (Q1) and 1.5% GDP growth rate for June (Q2), we can fill in 1.2% for April and May.</p>
