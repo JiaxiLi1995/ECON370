@@ -150,7 +150,7 @@ Class Room: Gardner 308 & Office: Gardner Hall 5th Floor Library \\
 %                               Course Description                             %
 %------------------------------------------------------------------------------%
 \section*{Course Description}
-ECON \CourseNum is intended to provide a broad-based introduction to numerical and data science methods commonly used in economics. The course will first introduce students to the R programming language, assuming no prior experience. Subsequent lectures, using R, will provide students an opportunity to apply this knowledge on real-world data to achieve an economic objective.  The methods used in these applications will include (but are not limited to): collecting, cleaning, merging, processing, and visualizing data, descriptive analysis, optimization, and supervised/unsupervised statistical learning.
+ECON \CourseNum is intended to provide a broad-based introduction to numerical and data science methods commonly used in economics. The course will first introduce students to the R programming language, assuming no prior experience. Subsequent lectures, using R, will provide students with the opportunity to apply this knowledge to real-world data to achieve an economic objective.  The methods used in these applications will include (but are not limited to): collecting, cleaning, merging, processing, and visualizing data, supervised/unsupervised statistical learning, cross-validation, trees and basic neural networks.
 
 %------------------------------------------------------------------------------%
 %                                 Course Goals                                 %
@@ -159,7 +159,7 @@ ECON \CourseNum is intended to provide a broad-based introduction to numerical a
 My teaching goals for this course are as follows:
 
 \begin{enumerate}
-    \item Teach students how to competently program in R with good style,
+    \item Teach students how to competently program in R in good style,
     \item Teach students how to think and approach problems from a computational perspective,
     \item Teach students basic data science skills including data visualization and basic models,
     \item Imbue students with a desire to learn more about econometrics and data science.
@@ -170,7 +170,7 @@ My teaching goals for this course are as follows:
 %                              Learning Objective                              %
 %------------------------------------------------------------------------------%
 \section*{Learning Objectives}
-Upon successfully completing ECON \CourseNum, students should be able to do the following:
+Upon successful completion of ECON \CourseNum, students should be able to do the following:
 
 \begin{enumerate}
     \item Be able to write functioning, readable, and aesthetically pleasing code in the R programming language, 
@@ -184,7 +184,7 @@ Upon successfully completing ECON \CourseNum, students should be able to do the 
 %                                Prerequisites                                 %
 %------------------------------------------------------------------------------%
 \section*{Prerequisites and Requirements}
-ECON 101 and a declared economics major.
+ECON 101 and a declared Economics major; some background in statistics is recommended.
 
 %------------------------------------------------------------------------------%
 %                                Course Materials                              %
@@ -208,7 +208,7 @@ ECON 101 and a declared economics major.
     \item \textbf{R and RStudio:} We will be using R as our programming language. R is widely used in the business world and academia and has an excellent Integrated Development Environment (IDE) called RStudio. To install R, go to \href{https://cran.r-project.org}{\tt\bf https://cran.r-project.org} and download the correct distribution for your machine. After installing R, you can install Rstudio by going to \href{https://www.rstudio.com/products/rstudio/download/}{\tt\bf https://www.rstudio.com/products/rstudio/download/} and downloading the free version of RStudio Desktop.
     
     % Canvas
-    \item \textbf{Canvas:} All announcements, materials, assignments, grades, etc will be posted on the course's Canvas site. Please visit \href{https://uncch.instructure.com/}{\tt\bf uncch.instructure.com}. I will also be posting all materials on the \href{https://github.com/drewvankuiken/ECON370}{\tt\bf Github repo} for the course. You may access them however you wish, but assignments will need to be submitted on Canvas. {\tt\bf  \emph{Submitted assignments will only be accepted when submitted on Canvas. No exceptions.}} Any assignment that we have will be able to be submitted on Canvas. If you are having trouble submitting an assignment, it is likely something is incorrect with the submission (e.g. unnecessarily large file, a weird file type, etc). See the course policies below for more details.
+    \item \textbf{Canvas:} All announcements, materials, assignments, grades, etc will be posted on the course's Canvas site. Please visit \href{https://uncch.instructure.com/}{\tt\bf uncch.instructure.com}. I will also be posting all materials on the \href{https://github.com/JiaxiLi1995/ECON370}{\tt\bf Github repo} for the course. You may access them however you wish, but assignments will need to be submitted on Canvas. {\tt\bf  \emph{Submitted assignments will only be accepted when submitted on Canvas. No exceptions.}} Any assignment that we have will be able to be submitted on Canvas. If you are having trouble submitting an assignment, it is likely something is incorrect with the submission (e.g. unnecessarily large file, a weird file type, etc). See the course policies below for more details.
 \end{itemize}
 
 
@@ -223,33 +223,32 @@ The course will cover the following topics using illustrative economic applicati
 	% Module 1
 	\item Module 1: Introduction (week 1)
 	\begin{itemize}
-    	\item Introduction to course, the syllabus, and R
+    	\item Introduction to course: the syllabus, R and data visualization with ggplot2
 	\end{itemize}
 	
 	% Module 2
-	\item Module 2: R programming (weeks 2-6)
+	\item Module 2: R programming (weeks 2-7)
 	\begin{itemize}
     	\item Data types and structures
     	\item Objects and the environment
     	\item Logic, loops, and control flow
-    	\item Functions and miscellaneous topics (dates, regular expressions, etc)
-    	\item Programming applications (optimization, simulation, numerical methods)
+    	\item Functions
+        \item miscellaneous topics (pipeline, dates, regular expressions, etc)
 	\end{itemize} 
 	
 	% Module 3
-	\item Module 3: Data Acumen (weeks 8-11)
+	\item Module 3: Data Acumen (weeks 8-10)
 	\begin{itemize}
-    	\item Structured and unstructured data
-    	\item Loading, cleaning, validation, merging, and processing data
+    	\item Tidyverse: Loading, cleaning, validation, merging, and processing data
+    	\item Datatable: Loading, cleaning, validation, merging, and processing data
 	\end{itemize}  
 	
 	% Module 4
-	\item Module 4: Data Science and Visualization (weeks 12-15)
+	\item Module 4: Data Science (weeks 11-15)
 	\begin{itemize}
-    	\item Descriptive analysis
-    	\item Visualizing and plotting data (spatial, etc)
-    	\item Clustering, classification, etc
-            \item Basic Machine Learning and AI
+    	\item Into to data science and model fitting with OLS, Ridge and LASSO
+    	\item Validating and Testing: simulation vs. bootstrap, cross-validation and model evaluation
+    	\item Trees and Neural Networks
 	\end{itemize}   
 \end{itemize}
 
@@ -273,7 +272,7 @@ The following items will contribute to your overall grade:
     \item Participation (10\%): Regular participation in class discussions and attendance at speaker events. I will be tracking participation at the start of each class. If you attend 75\% of the lectures, you are guaranteed at least half (5\% total) of the participation points. The rest are determined via a linear scale between 75\% and 100\% plus or minus how well I believe you are participating in class. This is a small class in which I can get to know all of you, and I want that to be the case. Asking questions, coming to office hours, and engaging with the material will serve you greatly both in this class, and for your time after this course.
         
     % Final Project
-    \item Final Project (30\%): Students will present a data project about predicting monthly S\&P500 returns during the scheduled final time. More details on this to come. Group submissions are \textbf{not} allowed for this project. 
+    \item Final Project (30\%): Students will present a data project about forecasting monthly S\&P 500 returns during the scheduled final time. More details on this to come. Group submissions are \textbf{not} allowed for this project. 
 \end{itemize}
 
 % Grading Scale
