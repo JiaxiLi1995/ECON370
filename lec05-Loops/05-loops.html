@@ -124,7 +124,7 @@ This can be done with a `for` loop.
 
 We can loop over indexes for that vector, list, data.frame, etc.
 
-&lt;img src="pics/for_loop.png" width="25%" style="display: block; margin: auto;" /&gt;
+&lt;img src="pics/for_loop.png" alt="" width="25%" style="display: block; margin: auto;" /&gt;
 
 ---
 # Our First Loop
@@ -313,9 +313,9 @@ mbm
 
 ```
 ## Unit: milliseconds
-##      expr    min      lq     mean  median      uq     max neval
-##  no_preal 2.7248 2.82270 3.167060 2.88030 2.99895 66.4240  1000
-##     preal 1.8740 1.94115 2.095453 1.98255 2.05235  8.2964  1000
+##      expr    min      lq     mean  median      uq      max neval
+##  no_preal 3.3893 3.68740 4.466903 4.02985 4.67260  11.9888  1000
+##     preal 2.3155 2.47805 3.045723 2.67055 3.11935 113.4007  1000
 ```
 
 --
@@ -332,7 +332,7 @@ Bottom line: **Always preallocate** if you are saving the result of each iterati
 - Can be dangerous though: infinite loop!
  - Not so much in RStudio, though.
 
-&lt;img src="pics/while_loop.png" width="25%" style="display: block; margin: auto;" /&gt;
+&lt;img src="pics/while_loop.png" alt="" width="25%" style="display: block; margin: auto;" /&gt;
 
 ---
 # Our First While Loop
@@ -644,7 +644,8 @@ while(abs(x_n - 2*x_n) &gt; eps){
 ```
 
 ```
-## Error: Did not find fixed point!
+## Error:
+## ! Did not find fixed point!
 ```
 
 ---
@@ -1084,9 +1085,9 @@ mbm
 
 ```
 ## Unit: microseconds
-##        expr    min     lq      mean  median     uq    max neval
-##        loop 1720.2 1772.3 1881.4015 1798.50 1842.6 6042.3  1000
-##  vectorized   14.6   16.9   26.2618   19.35   23.0  161.1  1000
+##        expr    min      lq      mean  median      uq     max neval
+##        loop 3707.5 4278.40 5350.2227 4788.10 6072.05 16538.8  1000
+##  vectorized   19.6   41.75   83.3292   60.85  119.15   354.7  1000
 ```
 
 ---
@@ -1132,9 +1133,9 @@ mbm
 
 ```
 ## Unit: microseconds
-##        expr    min      lq      mean  median      uq     max neval
-##        loop 4892.4 5024.45 5385.5191 5107.15 5301.90 14343.8  1000
-##  vectorized  131.3  147.60  183.3199  191.80  216.05   359.1  1000
+##        expr     min       lq      mean  median      uq     max neval
+##        loop 11319.4 12695.25 15574.007 14670.4 17579.1 42805.6  1000
+##  vectorized   202.5   358.05   543.283   488.2   665.1  1593.3  1000
 ```
 
 ``` r
@@ -1142,7 +1143,7 @@ mean(mbm[mbm$expr=="loop","time"])/mean(mbm[mbm$expr=="vectorized","time"])
 ```
 
 ```
-## [1] 29.37771
+## [1] 28.66647
 ```
 
 ---
@@ -1213,8 +1214,8 @@ print(benchmark_result)
 ```
 ## Unit: milliseconds
 ##           expr      min       lq      mean   median       uq      max neval
-##  base_colMeans   9.3672   9.5098   9.87787   9.5687   9.7685  12.3943    10
-##     apply_mean 139.0726 146.0562 148.04820 147.4354 148.7114 159.5839    10
+##  base_colMeans  21.7182  22.0687  23.57383  22.9064  24.4176  28.0423    10
+##     apply_mean 448.4709 574.3310 603.85739 607.0868 633.2206 715.2070    10
 ```
 
 Note: You can use `replicate` to create the big matrix, but it would be slower.
@@ -1262,6 +1263,12 @@ all.equal(unlist(lapply(my_list, mean)), unlist(future_lapply(my_list, mean)))
 ```
 
 ```
+## Warning: package 'future' was built under R version 4.5.3
+## Warning: package 'future' was built under R version 4.5.3
+## Warning: package 'future' was built under R version 4.5.3
+```
+
+```
 ## [1] TRUE
 ```
 
@@ -1283,11 +1290,15 @@ Benchmark Different Approaches: I have included the benchmarking code in the scr
 
 
 ```
+## Warning: package 'future' was built under R version 4.5.3
+```
+
+```
 ## Unit: milliseconds
-##         expr       min        lq      mean    median        uq       max neval
-##   for_loop() 1288.1779 1293.9699 1314.7966 1299.7620 1328.1059 1356.4498     3
-##  apply_seq() 1331.6848 1332.9895 1356.9916 1334.2942 1369.6450 1404.9958     3
-##  apply_par()  516.6633  529.5994  535.2828  542.5355  544.5925  546.6495     3
+##         expr       min        lq     mean   median       uq      max neval
+##   for_loop() 2540.8610 2826.4201 3148.459 3111.979 3452.258 3792.537     3
+##  apply_seq() 3415.4069 3449.6710 3482.987 3483.935 3516.777 3549.619     3
+##  apply_par()  688.7482  854.1506 1025.243 1019.553 1193.491 1367.428     3
 ```
 
 ---
@@ -1339,7 +1350,7 @@ Note: I did not use `\(t\)` as the loop variable because of the function `t()`. 
 ---
 # AR(1) Plot
 
-&lt;img src="05-loops_files/figure-html/unnamed-chunk-38-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="05-loops_files/figure-html/unnamed-chunk-38-1.png" alt="" style="display: block; margin: auto;" /&gt;
 
 ---
 # Temporarily Saved Values

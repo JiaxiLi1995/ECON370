@@ -160,7 +160,7 @@ Sys.Date()
 ```
 
 ```
-## [1] "2025-10-21"
+## [1] "2026-09-14"
 ```
 
 --
@@ -202,7 +202,7 @@ today()
 ```
 
 ```
-## [1] "2025-10-21"
+## [1] "2026-09-14"
 ```
 
 ---
@@ -215,7 +215,7 @@ year(today())
 ```
 
 ```
-## [1] 2025
+## [1] 2026
 ```
 
 ``` r
@@ -223,7 +223,7 @@ month(today())
 ```
 
 ```
-## [1] 10
+## [1] 9
 ```
 
 ``` r
@@ -231,7 +231,7 @@ week(today())
 ```
 
 ```
-## [1] 42
+## [1] 37
 ```
 
 ``` r
@@ -381,7 +381,7 @@ list.files("D:/R/ECON370/HW1")
 ```
 
 ```
-## [1] "2024"            "Assignment1.pdf" "Assignment1.Rmd" "marsh"
+## character(0)
 ```
 ---
 # Read in CSV
@@ -468,25 +468,20 @@ OTC_data_fst = read_fst("OTC_data.fst")
 
 ```
 ## Unit: microseconds
-##          expr      min       lq      mean   median       uq       max neval
-##      rds_read  629.400  692.802  737.5811  753.251  763.200   838.702    10
-##      csv_read 5212.301 5437.301 5736.0307 5622.000 6080.900  6269.501    10
-##  feather_read 4458.400 4600.901 5728.5109 5091.752 6080.601 10104.701    10
-##      fst_read  447.401  486.801  539.3808  555.301  577.500   605.701    10
+##          expr    min     lq    mean  median     uq    max neval
+##      rds_read  516.9  714.9  839.39  849.45  916.2 1242.7    10
+##      csv_read 3391.3 5836.8 6424.29 6342.80 7686.1 8870.0    10
+##  feather_read 4474.9 5956.6 6678.22 7003.70 7241.6 8390.4    10
+##      fst_read  438.6  623.0  760.43  669.10  935.9 1085.0    10
 ```
 
 ```
 ## Unit: microseconds
-##          expr       min        lq       mean     median        uq       max
-##      rds_save  2568.601  2764.901  2865.5411  2827.4510  2927.101  3331.502
-##      csv_save 18958.601 19596.701 21504.1412 22096.6010 22706.601 24244.602
-##  feather_save  3147.701  3315.800  3949.3211  3752.8515  4566.801  5434.400
-##      fst_save   623.301   681.701   852.6709   772.1005  1082.801  1196.900
-##  neval
-##     10
-##     10
-##     10
-##     10
+##          expr     min      lq     mean   median      uq     max neval
+##      rds_save  2503.9  3205.2  4885.84  4678.15  5169.7 11706.8    10
+##      csv_save 23983.3 30345.2 38129.56 35620.00 44787.9 53296.0    10
+##  feather_save  4711.1  6020.7  8446.50  6540.70  7990.9 17625.3    10
+##      fst_save   685.5  1053.2  1585.90  1722.50  2032.6  2350.2    10
 ```
 
 
@@ -661,7 +656,7 @@ raw_wiki
 
 ```
 ## {html_document}
-## &lt;html class="client-nojs vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-page-tools-pinned-disabled vector-feature-toc-pinned-clientpref-1 vector-feature-main-menu-pinned-disabled vector-feature-limited-width-clientpref-1 vector-feature-limited-width-content-enabled vector-feature-custom-font-size-clientpref-1 vector-feature-appearance-pinned-clientpref-1 vector-feature-night-mode-enabled skin-theme-clientpref-day vector-sticky-header-enabled vector-toc-available" lang="en" dir="ltr"&gt;
+## &lt;html class="client-nojs vector-feature-language-in-header-enabled vector-feature-language-in-main-menu-disabled vector-feature-language-in-main-page-header-disabled vector-feature-page-tools-pinned-disabled vector-feature-toc-pinned-clientpref-1 vector-feature-main-menu-pinned-disabled vector-feature-limited-width-clientpref-1 vector-feature-limited-width-content-enabled vector-feature-custom-font-size-clientpref-1 vector-feature-appearance-pinned-clientpref-1 skin-theme-clientpref-day vector-sticky-header-enabled vector-toc-available skin-thumbsize-clientpref-standard" lang="en" dir="ltr"&gt;
 ## [1] &lt;head&gt;\n&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
 ## [2] &lt;body class="skin--responsive skin-vector skin-vector-search-vue mediawik ...
 ```
@@ -708,22 +703,21 @@ raw_wiki |&gt; html_elements("table")
 ```
 
 ```
-## {xml_nodeset (15)}
-##  [1] &lt;table class="box-Unreferenced_section plainlinks metadata ambox ambox-c ...
-##  [2] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/ ...
-##  [3] &lt;table class="wikitable" style="text-align: left;"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;td st ...
-##  [4] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt; ...
-##  [5] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt; ...
-##  [6] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/ ...
-##  [7] &lt;table class="nowraplinks mw-collapsible autocollapse navbox-inner" styl ...
-##  [8] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
-##  [9] &lt;table class="nowraplinks hlist mw-collapsible autocollapse navbox-inner ...
+## {xml_nodeset (14)}
+##  [1] &lt;table class="wikitable" id="mwHA"&gt;\n&lt;caption id="mwHQ"&gt;Unofficial world ...
+##  [2] &lt;table class="wikitable" style="text-align: left;" id="mw4Q"&gt;&lt;tbody id=" ...
+##  [3] &lt;table class="wikitable" id="mw-Q"&gt;&lt;tbody id="mw-g"&gt;\n&lt;tr id="mw-w"&gt;\n&lt;t ...
+##  [4] &lt;table class="wikitable" id="mwBA8"&gt;&lt;tbody id="mwBBA"&gt;\n&lt;tr id="mwBBE"&gt;\ ...
+##  [5] &lt;table class="wikitable" id="mwBiw"&gt;&lt;tbody id="mwBi0"&gt;\n&lt;tr id="mwBi4"&gt;\ ...
+##  [6] &lt;table class="nowraplinks mw-collapsible autocollapse navbox-inner" styl ...
+##  [7] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
+##  [8] &lt;table class="nowraplinks hlist mw-collapsible autocollapse navbox-inner ...
+##  [9] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
 ## [10] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
-## [11] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
-## [12] &lt;table class="nowraplinks mw-collapsible uncollapsed navbox-inner" style ...
+## [11] &lt;table class="nowraplinks mw-collapsible uncollapsed navbox-inner" style ...
+## [12] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
 ## [13] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
 ## [14] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
-## [15] &lt;table class="nowraplinks navbox-subgroup" style="border-spacing:0"&gt;&lt;tbo ...
 ```
 
 --
@@ -742,11 +736,11 @@ raw_wiki |&gt; html_elements("table.wikitable")
 
 ```
 ## {xml_nodeset (5)}
-## [1] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/t ...
-## [2] &lt;table class="wikitable" style="text-align: left;"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;td sty ...
-## [3] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt;\ ...
-## [4] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Wind\n&lt;/th&gt;\ ...
-## [5] &lt;table class="wikitable"&gt;&lt;tbody&gt;\n&lt;tr&gt;\n&lt;th&gt;Time\n&lt;/th&gt;\n&lt;th&gt;Athlete\n&lt;/t ...
+## [1] &lt;table class="wikitable" id="mwHA"&gt;\n&lt;caption id="mwHQ"&gt;Unofficial world  ...
+## [2] &lt;table class="wikitable" style="text-align: left;" id="mw4Q"&gt;&lt;tbody id="m ...
+## [3] &lt;table class="wikitable" id="mw-Q"&gt;&lt;tbody id="mw-g"&gt;\n&lt;tr id="mw-w"&gt;\n&lt;th ...
+## [4] &lt;table class="wikitable" id="mwBA8"&gt;&lt;tbody id="mwBBA"&gt;\n&lt;tr id="mwBBE"&gt;\n ...
+## [5] &lt;table class="wikitable" id="mwBiw"&gt;&lt;tbody id="mwBi0"&gt;\n&lt;tr id="mwBi4"&gt;\n ...
 ```
 
 Looks better! 
@@ -767,16 +761,16 @@ table_dfs[[1]]
 ## # A tibble: 21 × 5
 ##     Time Athlete               Nationality    `Location of races`     Date      
 ##    &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;     
-##  1  10.8 Luther Cary           United States  Paris, France           July 4, 1…
-##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       September…
-##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       August 4,…
-##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany April 13,…
-##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  August 28…
-##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     August 9,…
-##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           September…
-##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           September…
-##  9  10.8 Frank Jarvis          United States  Paris, France           July 14, …
-## 10  10.8 Walter Tewksbury      United States  Paris, France           July 14, …
+##  1  10.8 Luther Cary           United States  Paris, France           4 July 18…
+##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       25 Septem…
+##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       4 August …
+##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany 13 April …
+##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  28 August…
+##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     9 August …
+##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           11 Septem…
+##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           10 Septem…
+##  9  10.8 Frank Jarvis          United States  Paris, France           14 July 1…
+## 10  10.8 Walter Tewksbury      United States  Paris, France           14 July 1…
 ## # ℹ 11 more rows
 ```
 
@@ -814,16 +808,16 @@ table_dfs[[1]]
 ## # A tibble: 21 × 5
 ##     time athlete               nationality    location_of_races       date      
 ##    &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;                   &lt;date&gt;    
-##  1  10.8 Luther Cary           United States  Paris, France           1891-07-04
-##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       1892-09-25
-##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       1893-08-04
-##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany 1895-04-13
-##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  1895-08-28
-##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     1896-08-09
-##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1898-09-11
-##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1899-09-10
-##  9  10.8 Frank Jarvis          United States  Paris, France           1900-07-14
-## 10  10.8 Walter Tewksbury      United States  Paris, France           1900-07-14
+##  1  10.8 Luther Cary           United States  Paris, France           NA        
+##  2  10.8 Cecil Lee             United Kingdom Brussels, Belgium       NA        
+##  3  10.8 Étienne De Ré         Belgium        Brussels, Belgium       NA        
+##  4  10.8 L. Atcherley          United Kingdom Frankfurt/Main, Germany NA        
+##  5  10.8 Harry Beaton          United Kingdom Rotterdam, Netherlands  NA        
+##  6  10.8 Harald Anderson-Arbin Sweden         Helsingborg, Sweden     NA        
+##  7  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1998-11-18
+##  8  10.8 Isaac Westergren      Sweden         Gävle, Sweden           1999-10-18
+##  9  10.8 Frank Jarvis          United States  Paris, France           NA        
+## 10  10.8 Walter Tewksbury      United States  Paris, France           NA        
 ## # ℹ 11 more rows
 ```
 
@@ -847,14 +841,14 @@ head(wr100)
 
 ```
 ## # A tibble: 6 × 5
-##    time athlete               nationality    date       era     
-##   &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;date&gt;     &lt;chr&gt;   
-## 1  10.8 Luther Cary           United States  1891-07-04 Pre-IAAF
-## 2  10.8 Cecil Lee             United Kingdom 1892-09-25 Pre-IAAF
-## 3  10.8 Étienne De Ré         Belgium        1893-08-04 Pre-IAAF
-## 4  10.8 L. Atcherley          United Kingdom 1895-04-13 Pre-IAAF
-## 5  10.8 Harry Beaton          United Kingdom 1895-08-28 Pre-IAAF
-## 6  10.8 Harald Anderson-Arbin Sweden         1896-08-09 Pre-IAAF
+##    time athlete               nationality    date   era     
+##   &lt;dbl&gt; &lt;chr&gt;                 &lt;chr&gt;          &lt;date&gt; &lt;chr&gt;   
+## 1  10.8 Luther Cary           United States  NA     Pre-IAAF
+## 2  10.8 Cecil Lee             United Kingdom NA     Pre-IAAF
+## 3  10.8 Étienne De Ré         Belgium        NA     Pre-IAAF
+## 4  10.8 L. Atcherley          United Kingdom NA     Pre-IAAF
+## 5  10.8 Harry Beaton          United Kingdom NA     Pre-IAAF
+## 6  10.8 Harald Anderson-Arbin Sweden         NA     Pre-IAAF
 ```
 
 ---

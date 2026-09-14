@@ -246,7 +246,8 @@ lm(y ~ x) ## The "lm" stands for linear model(s)
 ```
 
 ```
-## Error in eval(predvars, data, env): object 'y' not found
+## Error:
+## ! object 'y' not found
 ```
 
 --
@@ -429,6 +430,10 @@ A similar issue crops up when we load two packages, which have functions that sh
 
 ``` r
 library(dplyr)
+```
+
+```
+## Warning: package 'dplyr' was built under R version 4.5.3
 ```
 
 ```
@@ -619,8 +624,8 @@ gc()                                                  # free unused RAM
 
 ```
 ##           used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells  757674 40.5    1436168 76.7  1436168 76.7
-## Vcells 1557488 11.9    8388608 64.0  3074185 23.5
+## Ncells  788394 42.2    1451482 77.6  1451482 77.6
+## Vcells 1612872 12.4    8388608 64.0  2965238 22.7
 ```
 
 This helps reduce memory usage by clearing unnecessary objects and reclaiming unused memory from R's internal heap.
